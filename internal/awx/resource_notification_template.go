@@ -257,6 +257,9 @@ func resourceNotificationTemplate() *schema.Resource {
 				},
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 	}
 }
 
