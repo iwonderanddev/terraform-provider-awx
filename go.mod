@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.30.0
 	github.com/magefile/mage v1.15.0
 	github.com/nolte/plumbing v0.0.1
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.10.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
