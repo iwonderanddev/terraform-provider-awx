@@ -130,6 +130,7 @@
         "name": "become_enabled",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -144,6 +145,7 @@
         "name": "diff_mode",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -166,6 +168,7 @@
         "name": "forks",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -180,6 +183,7 @@
         "name": "job_type",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `run` - Run\n* `check` - Check"
@@ -202,6 +206,7 @@
         "name": "module_name",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `command` - command\n* `shell` - shell\n* `yum` - yum\n* `apt` - apt\n* `apt_key` - apt_key\n* `apt_repository` - apt_repository\n* `apt_rpm` - apt_rpm\n* `service` - service\n* `group` - group\n* `user` - user\n* `mount` - mount\n* `ping` - ping\n* `selinux` - selinux\n* `setup` - setup\n* `win_ping` - win_ping\n* `win_service` - win_service\n* `win_updates` - win_updates\n* `win_group` - win_group\n* `win_user` - win_user"
@@ -210,6 +215,7 @@
         "name": "verbosity",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
@@ -271,6 +277,7 @@
         "name": "prevent_instance_group_fallback",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled, the inventory will prevent adding any organization instance groups to the list of preferred instances groups to run associated job templates on.If this setting is enabled and you provided an empty list, the global instance groups will be applied."
@@ -340,6 +347,7 @@
         "name": "metadata",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -383,6 +391,7 @@
         "name": "injectors",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Enter injectors using either JSON or YAML syntax. Refer to the documentation for example syntax."
@@ -391,6 +400,7 @@
         "name": "inputs",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Enter inputs using either JSON or YAML syntax. Refer to the documentation for example syntax."
@@ -444,6 +454,7 @@
         "name": "inputs",
         "type": "object",
         "required": false,
+        "computed": true,
         "sensitive": true,
         "writeOnly": true,
         "description": "Credential inputs are treated as write-only secret payloads."
@@ -602,6 +613,7 @@
         "name": "automated_counter",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "How many times was the host automated"
@@ -610,6 +622,7 @@
         "name": "deleted",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Boolean flag saying whether the host is deleted and therefore not counted into the subscription consumption"
@@ -618,6 +631,7 @@
         "name": "deleted_counter",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "How many times was the host deleted"
@@ -701,6 +715,7 @@
         "name": "enabled",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Is this host online and available for running jobs?"
@@ -769,6 +784,7 @@
         "name": "max_concurrent_jobs",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Maximum number of concurrent jobs to run on a group. When set to zero, no maximum is enforced."
@@ -777,6 +793,7 @@
         "name": "max_forks",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Maximum number of forks to execute concurrently on a group. When set to zero, no maximum is enforced."
@@ -807,6 +824,7 @@
         "name": "policy_instance_minimum",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Static minimum number of Instances that will be automatically assign to this group when new instances come online."
@@ -815,6 +833,7 @@
         "name": "policy_instance_percentage",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Minimum percentage of all instances that will be automatically assigned to this group when new instances come online."
@@ -839,6 +858,7 @@
         "name": "capacity_adjustment",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -846,6 +866,7 @@
         "name": "enabled",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -867,6 +888,7 @@
         "name": "managed_by_policy",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -874,6 +896,7 @@
         "name": "node_state",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Indicates the current life cycle stage of this instance.\n\n* `provisioning` - Provisioning\n* `provision-fail` - Provisioning Failure\n* `installed` - Installed\n* `ready` - Ready\n* `unavailable` - Unavailable\n* `deprovisioning` - De-provisioning\n* `deprovision-fail` - De-provisioning Failure"
@@ -882,6 +905,7 @@
         "name": "node_type",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Role that this node plays in the mesh.\n\n* `control` - Control plane node\n* `execution` - Execution plane node\n* `hybrid` - Controller and execution\n* `hop` - Message-passing node, no execution capability"
@@ -966,6 +990,7 @@
         "name": "prevent_instance_group_fallback",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled, the inventory will prevent adding any organization instance groups to the list of preferred instances groups to run associated job templates on.If this setting is enabled and you provided an empty list, the global instance groups will be applied."
@@ -1066,6 +1091,7 @@
         "name": "overwrite",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Overwrite local groups and hosts from remote inventory source."
@@ -1074,6 +1100,7 @@
         "name": "overwrite_vars",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Overwrite local variables from remote inventory source."
@@ -1121,6 +1148,7 @@
         "name": "timeout",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The amount of time (in seconds) to run before the task is canceled."
@@ -1129,6 +1157,7 @@
         "name": "update_cache_timeout",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1136,6 +1165,7 @@
         "name": "update_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1143,6 +1173,7 @@
         "name": "verbosity",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `0` - 0 (WARNING)\n* `1` - 1 (INFO)\n* `2` - 2 (DEBUG)"
@@ -1392,6 +1423,7 @@
         "name": "overwrite",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Overwrite local groups and hosts from remote inventory source."
@@ -1400,6 +1432,7 @@
         "name": "overwrite_vars",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Overwrite local variables from remote inventory source."
@@ -1500,6 +1533,7 @@
         "name": "timeout",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The amount of time (in seconds) to run before the task is canceled."
@@ -1529,6 +1563,7 @@
         "name": "verbosity",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `0` - 0 (WARNING)\n* `1` - 1 (INFO)\n* `2` - 2 (DEBUG)"
@@ -1560,6 +1595,7 @@
         "name": "allow_simultaneous",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1567,6 +1603,7 @@
         "name": "ask_credential_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1574,6 +1611,7 @@
         "name": "ask_diff_mode_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1581,6 +1619,7 @@
         "name": "ask_execution_environment_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1588,6 +1627,7 @@
         "name": "ask_forks_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1595,6 +1635,7 @@
         "name": "ask_instance_groups_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1602,6 +1643,7 @@
         "name": "ask_inventory_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1609,6 +1651,7 @@
         "name": "ask_job_slice_count_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1616,6 +1659,7 @@
         "name": "ask_job_type_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1623,6 +1667,7 @@
         "name": "ask_labels_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1630,6 +1675,7 @@
         "name": "ask_limit_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1637,6 +1683,7 @@
         "name": "ask_scm_branch_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1644,6 +1691,7 @@
         "name": "ask_skip_tags_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1651,6 +1699,7 @@
         "name": "ask_tags_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1658,6 +1707,7 @@
         "name": "ask_timeout_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1665,6 +1715,7 @@
         "name": "ask_variables_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1672,6 +1723,7 @@
         "name": "ask_verbosity_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1679,6 +1731,7 @@
         "name": "become_enabled",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1693,6 +1746,7 @@
         "name": "diff_mode",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled, textual changes made to any templated files on the host are shown in the standard output"
@@ -1716,6 +1770,7 @@
         "name": "force_handlers",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1723,6 +1778,7 @@
         "name": "forks",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1744,6 +1800,7 @@
         "name": "job_slice_count",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The number of jobs to slice into at runtime. Will cause the Job Template to launch a workflow if value is greater than 1."
@@ -1759,6 +1816,7 @@
         "name": "job_type",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `run` - Run\n* `check` - Check"
@@ -1796,6 +1854,7 @@
         "name": "prevent_instance_group_fallback",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled, the job template will prevent adding any inventory or organization instance groups to the list of preferred instances groups to run on.If this setting is enabled and you provided an empty list, the global instance groups will be applied."
@@ -1833,6 +1892,7 @@
         "name": "survey_enabled",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1840,6 +1900,7 @@
         "name": "timeout",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The amount of time (in seconds) to run before the task is canceled."
@@ -1848,6 +1909,7 @@
         "name": "use_fact_cache",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible."
@@ -1856,6 +1918,7 @@
         "name": "verbosity",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
@@ -1895,6 +1958,7 @@
         "name": "allow_simultaneous",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -1947,6 +2011,7 @@
         "name": "diff_mode",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled, textual changes made to any templated files on the host are shown in the standard output"
@@ -2009,6 +2074,7 @@
         "name": "force_handlers",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -2016,6 +2082,7 @@
         "name": "forks",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -2082,6 +2149,7 @@
         "name": "job_slice_count",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job."
@@ -2090,6 +2158,7 @@
         "name": "job_slice_number",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used."
@@ -2112,6 +2181,7 @@
         "name": "job_type",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `run` - Run\n* `check` - Check\n* `scan` - Scan"
@@ -2260,6 +2330,7 @@
         "name": "timeout",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The amount of time (in seconds) to run before the task is canceled."
@@ -2289,6 +2360,7 @@
         "name": "use_fact_cache",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible."
@@ -2297,6 +2369,7 @@
         "name": "verbosity",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
@@ -2389,6 +2462,7 @@
         "name": "messages",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Optional custom messages for notification template."
@@ -2404,6 +2478,7 @@
         "name": "notification_configuration",
         "type": "object",
         "required": false,
+        "computed": true,
         "sensitive": true,
         "writeOnly": false,
         "description": "Notification transport configuration may include secrets and is handled as sensitive JSON."
@@ -2580,6 +2655,7 @@
         "name": "max_hosts",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Maximum number of hosts allowed to be managed by this organization."
@@ -2746,6 +2822,7 @@
         "name": "job_type",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "* `run` - Run\n* `check` - Check"
@@ -2828,6 +2905,7 @@
         "name": "scm_clean",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Discard any local changes before syncing the project."
@@ -2836,6 +2914,7 @@
         "name": "scm_delete_on_update",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Delete the project before syncing."
@@ -2860,6 +2939,7 @@
         "name": "scm_track_submodules",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Track submodules latest commits on defined branch."
@@ -2907,6 +2987,7 @@
         "name": "timeout",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The amount of time (in seconds) to run before the task is canceled."
@@ -2959,6 +3040,7 @@
         "name": "allow_override",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Allow changing the SCM branch or revision in a job template that uses this project."
@@ -3020,6 +3102,7 @@
         "name": "scm_clean",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Discard any local changes before syncing the project."
@@ -3028,6 +3111,7 @@
         "name": "scm_delete_on_update",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Delete the project before syncing."
@@ -3044,6 +3128,7 @@
         "name": "scm_track_submodules",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Track submodules latest commits on defined branch."
@@ -3060,6 +3145,7 @@
         "name": "scm_update_cache_timeout",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The number of seconds after the last project update ran that a new project update will be launched as a job dependency."
@@ -3068,6 +3154,7 @@
         "name": "scm_update_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Update the project when a job is launched that uses the project."
@@ -3092,6 +3179,7 @@
         "name": "timeout",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The amount of time (in seconds) to run before the task is canceled."
@@ -3123,6 +3211,7 @@
         "name": "canonical",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If True, this address is the canonical address for the instance."
@@ -3152,6 +3241,7 @@
         "name": "is_internal",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If True, only routable within the Kubernetes cluster."
@@ -3160,6 +3250,7 @@
         "name": "peers_from_control_nodes",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If True, control plane cluster nodes should automatically peer to it."
@@ -3168,6 +3259,7 @@
         "name": "port",
         "type": "integer",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Port for the address."
@@ -3176,6 +3268,7 @@
         "name": "protocol",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Protocol to use for the Receptor listener, 'tcp', 'wss', or 'ws'.\n\n* `tcp` - TCP\n* `ws` - WS\n* `wss` - WSS"
@@ -3496,6 +3589,7 @@
         "name": "enabled",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Enables processing of this schedule."
@@ -3512,6 +3606,7 @@
         "name": "extra_data",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4046,6 +4141,7 @@
         "name": "is_superuser",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Designates that this user has all permissions without explicitly assigning them."
@@ -4054,6 +4150,7 @@
         "name": "is_system_auditor",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4328,6 +4425,7 @@
         "name": "all_parents_must_converge",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node"
@@ -4357,6 +4455,7 @@
         "name": "do_not_run",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Indicates that a job will not be created when True. Workflow runtime semantics will mark this True if the node is in a path that will decidedly not be ran. A value of False means the node may not run."
@@ -4373,6 +4472,7 @@
         "name": "extra_data",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4553,6 +4653,7 @@
         "name": "all_parents_must_converge",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node"
@@ -4576,6 +4677,7 @@
         "name": "extra_data",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4693,6 +4795,7 @@
         "name": "allow_simultaneous",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4700,6 +4803,7 @@
         "name": "ask_inventory_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4707,6 +4811,7 @@
         "name": "ask_labels_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4714,6 +4819,7 @@
         "name": "ask_limit_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4721,6 +4827,7 @@
         "name": "ask_scm_branch_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4728,6 +4835,7 @@
         "name": "ask_skip_tags_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4735,6 +4843,7 @@
         "name": "ask_tags_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4742,6 +4851,7 @@
         "name": "ask_variables_on_launch",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4814,6 +4924,7 @@
         "name": "survey_enabled",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4852,6 +4963,7 @@
         "name": "allow_simultaneous",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4926,6 +5038,7 @@
         "name": "is_sliced_job",
         "type": "boolean",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },

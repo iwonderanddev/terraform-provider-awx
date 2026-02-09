@@ -40,6 +40,7 @@ func TestAcceptance_TeamCRUDAndImport(t *testing.T) {
 	ctx := context.Background()
 	resourceName := fmt.Sprintf("tf-awx-acceptance-team-%d", time.Now().UnixNano())
 
+	t.Logf("creating team %q in organization %d", resourceName, organizationID)
 	created, err := awxClient.CreateObject(ctx, "/api/v2/teams/", map[string]any{
 		"name":         resourceName,
 		"description":  "terraform provider acceptance test",
@@ -54,13 +55,16 @@ func TestAcceptance_TeamCRUDAndImport(t *testing.T) {
 		t.Fatalf("failed to parse created team id: %v", err)
 	}
 	defer func() {
+		t.Logf("cleanup: deleting team id=%d", teamID)
 		_ = awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", teamID)
 	}()
 
+	t.Logf("updating team id=%d description", teamID)
 	if _, err := awxClient.UpdateObject(ctx, "/api/v2/teams/{id}/", teamID, map[string]any{"description": "updated by acceptance test"}); err != nil {
 		t.Fatalf("failed to update team: %v", err)
 	}
 
+	t.Logf("reading team id=%d", teamID)
 	fetched, err := awxClient.GetObject(ctx, "/api/v2/teams/{id}/", teamID)
 	if err != nil {
 		t.Fatalf("failed to read team: %v", err)
@@ -70,14 +74,17 @@ func TestAcceptance_TeamCRUDAndImport(t *testing.T) {
 	}
 
 	importID := strconv.FormatInt(teamID, 10)
+	t.Logf("validating import id format: %s", importID)
 	if _, err := strconv.ParseInt(importID, 10, 64); err != nil {
 		t.Fatalf("expected numeric import id, got %q", importID)
 	}
 
+	t.Logf("deleting team id=%d", teamID)
 	if err := awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", teamID); err != nil {
 		t.Fatalf("failed to delete team: %v", err)
 	}
 
+	t.Logf("confirming team id=%d no longer exists", teamID)
 	_, err = awxClient.GetObject(ctx, "/api/v2/teams/{id}/", teamID)
 	if err == nil {
 		t.Fatalf("expected team lookup to fail after delete")
@@ -107,15 +114,18 @@ func TestAcceptance_TeamUserRelationshipCompositeImport(t *testing.T) {
 	ctx := context.Background()
 	relationshipPath := "/api/v2/teams/{id}/users/"
 
+	t.Logf("checking initial team-user relationship state team=%d user=%d", teamID, userID)
 	existedBefore, err := awxClient.RelationshipExists(ctx, relationshipPath, teamID, userID)
 	if err != nil {
 		t.Fatalf("failed pre-check for relationship existence: %v", err)
 	}
 
+	t.Logf("associating team=%d with user=%d", teamID, userID)
 	if err := awxClient.Associate(ctx, relationshipPath, teamID, userID); err != nil {
 		t.Fatalf("failed to associate team and user: %v", err)
 	}
 
+	t.Logf("verifying association exists team=%d user=%d", teamID, userID)
 	existsAfterCreate, err := awxClient.RelationshipExists(ctx, relationshipPath, teamID, userID)
 	if err != nil {
 		t.Fatalf("failed relationship read after create: %v", err)
@@ -125,14 +135,17 @@ func TestAcceptance_TeamUserRelationshipCompositeImport(t *testing.T) {
 	}
 
 	compositeID := fmt.Sprintf("%d:%d", teamID, userID)
+	t.Logf("validating composite import id format: %s", compositeID)
 	if !compositeIDPattern.MatchString(compositeID) {
 		t.Fatalf("invalid composite import id: %q", compositeID)
 	}
 
+	t.Logf("disassociating team=%d from user=%d", teamID, userID)
 	if err := awxClient.Disassociate(ctx, relationshipPath, teamID, userID); err != nil {
 		t.Fatalf("failed to disassociate team and user: %v", err)
 	}
 
+	t.Logf("verifying association is removed team=%d user=%d", teamID, userID)
 	existsAfterDelete, err := awxClient.RelationshipExists(ctx, relationshipPath, teamID, userID)
 	if err != nil {
 		t.Fatalf("failed relationship read after delete: %v", err)
@@ -142,6 +155,7 @@ func TestAcceptance_TeamUserRelationshipCompositeImport(t *testing.T) {
 	}
 
 	if existedBefore {
+		t.Logf("restoring initial association team=%d user=%d", teamID, userID)
 		if err := awxClient.Associate(ctx, relationshipPath, teamID, userID); err != nil {
 			t.Fatalf("failed to restore original relationship state: %v", err)
 		}
@@ -163,6 +177,7 @@ func TestAcceptance_TeamLookupByIDAndName(t *testing.T) {
 	ctx := context.Background()
 	resourceName := fmt.Sprintf("tf-awx-acceptance-team-lookup-%d", time.Now().UnixNano())
 
+	t.Logf("creating lookup fixture team %q in organization %d", resourceName, organizationID)
 	created, err := awxClient.CreateObject(ctx, "/api/v2/teams/", map[string]any{
 		"name":         resourceName,
 		"description":  "terraform provider data-source lookup acceptance test",
@@ -177,9 +192,11 @@ func TestAcceptance_TeamLookupByIDAndName(t *testing.T) {
 		t.Fatalf("failed to parse created team id: %v", err)
 	}
 	defer func() {
+		t.Logf("cleanup: deleting lookup fixture team id=%d", teamID)
 		_ = awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", teamID)
 	}()
 
+	t.Logf("looking up team by id=%d", teamID)
 	byID, err := awxClient.GetObject(ctx, "/api/v2/teams/{id}/", teamID)
 	if err != nil {
 		t.Fatalf("lookup by id failed: %v", err)
@@ -192,6 +209,7 @@ func TestAcceptance_TeamLookupByIDAndName(t *testing.T) {
 		t.Fatalf("unexpected id from id-lookup: got=%d want=%d", byIDValue, teamID)
 	}
 
+	t.Logf("looking up team by name=%q", resourceName)
 	byName, err := awxClient.FindByField(ctx, "/api/v2/teams/", "name", resourceName)
 	if err != nil {
 		t.Fatalf("lookup by name failed: %v", err)

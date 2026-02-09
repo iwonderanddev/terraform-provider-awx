@@ -37,13 +37,16 @@ func TestAcceptanceTerraform_TeamResourceCRUDAndImport(t *testing.T) {
 	configCreateNoDescription := testAccTeamResourceConfigWithoutDescription(teamName, organizationID)
 	configCreate := testAccTeamResourceConfig(teamName, organizationID, "created by terraform-plugin-testing")
 	configUpdate := testAccTeamResourceConfig(teamName, organizationID, "updated by terraform-plugin-testing")
+	t.Logf("starting terraform acceptance: team CRUD/import team=%q organization=%d", teamName, organizationID)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: configCreateNoDescription,
+				PreConfig: testAccPreStep(t, "step 1/4: apply create config without description for team=%q", teamName),
+				Config:    configCreateNoDescription,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckLog(t, "step 1/4 complete: team created without description"),
 					resource.TestCheckResourceAttr(resourceName, "name", teamName),
 					resource.TestCheckResourceAttr(resourceName, "organization", strconv.FormatInt(organizationID, 10)),
 					resource.TestCheckNoResourceAttr(resourceName, "description"),
@@ -51,8 +54,10 @@ func TestAcceptanceTerraform_TeamResourceCRUDAndImport(t *testing.T) {
 				),
 			},
 			{
-				Config: configCreate,
+				PreConfig: testAccPreStep(t, "step 2/4: apply update to set description for team=%q", teamName),
+				Config:    configCreate,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckLog(t, "step 2/4 complete: description set"),
 					resource.TestCheckResourceAttr(resourceName, "name", teamName),
 					resource.TestCheckResourceAttr(resourceName, "organization", strconv.FormatInt(organizationID, 10)),
 					resource.TestCheckResourceAttr(resourceName, "description", "created by terraform-plugin-testing"),
@@ -60,12 +65,89 @@ func TestAcceptanceTerraform_TeamResourceCRUDAndImport(t *testing.T) {
 				),
 			},
 			{
-				Config: configUpdate,
+				PreConfig: testAccPreStep(t, "step 3/4: apply update to change description for team=%q", teamName),
+				Config:    configUpdate,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckLog(t, "step 3/4 complete: description changed"),
 					resource.TestCheckResourceAttr(resourceName, "description", "updated by terraform-plugin-testing"),
 				),
 			},
 			{
+				PreConfig:         testAccPreStep(t, "step 4/4: import team resource state"),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcceptanceTerraform_OrganizationResourceDefaultedFieldStability(t *testing.T) {
+	t.Parallel()
+
+	_ = testAccPreCheck(t, envOrganizationID)
+	organizationName := fmt.Sprintf("tf-awx-org-%d", time.Now().UnixNano())
+	resourceName := "awx_organization.test"
+	config := testAccOrganizationResourceConfigWithoutMaxHosts(organizationName)
+	t.Logf("starting terraform acceptance: organization default-field stability organization=%q", organizationName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: testAccPreStep(t, "step 1/3: apply create config without max_hosts for organization=%q", organizationName),
+				Config:    config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckLog(t, "step 1/3 complete: organization created"),
+					resource.TestCheckResourceAttr(resourceName, "name", organizationName),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+				),
+			},
+			{
+				PreConfig: testAccPreStep(t, "step 2/3: run plan-only to assert no drift for omitted max_hosts"),
+				Config:    config,
+				PlanOnly:  true,
+			},
+			{
+				PreConfig:         testAccPreStep(t, "step 3/3: import organization resource state"),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcceptanceTerraform_InventoryResourceDefaultedFieldStability(t *testing.T) {
+	t.Parallel()
+
+	_ = testAccPreCheck(t, envOrganizationID)
+	organizationName := fmt.Sprintf("tf-awx-inv-org-%d", time.Now().UnixNano())
+	inventoryName := fmt.Sprintf("tf-awx-inv-%d", time.Now().UnixNano())
+	resourceName := "awx_inventory.test"
+	config := testAccInventoryResourceConfigWithoutFallback(inventoryName, organizationName)
+	t.Logf("starting terraform acceptance: inventory default-field stability inventory=%q organization=%q", inventoryName, organizationName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: testAccPreStep(t, "step 1/3: apply create config without prevent_instance_group_fallback for inventory=%q", inventoryName),
+				Config:    config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckLog(t, "step 1/3 complete: inventory created and default fallback value captured"),
+					resource.TestCheckResourceAttr(resourceName, "name", inventoryName),
+					resource.TestCheckResourceAttr(resourceName, "prevent_instance_group_fallback", "false"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+				),
+			},
+			{
+				PreConfig: testAccPreStep(t, "step 2/3: run plan-only to assert no drift for omitted prevent_instance_group_fallback"),
+				Config:    config,
+				PlanOnly:  true,
+			},
+			{
+				PreConfig:         testAccPreStep(t, "step 3/3: import inventory resource state"),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -82,13 +164,16 @@ func TestAcceptanceTerraform_TeamDataSourceLookup(t *testing.T) {
 
 	resourceName := "awx_team.test"
 	dataSourceName := "data.awx_team.by_name"
+	t.Logf("starting terraform acceptance: team data source lookup team=%q organization=%d", teamName, organizationID)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamDataSourceConfig(teamName, organizationID),
+				PreConfig: testAccPreStep(t, "step 1/1: apply team resource and lookup by name"),
+				Config:    testAccTeamDataSourceConfig(teamName, organizationID),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckLog(t, "step 1/1 complete: team data source resolved id and name"),
 					resource.TestCheckResourceAttr(resourceName, "name", teamName),
 					resource.TestCheckResourceAttr(dataSourceName, "name", teamName),
 					resource.TestCheckResourceAttrPair(dataSourceName, "id", resourceName, "id"),
@@ -114,18 +199,22 @@ func TestAcceptanceTerraform_TeamUserRelationshipResource(t *testing.T) {
 	teamName := fmt.Sprintf("tf-awx-rel-team-%d", time.Now().UnixNano())
 	resourceName := "awx_team_user_association.membership"
 	teamResourceName := "awx_team.parent"
+	t.Logf("starting terraform acceptance: team-user relationship team=%q organization=%d user=%d", teamName, organizationID, userID)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRelationshipConfig(teamName, organizationID, userID),
+				PreConfig: testAccPreStep(t, "step 1/2: apply team and relationship association for user=%d", userID),
+				Config:    testAccRelationshipConfig(teamName, organizationID, userID),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckLog(t, "step 1/2 complete: relationship association exists"),
 					resource.TestCheckResourceAttr(resourceName, "child_id", strconv.FormatInt(userID, 10)),
 					testCheckCompositeRelationshipID(resourceName, teamResourceName, userID),
 				),
 			},
 			{
+				PreConfig:    testAccPreStep(t, "step 2/2: import relationship using composite id"),
 				ResourceName: resourceName,
 				ImportState:  true,
 				ImportStateIdFunc: func(state *terraform.State) (string, error) {
@@ -139,6 +228,23 @@ func TestAcceptanceTerraform_TeamUserRelationshipResource(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccPreStep(t *testing.T, format string, args ...any) func() {
+	t.Helper()
+	return func() {
+		t.Helper()
+		t.Logf(format, args...)
+	}
+}
+
+func testAccCheckLog(t *testing.T, format string, args ...any) resource.TestCheckFunc {
+	t.Helper()
+	return func(_ *terraform.State) error {
+		t.Helper()
+		t.Logf(format, args...)
+		return nil
+	}
 }
 
 func testAccPreCheck(t *testing.T, required ...string) int64 {
@@ -209,6 +315,32 @@ data "awx_team" "by_name" {
   name = awx_team.test.name
 }
 `, testAccProviderConfig(), name, organizationID)
+}
+
+func testAccOrganizationResourceConfigWithoutMaxHosts(name string) string {
+	return fmt.Sprintf(`
+%s
+resource "awx_organization" "test" {
+  name        = %q
+  description = "created for default field stability checks"
+}
+`, testAccProviderConfig(), name)
+}
+
+func testAccInventoryResourceConfigWithoutFallback(inventoryName string, organizationName string) string {
+	return fmt.Sprintf(`
+%s
+resource "awx_organization" "test" {
+  name        = %q
+  description = "created for inventory default field stability checks"
+}
+
+resource "awx_inventory" "test" {
+  name         = %q
+  organization = tonumber(awx_organization.test.id)
+  description  = "created for inventory default field stability checks"
+}
+`, testAccProviderConfig(), organizationName, inventoryName)
 }
 
 func testAccRelationshipConfig(name string, organizationID int64, userID int64) string {

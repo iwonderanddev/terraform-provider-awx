@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -33,22 +34,54 @@ func TestNewResourceFieldAttributeSensitive(t *testing.T) {
 	}
 }
 
+func TestNewResourceFieldAttributeComputed(t *testing.T) {
+	t.Parallel()
+
+	attribute := newResourceFieldAttribute(manifest.FieldSpec{
+		Name:     "max_hosts",
+		Type:     manifest.FieldTypeInt,
+		Required: false,
+		Computed: true,
+	})
+
+	intAttribute, ok := attribute.(resourceschema.Int64Attribute)
+	if !ok {
+		t.Fatalf("expected int64 attribute, got %T", attribute)
+	}
+	if !intAttribute.Optional {
+		t.Fatalf("expected computed field to remain optional")
+	}
+	if !intAttribute.Computed {
+		t.Fatalf("expected attribute to be computed")
+	}
+}
+
 func TestParseNumericID(t *testing.T) {
 	t.Parallel()
 
 	cases := []struct {
-		name  string
-		input any
-		want  int64
+		name    string
+		input   any
+		want    int64
+		wantErr bool
 	}{
 		{name: "string", input: "42", want: 42},
 		{name: "int", input: int(7), want: 7},
 		{name: "float", input: float64(9), want: 9},
+		{name: "json number", input: json.Number("13"), want: 13},
+		{name: "unsupported type", input: true, wantErr: true},
+		{name: "invalid string", input: "abc", wantErr: true},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := parseNumericID(tc.input)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected parseNumericID error")
+				}
+				return
+			}
 			if err != nil {
 				t.Fatalf("parseNumericID returned error: %v", err)
 			}

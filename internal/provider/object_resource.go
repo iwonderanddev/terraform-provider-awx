@@ -379,12 +379,14 @@ func normalizeOptionalEmptyStringToNull(field manifest.FieldSpec, value any, pri
 
 func newResourceFieldAttribute(field manifest.FieldSpec) resourceschema.Attribute {
 	optional := !field.Required
+	computed := field.Computed && !field.Required
 	switch field.Type {
 	case manifest.FieldTypeInt:
 		return resourceschema.Int64Attribute{
 			Description: fieldDescription(field),
 			Required:    field.Required,
 			Optional:    optional,
+			Computed:    computed,
 			Sensitive:   field.Sensitive,
 		}
 	case manifest.FieldTypeBool:
@@ -392,6 +394,7 @@ func newResourceFieldAttribute(field manifest.FieldSpec) resourceschema.Attribut
 			Description: fieldDescription(field),
 			Required:    field.Required,
 			Optional:    optional,
+			Computed:    computed,
 			Sensitive:   field.Sensitive,
 		}
 	case manifest.FieldTypeFloat:
@@ -399,6 +402,7 @@ func newResourceFieldAttribute(field manifest.FieldSpec) resourceschema.Attribut
 			Description: fieldDescription(field),
 			Required:    field.Required,
 			Optional:    optional,
+			Computed:    computed,
 			Sensitive:   field.Sensitive,
 		}
 	default:
@@ -406,6 +410,7 @@ func newResourceFieldAttribute(field manifest.FieldSpec) resourceschema.Attribut
 			Description: fieldDescription(field),
 			Required:    field.Required,
 			Optional:    optional,
+			Computed:    computed,
 			Sensitive:   field.Sensitive,
 		}
 	}

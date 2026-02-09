@@ -14,11 +14,16 @@ resource "awx_schedule" "example" {
 
 ## Argument Reference
 
+Argument qualifiers used below:
+- `Required`: Must be set in configuration.
+- `Optional`: May be omitted.
+- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `diff_mode` (Optional) Managed field from AWX OpenAPI schema.
-- `enabled` (Optional) Enables processing of this schedule.
+- `enabled` (Optional, Computed) Enables processing of this schedule.
 - `execution_environment` (Optional) The container image to be used for execution.
-- `extra_data` (Optional) Managed field from AWX OpenAPI schema.
+- `extra_data` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `forks` (Optional) Managed field from AWX OpenAPI schema.
 - `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
 - `job_slice_count` (Optional) Managed field from AWX OpenAPI schema.

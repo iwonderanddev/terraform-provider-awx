@@ -31,6 +31,6 @@ resource "awx_inventory" "mockshop" {
 resource "awx_organization" "mockshop" {
   name        = "Mockshop"
   description = "Mockshop organization"
-  # Galaxy credentials id 2 is hardcoded in the AWX instance
-  galaxy_credentials = [2]
+  # # Galaxy credentials id 2 is hardcoded in the AWX instance
+  # galaxy_credentials = [2]
 }

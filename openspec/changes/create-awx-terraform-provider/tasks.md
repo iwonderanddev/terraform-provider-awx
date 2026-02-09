@@ -62,3 +62,11 @@
 - [x] 9.3 Verify generated docs/examples and import workflows are complete and accurate
 - [x] 9.4 Prepare initial release notes with support contract, exclusions, and test execution guidance
 - [x] 9.5 Execute Terraform-driven acceptance validation against AWX 24.6.1 and capture discovered provider behavior fixes
+
+## 10. Default-Value Drift Hardening
+
+- [x] 10.1 Extend OpenAPI schema parsing to ingest request-property `default` values
+- [x] 10.2 Mark optional non-write-only fields with OpenAPI defaults as `Optional + Computed` in generated provider schemas
+- [x] 10.3 Add manifest regression checks for server-defaulted fields (`organizations.max_hosts`, `inventories.prevent_instance_group_fallback`)
+- [x] 10.4 Add Terraform-driven acceptance regression scenarios for omitted defaulted fields using create + plan-only + import validation
+- [x] 10.5 Improve acceptance test logs with explicit per-step progress messages for API and Terraform-driven flows

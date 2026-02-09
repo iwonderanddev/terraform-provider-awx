@@ -26,6 +26,7 @@ This design follows HashiCorp provider design principles around predictable reso
 - Deliver resources and data sources for all AWX API-managed configuration objects in scope.
 - Map each AWX object to its own Terraform resource and map object links to explicit relationship resources.
 - Provide stable CRUD/import/state behavior and deterministic drift handling.
+- Normalize optional AWX server-defaulted fields as `Optional + Computed` to prevent null-to-default inconsistencies after apply.
 - Enforce sensitive-field safety by avoiding secret value round-tripping in Terraform state.
 - Deliver registry-grade documentation and examples for provider/resources/data sources.
 - Deliver unit tests and local opt-in acceptance/e2e tests against AWX `24.6.1`.
@@ -184,10 +185,26 @@ Alternatives considered:
 - Composite IDs for all resources: unnecessary verbosity for object resources with native IDs.
 - Numeric IDs for relationship resources only: not possible where association endpoints expose no unique standalone ID.
 
+### 12) Server-default field normalization contract
+
+Decision:
+- Parse OpenAPI `default` values from request schemas.
+- Mark optional non-write-only fields with OpenAPI defaults as Terraform `Computed` (while preserving `Optional`).
+- Add targeted acceptance scenarios for omitted defaulted fields to verify create + plan-only + import stability.
+
+Rationale:
+- AWX frequently returns explicit default values even when fields are omitted in configuration.
+- Without computed normalization, Terraform can fail with provider inconsistency errors (planned `null`, observed concrete default).
+
+Alternatives considered:
+- Manual per-field overrides only: too brittle and reactive for broad object coverage.
+- Keep fields optional-only and special-case in runtime state conversion: higher complexity and less transparent schema behavior.
+
 ## Risks / Trade-offs
 
 - [Coverage scale] Broad object coverage increases implementation/test surface. -> Mitigation: generator-first workflow plus manifest-based coverage tracking.
 - [Schema/runtime mismatch] OpenAPI may diverge from behavior of certain endpoints. -> Mitigation: override registry and fixture-backed validation against AWX `24.6.1`.
+- [Default inference overreach] OpenAPI defaults may not always represent desired computed semantics for every field. -> Mitigation: explicit field overrides and regression acceptance tests for high-risk objects.
 - [Runtime exclusion mistakes] Misclassification could hide useful objects or include invalid ones. -> Mitigation: explicit inclusion/exclusion manifest and review checks.
 - [Local-only acceptance] No CI integration signal may delay detection of regressions. -> Mitigation: strong unit tests and documented local pre-release acceptance workflow.
 
@@ -196,12 +213,13 @@ Alternatives considered:
 1. Scaffold provider module (`terraform-plugin-framework`, provider config, diagnostics, shared API client).
 2. Implement HTTP Basic auth and core API behavior (timeouts, retries, pagination, error mapping).
 3. Build OpenAPI ingestion and managed-object manifest generation.
-4. Generate baseline resources/data sources and wire explicit relationship resources.
-5. Apply runtime-only object exclusions and sensitive-field schema policies.
-6. Implement import/state normalization and consistent read/drift behavior.
-7. Generate and refine registry-style docs with examples and import sections.
-8. Implement unit tests and local opt-in acceptance harness targeting AWX `24.6.1`.
-9. Validate against a real AWX instance and publish compatibility/known-limitations notes.
+4. Add OpenAPI default-value inference and optional-field computed normalization rules.
+5. Generate baseline resources/data sources and wire explicit relationship resources.
+6. Apply runtime-only object exclusions and sensitive-field schema policies.
+7. Implement import/state normalization and consistent read/drift behavior.
+8. Generate and refine registry-style docs with examples and import sections.
+9. Implement unit tests and local opt-in acceptance harness targeting AWX `24.6.1`.
+10. Validate against a real AWX instance and publish compatibility/known-limitations notes.
 
 Rollback strategy:
 - Temporarily disable unstable object categories via manifest configuration.

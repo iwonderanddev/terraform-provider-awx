@@ -65,6 +65,16 @@ terraform plan
 - Object import IDs: numeric (`42`)
 - Relationship import IDs: composite (`<parent_id>:<child_id>`, for example `12:34`)
 
+## Generated Docs Qualifiers
+
+Generated resource docs in `docs/resources/*` use these argument qualifiers:
+
+- `Required`: Must be set in configuration.
+- `Optional`: May be omitted.
+- `Optional, Computed`: May be omitted; AWX may apply a server-side default and Terraform stores the resulting value in state after apply.
+
+`Optional, Computed` is used to avoid apply inconsistencies when AWX returns defaults for unset fields.
+
 ## How This Project Works
 
 High-level flow:

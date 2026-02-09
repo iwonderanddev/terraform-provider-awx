@@ -28,6 +28,14 @@ provider "awx" {
 - `retry_max_attempts` (Number) Retry attempts for retryable failures.
 - `retry_backoff_millis` (Number) Initial retry backoff in milliseconds.
 
+### Resource Argument Qualifiers
+
+Generated resource docs under `docs/resources/*` use these qualifiers:
+
+- `Required`: Must be set in configuration.
+- `Optional`: May be omitted.
+- `Optional, Computed`: May be omitted; AWX may apply a server-side default and Terraform records the resulting value in state after apply.
+
 ## Compatibility
 
 This provider targets AWX 24.6.1 API v2 only. Runtime-only objects are excluded from managed resources.

@@ -11,9 +11,11 @@ AWX configuration is often managed manually or with ad-hoc scripts, which create
 - Keep AWX object names in Terraform resource and data source names for consistency with AWX API/domain terminology.
 - Exclude runtime-only AWX objects from managed resource scope for the initial release.
 - Treat sensitive and secret fields as write-only in Terraform schemas/state wherever applicable.
+- Normalize optional AWX fields with server-side defaults (OpenAPI `default`) as Terraform `Optional + Computed` to avoid post-apply null-to-default inconsistency errors.
 - Use numeric import IDs for normal object resources and composite import IDs for relationship resources.
 - Add comprehensive tests, including unit tests and acceptance/e2e coverage for CRUD, import, update reconciliation, and relationship management behavior.
 - Implement Terraform-driven acceptance tests using `terraform-plugin-testing` so resource/data source behavior is validated through Terraform plan/apply/import flows.
+- Add targeted Terraform-driven regression scenarios for server-defaulted fields (for example `max_hosts` and `prevent_instance_group_fallback`) using create + plan-only + import checks.
 - Add Terraform Registry-grade documentation for provider, resources, and data sources, including practical examples and import guidance like established providers.
 - Define GA compatibility as AWX `24.6.1` on API v2, with no backwards-compatibility requirement for older AWX versions.
 
@@ -29,6 +31,7 @@ AWX configuration is often managed manually or with ad-hoc scripts, which create
 - `awx-runtime-object-exclusions`: Exclude runtime-only AWX objects from managed Terraform resource scope.
 - `awx-data-sources-and-lookups`: Provide data sources and lookup strategies required to reference existing AWX entities safely in Terraform.
 - `awx-sensitive-field-handling`: Mark secrets as sensitive and write-only, avoiding secret value round-tripping in state.
+- `awx-server-default-normalization`: Infer and model optional server-defaulted fields as computed values so omitted configuration remains stable after apply.
 - `awx-provider-documentation-and-examples`: Provide Terraform Registry-style docs for provider/resources/data sources with realistic examples and import usage.
 - `awx-provider-test-suite`: Provide unit and acceptance/e2e tests, with acceptance tests run as opt-in local execution using user-supplied credentials/environment.
 - `awx-ga-compatibility-target`: Validate and document GA compatibility for AWX `24.6.1` API v2 only (no backwards compatibility requirement).
@@ -44,4 +47,5 @@ AWX configuration is often managed manually or with ad-hoc scripts, which create
 - Requires test workflow updates for unit tests and opt-in local acceptance/e2e tests against a reachable AWX instance.
 - Aligns provider/resource modeling with HashiCorp provider design principles, reducing abstraction complexity and drift ambiguity.
 - Expands scope to broad AWX object coverage and therefore increases implementation and test surface area.
+- Improves apply stability by preventing optional null-to-default post-apply inconsistencies for server-defaulted AWX fields.
 - Narrows compatibility promises to AWX `24.6.1` API v2 for initial GA scope.

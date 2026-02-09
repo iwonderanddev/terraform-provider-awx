@@ -64,6 +64,7 @@ type Schema struct {
 	Ref         string             `json:"$ref"`
 	Type        string             `json:"type"`
 	Format      string             `json:"format"`
+	Default     any                `json:"default"`
 	WriteOnly   bool               `json:"writeOnly"`
 	Description string             `json:"description"`
 	Properties  map[string]*Schema `json:"properties"`
@@ -420,10 +421,12 @@ func fieldsFromSchema(doc *Document, schemaName string) []manifest.FieldSpec {
 
 		sensitive := property.WriteOnly || isSensitiveField(name, property)
 		_, isRequired := required[name]
+		computed := shouldInferComputedFromDefault(property, isRequired)
 		out = append(out, manifest.FieldSpec{
 			Name:        name,
 			Type:        normalizeFieldType(property),
 			Required:    isRequired,
+			Computed:    computed,
 			Sensitive:   sensitive,
 			WriteOnly:   property.WriteOnly || sensitive,
 			Description: strings.TrimSpace(property.Description),
@@ -448,6 +451,7 @@ func resolveSchema(doc *Document, schema *Schema) *Schema {
 	out := &Schema{
 		Type:        schema.Type,
 		Format:      schema.Format,
+		Default:     schema.Default,
 		WriteOnly:   schema.WriteOnly,
 		Description: schema.Description,
 		Properties:  make(map[string]*Schema),
@@ -471,6 +475,9 @@ func resolveSchema(doc *Document, schema *Schema) *Schema {
 			if out.Format == "" {
 				out.Format = resolved.Format
 			}
+			if out.Default == nil && resolved.Default != nil {
+				out.Default = resolved.Default
+			}
 			if resolved.WriteOnly {
 				out.WriteOnly = true
 			}
@@ -493,6 +500,20 @@ func resolveSchema(doc *Document, schema *Schema) *Schema {
 	}
 	out.Required = uniqueSorted(out.Required)
 	return out
+}
+
+func shouldInferComputedFromDefault(property *Schema, required bool) bool {
+	if property == nil || required || property.WriteOnly || property.Default == nil {
+		return false
+	}
+
+	// AWX commonly sets empty-string defaults for optional text fields such as
+	// descriptions; keep those as plain Optional to avoid over-marking computed.
+	if defaultString, ok := property.Default.(string); ok && defaultString == "" {
+		return false
+	}
+
+	return true
 }
 
 func normalizeFieldType(schema *Schema) manifest.FieldType {

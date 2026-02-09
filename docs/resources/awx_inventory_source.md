@@ -14,6 +14,11 @@ resource "awx_inventory_source" "example" {
 
 ## Argument Reference
 
+Argument qualifiers used below:
+- `Required`: Must be set in configuration.
+- `Optional`: May be omitted.
+- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+
 - `credential` (Optional) Cloud credential to use for inventory updates.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `enabled_value` (Optional) Only used when enabled_var is set. Value when the host is considered enabled. For example if enabled_var="status.power_state"and enabled_value="powered_on" with host variables:{   "status": {     "power_state": "powered_on",     "created": "2020-08-04T18:13:04+00:00",     "healthy": true    },    "name": "foobar",    "ip_address": "192.168.2.1"}The host would be marked enabled. If power_state where any value other than powered_on then the host would be disabled when imported. If the key is not found then the host will be enabled
@@ -23,8 +28,8 @@ resource "awx_inventory_source" "example" {
 - `inventory` (Required) Managed field from AWX OpenAPI schema.
 - `limit` (Optional) Enter host, group or pattern match
 - `name` (Required) Managed field from AWX OpenAPI schema.
-- `overwrite` (Optional) Overwrite local groups and hosts from remote inventory source.
-- `overwrite_vars` (Optional) Overwrite local variables from remote inventory source.
+- `overwrite` (Optional, Computed) Overwrite local groups and hosts from remote inventory source.
+- `overwrite_vars` (Optional, Computed) Overwrite local variables from remote inventory source.
 - `scm_branch` (Optional) Inventory source SCM branch. Project default used if blank. Only allowed if project allow_override field is set to true.
 - `source` (Required) * `azure_rm` - Microsoft Azure Resource Manager
 * `controller` - Red Hat Ansible Automation Platform
@@ -42,10 +47,10 @@ resource "awx_inventory_source" "example" {
 - `source_path` (Optional) Managed field from AWX OpenAPI schema.
 - `source_project` (Optional) Project containing inventory file used as source.
 - `source_vars` (Optional) Inventory source variables in YAML or JSON format.
-- `timeout` (Optional) The amount of time (in seconds) to run before the task is canceled.
-- `update_cache_timeout` (Optional) Managed field from AWX OpenAPI schema.
-- `update_on_launch` (Optional) Managed field from AWX OpenAPI schema.
-- `verbosity` (Optional) * `0` - 0 (WARNING)
+- `timeout` (Optional, Computed) The amount of time (in seconds) to run before the task is canceled.
+- `update_cache_timeout` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `update_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `verbosity` (Optional, Computed) * `0` - 0 (WARNING)
 * `1` - 1 (INFO)
 * `2` - 2 (DEBUG)
 

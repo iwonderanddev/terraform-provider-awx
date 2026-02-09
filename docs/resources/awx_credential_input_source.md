@@ -14,9 +14,14 @@ resource "awx_credential_input_source" "example" {
 
 ## Argument Reference
 
+Argument qualifiers used below:
+- `Required`: Must be set in configuration.
+- `Optional`: May be omitted.
+- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `input_field_name` (Required) Managed field from AWX OpenAPI schema.
-- `metadata` (Optional) Managed field from AWX OpenAPI schema.
+- `metadata` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `source_credential` (Required) Managed field from AWX OpenAPI schema.
 - `target_credential` (Required) Managed field from AWX OpenAPI schema.
 

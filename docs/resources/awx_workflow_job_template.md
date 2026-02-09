@@ -12,14 +12,19 @@ resource "awx_workflow_job_template" "example" {
 
 ## Argument Reference
 
-- `allow_simultaneous` (Optional) Managed field from AWX OpenAPI schema.
-- `ask_inventory_on_launch` (Optional) Managed field from AWX OpenAPI schema.
-- `ask_labels_on_launch` (Optional) Managed field from AWX OpenAPI schema.
-- `ask_limit_on_launch` (Optional) Managed field from AWX OpenAPI schema.
-- `ask_scm_branch_on_launch` (Optional) Managed field from AWX OpenAPI schema.
-- `ask_skip_tags_on_launch` (Optional) Managed field from AWX OpenAPI schema.
-- `ask_tags_on_launch` (Optional) Managed field from AWX OpenAPI schema.
-- `ask_variables_on_launch` (Optional) Managed field from AWX OpenAPI schema.
+Argument qualifiers used below:
+- `Required`: Must be set in configuration.
+- `Optional`: May be omitted.
+- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+
+- `allow_simultaneous` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `ask_inventory_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `ask_labels_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `ask_limit_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `ask_scm_branch_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `ask_skip_tags_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `ask_tags_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `ask_variables_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `extra_vars` (Optional) Managed field from AWX OpenAPI schema.
 - `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
@@ -29,7 +34,7 @@ resource "awx_workflow_job_template" "example" {
 - `organization` (Optional) The organization used to determine access to this template.
 - `scm_branch` (Optional) Managed field from AWX OpenAPI schema.
 - `skip_tags` (Optional) Managed field from AWX OpenAPI schema.
-- `survey_enabled` (Optional) Managed field from AWX OpenAPI schema.
+- `survey_enabled` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `webhook_credential` (Optional) Personal Access Token for posting back the status to the service API
 - `webhook_service` (Optional) Service that webhook requests will be accepted from
 

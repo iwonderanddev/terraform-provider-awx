@@ -12,10 +12,15 @@ resource "awx_workflow_job_template_node" "example" {
 
 ## Argument Reference
 
-- `all_parents_must_converge` (Optional) If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node
+Argument qualifiers used below:
+- `Required`: Must be set in configuration.
+- `Optional`: May be omitted.
+- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+
+- `all_parents_must_converge` (Optional, Computed) If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node
 - `diff_mode` (Optional) Managed field from AWX OpenAPI schema.
 - `execution_environment` (Optional) The container image to be used for execution.
-- `extra_data` (Optional) Managed field from AWX OpenAPI schema.
+- `extra_data` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `forks` (Optional) Managed field from AWX OpenAPI schema.
 - `identifier` (Optional) An identifier for this node that is unique within its workflow. It is copied to workflow job nodes corresponding to this node.
 - `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
