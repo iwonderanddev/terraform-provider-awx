@@ -95,6 +95,11 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plannedStrings := r.stringValuesFromSource(ctx, req.Plan)
+	resp.Diagnostics.Append(plannedStrings.Diagnostics...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	created, err := r.data.client.CreateObject(ctx, r.object.CollectionPath, payload)
 	if err != nil {
@@ -117,7 +122,7 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 		refreshed = created
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values)...)
 }
 
 func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -137,6 +142,11 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		resp.Diagnostics.Append(currentValues.Diagnostics...)
 		return
 	}
+	currentStrings := r.stringValuesFromSource(ctx, req.State)
+	if currentStrings.HasError() {
+		resp.Diagnostics.Append(currentStrings.Diagnostics...)
+		return
+	}
 
 	obj, err := r.data.client.GetObject(ctx, r.object.DetailPath, id)
 	if err != nil {
@@ -148,7 +158,7 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, obj, currentValues.Values)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, obj, currentValues.Values, currentStrings.Values)...)
 }
 
 func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -168,6 +178,11 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plannedStrings := r.stringValuesFromSource(ctx, req.Plan)
+	resp.Diagnostics.Append(plannedStrings.Diagnostics...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	_, err := r.data.client.UpdateObject(ctx, r.object.DetailPath, id, payload)
 	if err != nil {
@@ -181,7 +196,7 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values)...)
 }
 
 func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -285,7 +300,34 @@ func (r *objectResource) valuesFromConfig(ctx context.Context, config attributeS
 	return valueSnapshot{Values: values, Diagnostics: diags}
 }
 
-func (r *objectResource) setState(ctx context.Context, state attributeTarget, id int64, apiObject map[string]any, writeOnlyValues map[string]types.String) diag.Diagnostics {
+func (r *objectResource) stringValuesFromSource(ctx context.Context, source attributeSource) valueSnapshot {
+	values := make(map[string]types.String)
+	diags := diag.Diagnostics{}
+
+	for _, field := range r.object.Fields {
+		if field.Type != manifest.FieldTypeString {
+			continue
+		}
+
+		var value types.String
+		diags.Append(source.GetAttribute(ctx, path.Root(field.Name), &value)...)
+		if value.IsUnknown() {
+			continue
+		}
+		values[field.Name] = value
+	}
+
+	return valueSnapshot{Values: values, Diagnostics: diags}
+}
+
+func (r *objectResource) setState(
+	ctx context.Context,
+	state attributeTarget,
+	id int64,
+	apiObject map[string]any,
+	writeOnlyValues map[string]types.String,
+	priorStringValues map[string]types.String,
+) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	diags.Append(state.SetAttribute(ctx, path.Root("id"), strconv.FormatInt(id, 10))...)
 
@@ -301,6 +343,11 @@ func (r *objectResource) setState(ctx context.Context, state attributeTarget, id
 		}
 
 		value := apiObject[field.Name]
+		if normalized, ok := normalizeOptionalEmptyStringToNull(field, value, priorStringValues); ok {
+			diags.Append(state.SetAttribute(ctx, path.Root(field.Name), normalized)...)
+			continue
+		}
+
 		converted, convDiags := toTerraformValue(field, value)
 		diags.Append(convDiags...)
 		if convDiags.HasError() {
@@ -310,6 +357,24 @@ func (r *objectResource) setState(ctx context.Context, state attributeTarget, id
 	}
 
 	return diags
+}
+
+func normalizeOptionalEmptyStringToNull(field manifest.FieldSpec, value any, priorStringValues map[string]types.String) (types.String, bool) {
+	if field.Type != manifest.FieldTypeString || field.Required {
+		return types.String{}, false
+	}
+
+	strValue, ok := value.(string)
+	if !ok || strValue != "" {
+		return types.String{}, false
+	}
+
+	prior, hasPrior := priorStringValues[field.Name]
+	if !hasPrior || !prior.IsNull() {
+		return types.String{}, false
+	}
+
+	return types.StringNull(), true
 }
 
 func newResourceFieldAttribute(field manifest.FieldSpec) resourceschema.Attribute {

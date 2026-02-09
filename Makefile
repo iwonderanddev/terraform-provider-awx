@@ -24,4 +24,4 @@ test-acceptance:
 	@set -a; \
 	if [ -f .env ]; then . ./.env; fi; \
 	set +a; \
-	GOCACHE=$(GOCACHE) go test ./internal/acceptance -run TestAcceptance -v
+	TF_ACC=1 GOCACHE=$(GOCACHE) go test ./internal/acceptance ./internal/provider -run TestAcceptance -v

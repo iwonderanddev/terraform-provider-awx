@@ -136,6 +136,7 @@ Alternatives considered:
 Decision:
 - Unit tests cover client behavior, schema mapping, CRUD scaffolding, import/state normalization, and relationship resources.
 - Acceptance/e2e tests are local opt-in via environment variables and skipped by default in CI.
+- Acceptance tests include Terraform-driven scenarios using `terraform-plugin-testing` to exercise provider resources/data sources through plan/apply/import lifecycle flows (not client-only calls).
 
 Rationale:
 - Preserves CI reliability while allowing true integration validation.

@@ -52,7 +52,8 @@ provider "awx" {
 Then run:
 
 ```bash
-terraform init
+# with dev_overrides, build the provider binary and skip terraform init
+go build -o terraform-provider-awx ./cmd/terraform-provider-awx
 terraform plan
 ```
 
@@ -121,7 +122,7 @@ If you change schema inputs or curated files, run `make generate`, then `make va
 - `make docs-validate` verify docs structure/completeness
 - `make coverage-report` print coverage summary
 - `make test` run all Go tests
-- `make test-acceptance` run opt-in live AWX acceptance tests (loads `.env` if present)
+- `make test-acceptance` run opt-in live AWX acceptance tests (loads `.env` if present), including Terraform-driven tests via `terraform-plugin-testing`
 
 Typical local loop:
 
@@ -156,6 +157,26 @@ Run:
 
 ```bash
 make test-acceptance
+```
+
+### Terraform-Driven Acceptance Tests
+
+`make test-acceptance` runs two acceptance suites:
+
+- `internal/acceptance`: client-level live API checks (no Terraform runtime).
+- `internal/provider`: Terraform-driven checks via `terraform-plugin-testing` (real `plan/apply/import` flows against AWX).
+
+Terraform-driven scenarios currently cover:
+
+- `awx_team` resource CRUD + import.
+- `awx_team` data source lookup by name and id consistency checks.
+- `awx_team_user_association` relationship lifecycle + composite import id (`<parent_id>:<child_id>`).
+
+Run only Terraform-driven acceptance tests:
+
+```bash
+set -a; . ./.env; set +a
+TF_ACC=1 go test ./internal/provider -run TestAcceptanceTerraform -v
 ```
 
 If tests show `SKIP`, check `.env` values and confirm `AWX_ACCEPTANCE=1`.
@@ -199,7 +220,19 @@ provider "awx" {
 }
 ```
 
-Run `terraform init`, `terraform plan`, `terraform apply`.
+Run:
+
+```bash
+go build -o terraform-provider-awx ./cmd/terraform-provider-awx
+terraform plan
+terraform apply
+```
+
+Important with `dev_overrides`: Terraform may still try to query the public
+registry during `terraform init` and fail for unreleased namespaces (for
+example `damien/awx`). In local provider development, build the binary and run
+`terraform plan`/`terraform apply` directly from your test directory instead of
+running `terraform init`.
 
 ## Updating Vendored AWX OpenAPI
 

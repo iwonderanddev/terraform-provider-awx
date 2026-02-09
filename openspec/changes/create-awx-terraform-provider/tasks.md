@@ -53,6 +53,7 @@
 - [x] 8.3 Implement unit tests for sensitive-field handling and relationship identity semantics
 - [x] 8.4 Add local opt-in acceptance/e2e harness with required AWX environment variable gating and skip behavior
 - [x] 8.5 Implement acceptance scenarios for CRUD/import across representative object categories on AWX 24.6.1
+- [x] 8.6 Implement Terraform-driven acceptance tests (`terraform-plugin-testing`) for representative resource/data source/relationship lifecycle and import flows
 
 ## 9. Compatibility Validation and Release Readiness
 
@@ -60,3 +61,4 @@
 - [x] 9.2 Verify coverage report aligns with manifest for all non-excluded managed objects
 - [x] 9.3 Verify generated docs/examples and import workflows are complete and accurate
 - [x] 9.4 Prepare initial release notes with support contract, exclusions, and test execution guidance
+- [x] 9.5 Execute Terraform-driven acceptance validation against AWX 24.6.1 and capture discovered provider behavior fixes

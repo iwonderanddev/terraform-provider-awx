@@ -13,6 +13,7 @@ AWX configuration is often managed manually or with ad-hoc scripts, which create
 - Treat sensitive and secret fields as write-only in Terraform schemas/state wherever applicable.
 - Use numeric import IDs for normal object resources and composite import IDs for relationship resources.
 - Add comprehensive tests, including unit tests and acceptance/e2e coverage for CRUD, import, update reconciliation, and relationship management behavior.
+- Implement Terraform-driven acceptance tests using `terraform-plugin-testing` so resource/data source behavior is validated through Terraform plan/apply/import flows.
 - Add Terraform Registry-grade documentation for provider, resources, and data sources, including practical examples and import guidance like established providers.
 - Define GA compatibility as AWX `24.6.1` on API v2, with no backwards-compatibility requirement for older AWX versions.
 

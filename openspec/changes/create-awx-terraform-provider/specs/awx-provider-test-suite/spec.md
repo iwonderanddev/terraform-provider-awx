@@ -17,3 +17,7 @@ The provider SHALL provide acceptance and e2e test suites that run only when req
 #### Scenario: Acceptance tests with environment
 - **WHEN** acceptance tests are executed with valid AWX credentials and endpoint configuration
 - **THEN** tests verify CRUD, import, and relationship behavior against AWX 24.6.1
+
+#### Scenario: Terraform-driven resource lifecycle validation
+- **WHEN** acceptance tests are executed with valid AWX credentials and endpoint configuration
+- **THEN** tests execute Terraform resource/data source flows via `terraform-plugin-testing` and validate plan/apply/import semantics for representative object and relationship resources

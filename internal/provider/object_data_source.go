@@ -59,6 +59,10 @@ func (d *objectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 	}
 
 	for _, field := range d.object.Fields {
+		if _, exists := attributes[field.Name]; exists {
+			// Preserve explicit lookup arguments such as id and name.
+			continue
+		}
 		attributes[field.Name] = newDataSourceFieldAttribute(field)
 	}
 
