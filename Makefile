@@ -21,4 +21,7 @@ test:
 	GOCACHE=$(GOCACHE) go test ./...
 
 test-acceptance:
-	AWX_ACCEPTANCE=1 GOCACHE=$(GOCACHE) go test ./internal/acceptance -run TestAcceptance -v
+	@set -a; \
+	if [ -f .env ]; then . ./.env; fi; \
+	set +a; \
+	GOCACHE=$(GOCACHE) go test ./internal/acceptance -run TestAcceptance -v
