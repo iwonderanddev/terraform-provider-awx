@@ -1,6 +1,6 @@
 GOCACHE ?= /tmp/go-build
 
-.PHONY: generate validate-manifest docs docs-validate test test-acceptance coverage-report
+.PHONY: generate validate-manifest docs docs-validate test test-acceptance coverage-report build
 
 generate:
 	GOCACHE=$(GOCACHE) go run ./cmd/awxgen generate
@@ -16,6 +16,10 @@ validate-manifest:
 
 coverage-report:
 	GOCACHE=$(GOCACHE) go run ./cmd/awxgen report
+
+build:
+	mkdir -p dist
+	GOCACHE=$(GOCACHE) go build -o dist/terraform-provider-awx ./cmd/terraform-provider-awx
 
 test:
 	GOCACHE=$(GOCACHE) go test ./...

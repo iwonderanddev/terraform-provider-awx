@@ -4,4 +4,4 @@
 *.tfstate
 *.tfstate.*
 crash.log
-terraform-provider-awx
+/dist/
