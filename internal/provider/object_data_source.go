@@ -23,6 +23,17 @@ type objectDataSource struct {
 	data   *configuredProvider
 }
 
+type objectLookupClient interface {
+	GetObject(context.Context, string, int64) (map[string]any, error)
+	FindByField(context.Context, string, string, string) ([]map[string]any, error)
+}
+
+type dataSourceLookupInput struct {
+	ID           types.String
+	Name         types.String
+	HasNameField bool
+}
+
 // NewObjectDataSource returns a generated data source for one AWX object.
 func NewObjectDataSource(object manifest.ManagedObject) datasource.DataSource {
 	return &objectDataSource{object: object}
@@ -87,46 +98,13 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	var target map[string]any
-	if !idValue.IsNull() && !idValue.IsUnknown() {
-		id, err := strconv.ParseInt(idValue.ValueString(), 10, 64)
-		if err != nil {
-			resp.Diagnostics.AddAttributeError(path.Root("id"), "Invalid AWX object ID", err.Error())
-			return
-		}
-
-		obj, err := d.data.client.GetObject(ctx, d.object.DetailPath, id)
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to query AWX object", err.Error())
-			return
-		}
-		target = obj
-	} else if hasNameField && !nameValue.IsNull() && !nameValue.IsUnknown() {
-		matches, err := d.data.client.FindByField(ctx, d.object.CollectionPath, "name", nameValue.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to query AWX object by name", err.Error())
-			return
-		}
-		if len(matches) == 0 {
-			resp.Diagnostics.AddError(
-				"AWX object not found",
-				fmt.Sprintf("No `%s` object matched name %q.", d.object.Name, nameValue.ValueString()),
-			)
-			return
-		}
-		if len(matches) > 1 {
-			resp.Diagnostics.AddError(
-				"Ambiguous AWX object lookup",
-				fmt.Sprintf("Lookup for `%s` matched %d objects. Refine the query or provide id.", d.object.Name, len(matches)),
-			)
-			return
-		}
-		target = matches[0]
-	} else {
-		resp.Diagnostics.AddError(
-			"Missing lookup input",
-			"Provide either id or name for deterministic lookup.",
-		)
+	target, lookupDiags := resolveObjectDataSourceTarget(ctx, d.data.client, d.object, dataSourceLookupInput{
+		ID:           idValue,
+		Name:         nameValue,
+		HasNameField: hasNameField,
+	})
+	resp.Diagnostics.Append(lookupDiags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -193,4 +171,52 @@ func copyDiags(in diag.Diagnostics) diag.Diagnostics {
 	out := make(diag.Diagnostics, len(in))
 	copy(out, in)
 	return out
+}
+
+func resolveObjectDataSourceTarget(ctx context.Context, api objectLookupClient, object manifest.ManagedObject, lookup dataSourceLookupInput) (map[string]any, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+
+	if !lookup.ID.IsNull() && !lookup.ID.IsUnknown() {
+		id, err := strconv.ParseInt(lookup.ID.ValueString(), 10, 64)
+		if err != nil {
+			diags.AddAttributeError(path.Root("id"), "Invalid AWX object ID", err.Error())
+			return nil, diags
+		}
+
+		obj, err := api.GetObject(ctx, object.DetailPath, id)
+		if err != nil {
+			diags.AddError("Failed to query AWX object", err.Error())
+			return nil, diags
+		}
+		return obj, diags
+	}
+
+	if lookup.HasNameField && !lookup.Name.IsNull() && !lookup.Name.IsUnknown() {
+		matches, err := api.FindByField(ctx, object.CollectionPath, "name", lookup.Name.ValueString())
+		if err != nil {
+			diags.AddError("Failed to query AWX object by name", err.Error())
+			return nil, diags
+		}
+		if len(matches) == 0 {
+			diags.AddError(
+				"AWX object not found",
+				fmt.Sprintf("No `%s` object matched name %q.", object.Name, lookup.Name.ValueString()),
+			)
+			return nil, diags
+		}
+		if len(matches) > 1 {
+			diags.AddError(
+				"Ambiguous AWX object lookup",
+				fmt.Sprintf("Lookup for `%s` matched %d objects. Refine the query or provide id.", object.Name, len(matches)),
+			)
+			return nil, diags
+		}
+		return matches[0], diags
+	}
+
+	diags.AddError(
+		"Missing lookup input",
+		"Provide either id or name for deterministic lookup.",
+	)
+	return nil, diags
 }

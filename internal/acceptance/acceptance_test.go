@@ -148,6 +148,66 @@ func TestAcceptance_TeamUserRelationshipCompositeImport(t *testing.T) {
 	}
 }
 
+func TestAcceptance_TeamLookupByIDAndName(t *testing.T) {
+	t.Parallel()
+
+	requireAcceptanceEnabled(t)
+	env := requireEnv(t, envBaseURL, envUsername, envPassword, envOrganizationID)
+
+	organizationID, err := strconv.ParseInt(env[envOrganizationID], 10, 64)
+	if err != nil {
+		t.Fatalf("invalid %s: %v", envOrganizationID, err)
+	}
+
+	awxClient := mustClient(t, env)
+	ctx := context.Background()
+	resourceName := fmt.Sprintf("tf-awx-acceptance-team-lookup-%d", time.Now().UnixNano())
+
+	created, err := awxClient.CreateObject(ctx, "/api/v2/teams/", map[string]any{
+		"name":         resourceName,
+		"description":  "terraform provider data-source lookup acceptance test",
+		"organization": organizationID,
+	})
+	if err != nil {
+		t.Fatalf("failed to create team: %v", err)
+	}
+
+	teamID, err := parseID(created["id"])
+	if err != nil {
+		t.Fatalf("failed to parse created team id: %v", err)
+	}
+	defer func() {
+		_ = awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", teamID)
+	}()
+
+	byID, err := awxClient.GetObject(ctx, "/api/v2/teams/{id}/", teamID)
+	if err != nil {
+		t.Fatalf("lookup by id failed: %v", err)
+	}
+	byIDValue, err := parseID(byID["id"])
+	if err != nil {
+		t.Fatalf("failed to parse id from id-lookup: %v", err)
+	}
+	if byIDValue != teamID {
+		t.Fatalf("unexpected id from id-lookup: got=%d want=%d", byIDValue, teamID)
+	}
+
+	byName, err := awxClient.FindByField(ctx, "/api/v2/teams/", "name", resourceName)
+	if err != nil {
+		t.Fatalf("lookup by name failed: %v", err)
+	}
+	if len(byName) != 1 {
+		t.Fatalf("expected exactly one result for unique name lookup, got=%d", len(byName))
+	}
+	byNameValue, err := parseID(byName[0]["id"])
+	if err != nil {
+		t.Fatalf("failed to parse id from name-lookup: %v", err)
+	}
+	if byNameValue != teamID {
+		t.Fatalf("unexpected id from name-lookup: got=%d want=%d", byNameValue, teamID)
+	}
+}
+
 func requireAcceptanceEnabled(t *testing.T) {
 	t.Helper()
 	if os.Getenv(envAcceptance) != "1" {

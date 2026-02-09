@@ -303,7 +303,7 @@ func buildReport(schemaPath string, objects []manifest.ManagedObject, relationsh
 				report.MissingRuntimeExclusions = append(report.MissingRuntimeExclusions, obj.Name)
 			}
 		}
-		if obj.DataSourceElig {
+		if obj.DataSourceElig && !obj.RuntimeExcluded {
 			report.DataSourceEligible++
 			report.ManagedDataSourceObjects = append(report.ManagedDataSourceObjects, obj.DataSourceName)
 		}
