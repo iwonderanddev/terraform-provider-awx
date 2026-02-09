@@ -1,0 +1,60 @@
+{
+  "exclusions": [
+    {
+      "object": "activity_stream",
+      "reason": "Runtime audit stream entries are not desired-state configuration objects."
+    },
+    {
+      "object": "ad_hoc_commands",
+      "reason": "Ad-hoc command runs are runtime execution records."
+    },
+    {
+      "object": "host_metrics",
+      "reason": "Host metrics are runtime telemetry and not managed desired-state configuration."
+    },
+    {
+      "object": "instances",
+      "reason": "AWX instances represent runtime cluster topology and are not managed by this provider."
+    },
+    {
+      "object": "inventory_updates",
+      "reason": "Inventory updates are runtime job records."
+    },
+    {
+      "object": "jobs",
+      "reason": "Job objects are runtime execution records."
+    },
+    {
+      "object": "notifications",
+      "reason": "Notification events are runtime records."
+    },
+    {
+      "object": "project_updates",
+      "reason": "Project updates are runtime job records."
+    },
+    {
+      "object": "receptor_addresses",
+      "reason": "Receptor addresses are runtime transport data."
+    },
+    {
+      "object": "system_job_templates",
+      "reason": "System job templates are runtime/operator endpoints not in managed desired-state scope."
+    },
+    {
+      "object": "system_jobs",
+      "reason": "System jobs are runtime execution records."
+    },
+    {
+      "object": "workflow_approvals",
+      "reason": "Workflow approvals are runtime workflow execution records."
+    },
+    {
+      "object": "workflow_jobs",
+      "reason": "Workflow jobs are runtime execution records."
+    },
+    {
+      "object": "workflow_job_nodes",
+      "reason": "Workflow job nodes are runtime execution records."
+    }
+  ]
+}

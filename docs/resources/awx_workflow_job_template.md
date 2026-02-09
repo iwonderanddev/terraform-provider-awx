@@ -1,0 +1,48 @@
+# Resource: awx_workflow_job_template
+
+Manages AWX `workflow_job_templates` objects.
+
+## Example Usage
+
+```hcl
+resource "awx_workflow_job_template" "example" {
+  name = "example"
+}
+```
+
+## Argument Reference
+
+- `allow_simultaneous` (Optional) Managed field from AWX OpenAPI schema.
+- `ask_inventory_on_launch` (Optional) Managed field from AWX OpenAPI schema.
+- `ask_labels_on_launch` (Optional) Managed field from AWX OpenAPI schema.
+- `ask_limit_on_launch` (Optional) Managed field from AWX OpenAPI schema.
+- `ask_scm_branch_on_launch` (Optional) Managed field from AWX OpenAPI schema.
+- `ask_skip_tags_on_launch` (Optional) Managed field from AWX OpenAPI schema.
+- `ask_tags_on_launch` (Optional) Managed field from AWX OpenAPI schema.
+- `ask_variables_on_launch` (Optional) Managed field from AWX OpenAPI schema.
+- `description` (Optional) Managed field from AWX OpenAPI schema.
+- `extra_vars` (Optional) Managed field from AWX OpenAPI schema.
+- `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
+- `job_tags` (Optional) Managed field from AWX OpenAPI schema.
+- `limit` (Optional) Managed field from AWX OpenAPI schema.
+- `name` (Required) Managed field from AWX OpenAPI schema.
+- `organization` (Optional) The organization used to determine access to this template.
+- `scm_branch` (Optional) Managed field from AWX OpenAPI schema.
+- `skip_tags` (Optional) Managed field from AWX OpenAPI schema.
+- `survey_enabled` (Optional) Managed field from AWX OpenAPI schema.
+- `webhook_credential` (Optional) Personal Access Token for posting back the status to the service API
+- `webhook_service` (Optional) Service that webhook requests will be accepted from
+
+* `github` - GitHub
+* `gitlab` - GitLab
+* `bitbucket_dc` - BitBucket DataCenter
+
+## Attributes Reference
+
+- `id` (String) Numeric AWX object identifier.
+
+## Import
+
+```bash
+terraform import awx_workflow_job_template.example 42
+```

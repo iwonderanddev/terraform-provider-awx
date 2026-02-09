@@ -1,0 +1,19 @@
+{
+  "overrides": [
+    {
+      "object": "credentials",
+      "field": "inputs",
+      "type": "object",
+      "sensitive": true,
+      "writeOnly": true,
+      "description": "Credential inputs are treated as write-only secret payloads."
+    },
+    {
+      "object": "notification_templates",
+      "field": "notification_configuration",
+      "type": "object",
+      "sensitive": true,
+      "description": "Notification transport configuration may include secrets and is handled as sensitive JSON."
+    }
+  ]
+}

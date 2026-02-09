@@ -1,0 +1,38 @@
+[
+  {
+    "name": "team_user_association",
+    "priority": 10
+  },
+  {
+    "name": "organization_user_association",
+    "priority": 11
+  },
+  {
+    "name": "organization_team_association",
+    "priority": 12
+  },
+  {
+    "name": "inventory_host_association",
+    "priority": 13
+  },
+  {
+    "name": "inventory_group_association",
+    "priority": 14
+  },
+  {
+    "name": "group_host_association",
+    "priority": 15
+  },
+  {
+    "name": "group_children_association",
+    "priority": 16
+  },
+  {
+    "name": "job_template_credential_association",
+    "priority": 17
+  },
+  {
+    "name": "workflow_job_template_label_association",
+    "priority": 18
+  }
+]

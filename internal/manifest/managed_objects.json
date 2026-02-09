@@ -1,0 +1,5125 @@
+[
+  {
+    "name": "activity_stream",
+    "singularName": "activity_stream",
+    "resourceName": "awx_activity_stream",
+    "dataSourceName": "awx_activity_stream",
+    "collectionPath": "/api/v2/activity_stream/",
+    "detailPath": "/api/v2/activity_stream/{id}/",
+    "responseSchema": "ActivityStream",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Runtime audit stream entries are not desired-state configuration objects.",
+    "fields": [
+      {
+        "name": "action_node",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The cluster node the activity took place on."
+      },
+      {
+        "name": "changes",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A summary of the new and changed values when an object is created, updated, or deleted"
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "object1",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "For create, update, and delete events this is the object type that was affected. For associate and disassociate events this is the object type associated or disassociated with object2."
+      },
+      {
+        "name": "object2",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Unpopulated for create, update, and delete events. For associate and disassociate events this is the object type that object1 is being associated with."
+      },
+      {
+        "name": "object_association",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "When present, shows the field name of the role or relationship that changed."
+      },
+      {
+        "name": "object_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "When present, shows the model on which the role or relationship was defined."
+      },
+      {
+        "name": "operation",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The action taken with respect to the given object(s).\n\n* `create` - Entity Created\n* `update` - Entity Updated\n* `delete` - Entity Deleted\n* `associate` - Entity Associated with another Entity\n* `disassociate` - Entity was Disassociated with another Entity"
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timestamp",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "ad_hoc_commands",
+    "singularName": "ad_hoc_command",
+    "resourceName": "awx_ad_hoc_command",
+    "dataSourceName": "awx_ad_hoc_command",
+    "collectionPath": "/api/v2/ad_hoc_commands/",
+    "detailPath": "/api/v2/ad_hoc_commands/{id}/",
+    "requestSchema": "AdHocCommandListRequest",
+    "responseSchema": "AdHocCommandDetail",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Ad-hoc command runs are runtime execution records.",
+    "fields": [
+      {
+        "name": "become_enabled",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "diff_mode",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "extra_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "forks",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `run` - Run\n* `check` - Check"
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "module_args",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "module_name",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `command` - command\n* `shell` - shell\n* `yum` - yum\n* `apt` - apt\n* `apt_key` - apt_key\n* `apt_repository` - apt_repository\n* `apt_rpm` - apt_rpm\n* `service` - service\n* `group` - group\n* `user` - user\n* `mount` - mount\n* `ping` - ping\n* `selinux` - selinux\n* `setup` - setup\n* `win_ping` - win_ping\n* `win_service` - win_service\n* `win_updates` - win_updates\n* `win_group` - win_group\n* `win_user` - win_user"
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
+      }
+    ]
+  },
+  {
+    "name": "constructed_inventories",
+    "singularName": "constructed_inventory",
+    "resourceName": "awx_constructed_inventory",
+    "dataSourceName": "awx_constructed_inventory",
+    "collectionPath": "/api/v2/constructed_inventories/",
+    "detailPath": "/api/v2/constructed_inventories/{id}/",
+    "requestSchema": "ConstructedInventoryRequest",
+    "responseSchema": "ConstructedInventory",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The limit to restrict the returned hosts for the related auto-created inventory source, special to constructed inventory."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "opa_query_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule."
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Organization containing this inventory."
+      },
+      {
+        "name": "prevent_instance_group_fallback",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled, the inventory will prevent adding any organization instance groups to the list of preferred instances groups to run associated job templates on.If this setting is enabled and you provided an empty list, the global instance groups will be applied."
+      },
+      {
+        "name": "source_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The source_vars for the related auto-created inventory source, special to constructed inventory."
+      },
+      {
+        "name": "update_cache_timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The cache timeout for the related auto-created inventory source, special to constructed inventory"
+      },
+      {
+        "name": "variables",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory variables in JSON or YAML format."
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The verbosity level for the related auto-created inventory source, special to constructed inventory"
+      }
+    ]
+  },
+  {
+    "name": "credential_input_sources",
+    "singularName": "credential_input_source",
+    "resourceName": "awx_credential_input_source",
+    "dataSourceName": "awx_credential_input_source",
+    "collectionPath": "/api/v2/credential_input_sources/",
+    "detailPath": "/api/v2/credential_input_sources/{id}/",
+    "requestSchema": "CredentialInputSourceRequest",
+    "responseSchema": "CredentialInputSource",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "input_field_name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "metadata",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "source_credential",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "target_credential",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "credential_types",
+    "singularName": "credential_type",
+    "resourceName": "awx_credential_type",
+    "dataSourceName": "awx_credential_type",
+    "collectionPath": "/api/v2/credential_types/",
+    "detailPath": "/api/v2/credential_types/{id}/",
+    "requestSchema": "CredentialTypeRequest",
+    "responseSchema": "CredentialType",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "injectors",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Enter injectors using either JSON or YAML syntax. Refer to the documentation for example syntax."
+      },
+      {
+        "name": "inputs",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Enter inputs using either JSON or YAML syntax. Refer to the documentation for example syntax."
+      },
+      {
+        "name": "kind",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `cloud` - Cloud\\n* `net` - Network"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "credentials",
+    "singularName": "credential",
+    "resourceName": "awx_credential",
+    "dataSourceName": "awx_credential",
+    "collectionPath": "/api/v2/credentials/",
+    "detailPath": "/api/v2/credentials/{id}/",
+    "requestSchema": "CredentialSerializerCreateRequest",
+    "responseSchema": "Credential",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "credential_type",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Specify the type of credential you want to create. Refer to the documentation for details on each type."
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "inputs",
+        "type": "object",
+        "required": false,
+        "sensitive": true,
+        "writeOnly": true,
+        "description": "Credential inputs are treated as write-only secret payloads."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inherit permissions from organization roles. If provided on creation, do not give either user or team."
+      },
+      {
+        "name": "team",
+        "type": "integer",
+        "required": false,
+        "sensitive": true,
+        "writeOnly": true,
+        "description": "Write-only field used to add team to owner role. If provided, do not give either user or organization. Only valid for creation."
+      },
+      {
+        "name": "user",
+        "type": "integer",
+        "required": false,
+        "sensitive": true,
+        "writeOnly": true,
+        "description": "Write-only field used to add user to owner role. If provided, do not give either team or organization. Only valid for creation."
+      }
+    ]
+  },
+  {
+    "name": "execution_environments",
+    "singularName": "execution_environment",
+    "resourceName": "awx_execution_environment",
+    "dataSourceName": "awx_execution_environment",
+    "collectionPath": "/api/v2/execution_environments/",
+    "detailPath": "/api/v2/execution_environments/{id}/",
+    "requestSchema": "ExecutionEnvironmentRequest",
+    "responseSchema": "ExecutionEnvironment",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "image",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The full image location, including the container registry, image name, and version tag."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The organization used to determine access to this execution environment."
+      },
+      {
+        "name": "pull",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Pull image before running?\n\n* `always` - Always pull container before running.\n* `missing` - Only pull the image if not present before running.\n* `never` - Never pull container before running."
+      }
+    ]
+  },
+  {
+    "name": "groups",
+    "singularName": "group",
+    "resourceName": "awx_group",
+    "dataSourceName": "awx_group",
+    "collectionPath": "/api/v2/groups/",
+    "detailPath": "/api/v2/groups/{id}/",
+    "requestSchema": "GroupRequest",
+    "responseSchema": "Group",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "variables",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Group variables in JSON or YAML format."
+      }
+    ]
+  },
+  {
+    "name": "host_metrics",
+    "singularName": "host_metric",
+    "resourceName": "awx_host_metric",
+    "dataSourceName": "awx_host_metric",
+    "collectionPath": "/api/v2/host_metrics/",
+    "detailPath": "/api/v2/host_metrics/{id}/",
+    "responseSchema": "HostMetric",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Host metrics are runtime telemetry and not managed desired-state configuration.",
+    "fields": [
+      {
+        "name": "automated_counter",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "How many times was the host automated"
+      },
+      {
+        "name": "deleted",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Boolean flag saying whether the host is deleted and therefore not counted into the subscription consumption"
+      },
+      {
+        "name": "deleted_counter",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "How many times was the host deleted"
+      },
+      {
+        "name": "first_automation",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "When the host was first automated against"
+      },
+      {
+        "name": "hostname",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "last_automation",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "When the host was last automated against"
+      },
+      {
+        "name": "last_deleted",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "When the host was last deleted"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "used_in_inventories",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "How many inventories contain this host"
+      }
+    ]
+  },
+  {
+    "name": "hosts",
+    "singularName": "host",
+    "resourceName": "awx_host",
+    "dataSourceName": "awx_host",
+    "collectionPath": "/api/v2/hosts/",
+    "detailPath": "/api/v2/hosts/{id}/",
+    "requestSchema": "HostRequest",
+    "responseSchema": "Host",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Is this host online and available for running jobs?"
+      },
+      {
+        "name": "instance_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The value used by the remote inventory source to uniquely identify the host"
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "variables",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Host variables in JSON or YAML format."
+      }
+    ]
+  },
+  {
+    "name": "instance_groups",
+    "singularName": "instance_group",
+    "resourceName": "awx_instance_group",
+    "dataSourceName": "awx_instance_group",
+    "collectionPath": "/api/v2/instance_groups/",
+    "detailPath": "/api/v2/instance_groups/{id}/",
+    "requestSchema": "InstanceGroupRequest",
+    "responseSchema": "InstanceGroup",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "is_container_group",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Indicates whether instances in this group are containerized.Containerized groups have a designated Openshift or Kubernetes cluster."
+      },
+      {
+        "name": "max_concurrent_jobs",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Maximum number of concurrent jobs to run on a group. When set to zero, no maximum is enforced."
+      },
+      {
+        "name": "max_forks",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Maximum number of forks to execute concurrently on a group. When set to zero, no maximum is enforced."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "pod_spec_override",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "policy_instance_list",
+        "type": "array",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "List of exact-match Instances that will be assigned to this group"
+      },
+      {
+        "name": "policy_instance_minimum",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Static minimum number of Instances that will be automatically assign to this group when new instances come online."
+      },
+      {
+        "name": "policy_instance_percentage",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Minimum percentage of all instances that will be automatically assigned to this group when new instances come online."
+      }
+    ]
+  },
+  {
+    "name": "instances",
+    "singularName": "instance",
+    "resourceName": "awx_instance",
+    "dataSourceName": "awx_instance",
+    "collectionPath": "/api/v2/instances/",
+    "detailPath": "/api/v2/instances/{id}/",
+    "requestSchema": "InstanceRequest",
+    "responseSchema": "Instance",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "AWX instances represent runtime cluster topology and are not managed by this provider.",
+    "fields": [
+      {
+        "name": "capacity_adjustment",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "hostname",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "listener_port",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "managed_by_policy",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "node_state",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Indicates the current life cycle stage of this instance.\n\n* `provisioning` - Provisioning\n* `provision-fail` - Provisioning Failure\n* `installed` - Installed\n* `ready` - Ready\n* `unavailable` - Unavailable\n* `deprovisioning` - De-provisioning\n* `deprovision-fail` - De-provisioning Failure"
+      },
+      {
+        "name": "node_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Role that this node plays in the mesh.\n\n* `control` - Control plane node\n* `execution` - Execution plane node\n* `hybrid` - Controller and execution\n* `hop` - Message-passing node, no execution capability"
+      },
+      {
+        "name": "peers",
+        "type": "array",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Primary keys of receptor addresses to peer to."
+      },
+      {
+        "name": "peers_from_control_nodes",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "inventories",
+    "singularName": "inventory",
+    "resourceName": "awx_inventory",
+    "dataSourceName": "awx_inventory",
+    "collectionPath": "/api/v2/inventories/",
+    "detailPath": "/api/v2/inventories/{id}/",
+    "requestSchema": "InventoryRequest",
+    "responseSchema": "Inventory",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "host_filter",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Filter that will be applied to the hosts of this inventory."
+      },
+      {
+        "name": "kind",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Kind of inventory being represented.\n\n* `` - Hosts have a direct link to this inventory.\n* `smart` - Hosts for inventory generated using the host_filter property.\n* `constructed` - Parse list of source inventories with the constructed inventory plugin."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "opa_query_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule."
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Organization containing this inventory."
+      },
+      {
+        "name": "prevent_instance_group_fallback",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled, the inventory will prevent adding any organization instance groups to the list of preferred instances groups to run associated job templates on.If this setting is enabled and you provided an empty list, the global instance groups will be applied."
+      },
+      {
+        "name": "variables",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory variables in JSON or YAML format."
+      }
+    ]
+  },
+  {
+    "name": "inventory_sources",
+    "singularName": "inventory_source",
+    "resourceName": "awx_inventory_source",
+    "dataSourceName": "awx_inventory_source",
+    "collectionPath": "/api/v2/inventory_sources/",
+    "detailPath": "/api/v2/inventory_sources/{id}/",
+    "requestSchema": "InventorySourceRequest",
+    "responseSchema": "InventorySource",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Cloud credential to use for inventory updates."
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "enabled_value",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Only used when enabled_var is set. Value when the host is considered enabled. For example if enabled_var=\"status.power_state\"and enabled_value=\"powered_on\" with host variables:{   \"status\": {     \"power_state\": \"powered_on\",     \"created\": \"2020-08-04T18:13:04+00:00\",     \"healthy\": true    },    \"name\": \"foobar\",    \"ip_address\": \"192.168.2.1\"}The host would be marked enabled. If power_state where any value other than powered_on then the host would be disabled when imported. If the key is not found then the host will be enabled"
+      },
+      {
+        "name": "enabled_var",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Retrieve the enabled state from the given dict of host variables. The enabled variable may be specified as \"foo.bar\", in which case the lookup will traverse into nested dicts, equivalent to: from_dict.get(\"foo\", {}).get(\"bar\", default)"
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "host_filter",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "This field is deprecated and will be removed in a future release. Regex where only matching hosts will be imported."
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Enter host, group or pattern match"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "overwrite",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Overwrite local groups and hosts from remote inventory source."
+      },
+      {
+        "name": "overwrite_vars",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Overwrite local variables from remote inventory source."
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory source SCM branch. Project default used if blank. Only allowed if project allow_override field is set to true."
+      },
+      {
+        "name": "source",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `azure_rm` - Microsoft Azure Resource Manager\n* `controller` - Red Hat Ansible Automation Platform\n* `ec2` - Amazon EC2\n* `gce` - Google Compute Engine\n* `insights` - Red Hat Insights\n* `openshift_virtualization` - OpenShift Virtualization\n* `openstack` - OpenStack\n* `rhv` - Red Hat Virtualization\n* `satellite6` - Red Hat Satellite 6\n* `terraform` - Terraform State\n* `vmware` - VMware vCenter\n* `scm` - Sourced from a Project\n* `constructed` - Template additional groups and hostvars at runtime"
+      },
+      {
+        "name": "source_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "source_project",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Project containing inventory file used as source."
+      },
+      {
+        "name": "source_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory source variables in YAML or JSON format."
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The amount of time (in seconds) to run before the task is canceled."
+      },
+      {
+        "name": "update_cache_timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "update_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `0` - 0 (WARNING)\n* `1` - 1 (INFO)\n* `2` - 2 (DEBUG)"
+      }
+    ]
+  },
+  {
+    "name": "inventory_updates",
+    "singularName": "inventory_update",
+    "resourceName": "awx_inventory_update",
+    "dataSourceName": "awx_inventory_update",
+    "collectionPath": "/api/v2/inventory_updates/",
+    "detailPath": "/api/v2/inventory_updates/{id}/",
+    "responseSchema": "InventoryUpdateDetail",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Inventory updates are runtime job records.",
+    "fields": [
+      {
+        "name": "canceled_on",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time when the cancel request was sent."
+      },
+      {
+        "name": "controller_node",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The instance that managed the execution environment."
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Cloud credential to use for inventory updates."
+      },
+      {
+        "name": "custom_virtualenv",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Local absolute file path containing a custom Python virtualenv to use"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "elapsed",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Elapsed time in seconds that the job ran."
+      },
+      {
+        "name": "enabled_value",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Only used when enabled_var is set. Value when the host is considered enabled. For example if enabled_var=\"status.power_state\"and enabled_value=\"powered_on\" with host variables:{   \"status\": {     \"power_state\": \"powered_on\",     \"created\": \"2020-08-04T18:13:04+00:00\",     \"healthy\": true    },    \"name\": \"foobar\",    \"ip_address\": \"192.168.2.1\"}The host would be marked enabled. If power_state where any value other than powered_on then the host would be disabled when imported. If the key is not found then the host will be enabled"
+      },
+      {
+        "name": "enabled_var",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Retrieve the enabled state from the given dict of host variables. The enabled variable may be specified as \"foo.bar\", in which case the lookup will traverse into nested dicts, equivalent to: from_dict.get(\"foo\", {}).get(\"bar\", default)"
+      },
+      {
+        "name": "event_processing_finished",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Indicates whether all of the events generated by this unified job have been saved to the database."
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "execution_node",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The node the job executed on."
+      },
+      {
+        "name": "failed",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "finished",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job finished execution."
+      },
+      {
+        "name": "host_filter",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "This field is deprecated and will be removed in a future release. Regex where only matching hosts will be imported."
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "instance_group",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The Instance group the job was run under"
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "inventory_source",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_args",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_cwd",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_env",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_explanation",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A status field to indicate the state of the job if it wasn't able to run and capture stdout"
+      },
+      {
+        "name": "launch_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `manual` - Manual\n* `relaunch` - Relaunch\n* `callback` - Callback\n* `scheduled` - Scheduled\n* `dependency` - Dependency\n* `workflow` - Workflow\n* `webhook` - Webhook\n* `sync` - Sync\n* `scm` - SCM Update"
+      },
+      {
+        "name": "launched_by",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "license_error",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Enter host, group or pattern match"
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "org_host_limit_error",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "overwrite",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Overwrite local groups and hosts from remote inventory source."
+      },
+      {
+        "name": "overwrite_vars",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Overwrite local variables from remote inventory source."
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "result_traceback",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory source SCM branch. Project default used if blank. Only allowed if project allow_override field is set to true."
+      },
+      {
+        "name": "scm_revision",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The SCM Revision from the Project used for this inventory update.  Only applicable to inventories source from scm"
+      },
+      {
+        "name": "source",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `azure_rm` - Microsoft Azure Resource Manager\n* `controller` - Red Hat Ansible Automation Platform\n* `ec2` - Amazon EC2\n* `gce` - Google Compute Engine\n* `insights` - Red Hat Insights\n* `openshift_virtualization` - OpenShift Virtualization\n* `openstack` - OpenStack\n* `rhv` - Red Hat Virtualization\n* `satellite6` - Red Hat Satellite 6\n* `terraform` - Terraform State\n* `vmware` - VMware vCenter\n* `scm` - Sourced from a Project\n* `constructed` - Template additional groups and hostvars at runtime"
+      },
+      {
+        "name": "source_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "source_project",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The project used for this job."
+      },
+      {
+        "name": "source_project_update",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory files from this Project Update were used for the inventory update."
+      },
+      {
+        "name": "source_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory source variables in YAML or JSON format."
+      },
+      {
+        "name": "started",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job was queued for starting."
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `new` - New\n* `pending` - Pending\n* `waiting` - Waiting\n* `running` - Running\n* `successful` - Successful\n* `failed` - Failed\n* `error` - Error\n* `canceled` - Canceled"
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The amount of time (in seconds) to run before the task is canceled."
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `0` - 0 (WARNING)\n* `1` - 1 (INFO)\n* `2` - 2 (DEBUG)"
+      },
+      {
+        "name": "work_unit_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The Receptor work unit ID associated with this job."
+      }
+    ]
+  },
+  {
+    "name": "job_templates",
+    "singularName": "job_template",
+    "resourceName": "awx_job_template",
+    "dataSourceName": "awx_job_template",
+    "collectionPath": "/api/v2/job_templates/",
+    "detailPath": "/api/v2/job_templates/{id}/",
+    "requestSchema": "JobTemplateRequest",
+    "responseSchema": "JobTemplate",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "allow_simultaneous",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_credential_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_diff_mode_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_execution_environment_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_forks_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_instance_groups_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_inventory_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_job_slice_count_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_job_type_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_labels_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_limit_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_scm_branch_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_skip_tags_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_tags_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_timeout_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_variables_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_verbosity_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "become_enabled",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "diff_mode",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled, textual changes made to any templated files on the host are shown in the standard output"
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "extra_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "force_handlers",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "forks",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "host_config_key",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_slice_count",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The number of jobs to slice into at runtime. Will cause the Job Template to launch a workflow if value is greater than 1."
+      },
+      {
+        "name": "job_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `run` - Run\n* `check` - Check"
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "opa_query_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule."
+      },
+      {
+        "name": "playbook",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "prevent_instance_group_fallback",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled, the job template will prevent adding any inventory or organization instance groups to the list of preferred instances groups to run on.If this setting is enabled and you provided an empty list, the global instance groups will be applied."
+      },
+      {
+        "name": "project",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true."
+      },
+      {
+        "name": "skip_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "start_at_task",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "survey_enabled",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The amount of time (in seconds) to run before the task is canceled."
+      },
+      {
+        "name": "use_fact_cache",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible."
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
+      },
+      {
+        "name": "webhook_credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Personal Access Token for posting back the status to the service API"
+      },
+      {
+        "name": "webhook_service",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Service that webhook requests will be accepted from\n\n* `github` - GitHub\n* `gitlab` - GitLab\n* `bitbucket_dc` - BitBucket DataCenter"
+      }
+    ]
+  },
+  {
+    "name": "jobs",
+    "singularName": "job",
+    "resourceName": "awx_job",
+    "dataSourceName": "awx_job",
+    "collectionPath": "/api/v2/jobs/",
+    "detailPath": "/api/v2/jobs/{id}/",
+    "responseSchema": "JobDetail",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Job objects are runtime execution records.",
+    "fields": [
+      {
+        "name": "allow_simultaneous",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "artifacts",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "canceled_on",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time when the cancel request was sent."
+      },
+      {
+        "name": "controller_node",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The instance that managed the execution environment."
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "custom_virtualenv",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Local absolute file path containing a custom Python virtualenv to use"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "diff_mode",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled, textual changes made to any templated files on the host are shown in the standard output"
+      },
+      {
+        "name": "elapsed",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Elapsed time in seconds that the job ran."
+      },
+      {
+        "name": "event_processing_finished",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Indicates whether all of the events generated by this unified job have been saved to the database."
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "execution_node",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The node the job executed on."
+      },
+      {
+        "name": "extra_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "failed",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "finished",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job finished execution."
+      },
+      {
+        "name": "force_handlers",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "forks",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "host_status_counts",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Playbook stats from the Ansible playbook_on_stats event."
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "instance_group",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The Instance group the job was run under"
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_args",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_cwd",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_env",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_explanation",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A status field to indicate the state of the job if it wasn't able to run and capture stdout"
+      },
+      {
+        "name": "job_slice_count",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job."
+      },
+      {
+        "name": "job_slice_number",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used."
+      },
+      {
+        "name": "job_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `run` - Run\n* `check` - Check\n* `scan` - Scan"
+      },
+      {
+        "name": "launch_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `manual` - Manual\n* `relaunch` - Relaunch\n* `callback` - Callback\n* `scheduled` - Scheduled\n* `dependency` - Dependency\n* `workflow` - Workflow\n* `webhook` - Webhook\n* `sync` - Sync\n* `scm` - SCM Update"
+      },
+      {
+        "name": "launched_by",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The organization used to determine access to this unified job."
+      },
+      {
+        "name": "passwords_needed_to_start",
+        "type": "string",
+        "required": false,
+        "sensitive": true,
+        "writeOnly": true
+      },
+      {
+        "name": "playbook",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "playbook_counts",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A count of all plays and tasks for the job run."
+      },
+      {
+        "name": "project",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "result_traceback",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true."
+      },
+      {
+        "name": "scm_revision",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The SCM Revision from the Project used for this job, if available"
+      },
+      {
+        "name": "skip_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "start_at_task",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "started",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job was queued for starting."
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `new` - New\n* `pending` - Pending\n* `waiting` - Waiting\n* `running` - Running\n* `successful` - Successful\n* `failed` - Failed\n* `error` - Error\n* `canceled` - Canceled"
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The amount of time (in seconds) to run before the task is canceled."
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "use_fact_cache",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible."
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
+      },
+      {
+        "name": "webhook_credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Personal Access Token for posting back the status to the service API"
+      },
+      {
+        "name": "webhook_guid",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Unique identifier of the event that triggered this webhook"
+      },
+      {
+        "name": "webhook_service",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Service that webhook requests will be accepted from\n\n* `github` - GitHub\n* `gitlab` - GitLab\n* `bitbucket_dc` - BitBucket DataCenter"
+      },
+      {
+        "name": "work_unit_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The Receptor work unit ID associated with this job."
+      }
+    ]
+  },
+  {
+    "name": "labels",
+    "singularName": "label",
+    "resourceName": "awx_label",
+    "dataSourceName": "awx_label",
+    "collectionPath": "/api/v2/labels/",
+    "detailPath": "/api/v2/labels/{id}/",
+    "requestSchema": "LabelRequest",
+    "responseSchema": "Label",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Organization this label belongs to."
+      }
+    ]
+  },
+  {
+    "name": "notification_templates",
+    "singularName": "notification_template",
+    "resourceName": "awx_notification_template",
+    "dataSourceName": "awx_notification_template",
+    "collectionPath": "/api/v2/notification_templates/",
+    "detailPath": "/api/v2/notification_templates/{id}/",
+    "requestSchema": "NotificationTemplateRequest",
+    "responseSchema": "NotificationTemplate",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "messages",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Optional custom messages for notification template."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "notification_configuration",
+        "type": "object",
+        "required": false,
+        "sensitive": true,
+        "writeOnly": false,
+        "description": "Notification transport configuration may include secrets and is handled as sensitive JSON."
+      },
+      {
+        "name": "notification_type",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `awssns` - AWS SNS\n* `email` - Email\n* `grafana` - Grafana\n* `irc` - IRC\n* `mattermost` - Mattermost\n* `pagerduty` - Pagerduty\n* `rocketchat` - Rocket.Chat\n* `slack` - Slack\n* `twilio` - Twilio\n* `webhook` - Webhook"
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "notifications",
+    "singularName": "notification",
+    "resourceName": "awx_notification",
+    "dataSourceName": "awx_notification",
+    "collectionPath": "/api/v2/notifications/",
+    "detailPath": "/api/v2/notifications/{id}/",
+    "responseSchema": "Notification",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Notification events are runtime records.",
+    "fields": [
+      {
+        "name": "body",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Notification body"
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "error",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "notification_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "notification_type",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `awssns` - AWS SNS\n* `email` - Email\n* `grafana` - Grafana\n* `irc` - IRC\n* `mattermost` - Mattermost\n* `pagerduty` - Pagerduty\n* `rocketchat` - Rocket.Chat\n* `slack` - Slack\n* `twilio` - Twilio\n* `webhook` - Webhook"
+      },
+      {
+        "name": "notifications_sent",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "recipients",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `pending` - Pending\n* `successful` - Successful\n* `failed` - Failed"
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "organizations",
+    "singularName": "organization",
+    "resourceName": "awx_organization",
+    "dataSourceName": "awx_organization",
+    "collectionPath": "/api/v2/organizations/",
+    "detailPath": "/api/v2/organizations/{id}/",
+    "requestSchema": "PatchedOrganizationRequest",
+    "responseSchema": "Organization",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "default_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The default execution environment for jobs run by this organization."
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "max_hosts",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Maximum number of hosts allowed to be managed by this organization."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "opa_query_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule."
+      }
+    ]
+  },
+  {
+    "name": "project_updates",
+    "singularName": "project_update",
+    "resourceName": "awx_project_update",
+    "dataSourceName": "awx_project_update",
+    "collectionPath": "/api/v2/project_updates/",
+    "detailPath": "/api/v2/project_updates/{id}/",
+    "responseSchema": "ProjectUpdateDetail",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Project updates are runtime job records.",
+    "fields": [
+      {
+        "name": "canceled_on",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time when the cancel request was sent."
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "elapsed",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Elapsed time in seconds that the job ran."
+      },
+      {
+        "name": "event_processing_finished",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Indicates whether all of the events generated by this unified job have been saved to the database."
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "execution_node",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The node the job executed on."
+      },
+      {
+        "name": "failed",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "finished",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job finished execution."
+      },
+      {
+        "name": "host_status_counts",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Playbook stats from the Ansible playbook_on_stats event."
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_args",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_cwd",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_env",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_explanation",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A status field to indicate the state of the job if it wasn't able to run and capture stdout"
+      },
+      {
+        "name": "job_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Parts of the project update playbook that will be run."
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `run` - Run\n* `check` - Check"
+      },
+      {
+        "name": "launch_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `manual` - Manual\n* `relaunch` - Relaunch\n* `callback` - Callback\n* `scheduled` - Scheduled\n* `dependency` - Dependency\n* `workflow` - Workflow\n* `webhook` - Webhook\n* `sync` - Sync\n* `scm` - SCM Update"
+      },
+      {
+        "name": "launched_by",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "local_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project."
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "playbook_counts",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A count of all plays and tasks for the job run."
+      },
+      {
+        "name": "project",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "result_traceback",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Specific branch, tag or commit to checkout."
+      },
+      {
+        "name": "scm_clean",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Discard any local changes before syncing the project."
+      },
+      {
+        "name": "scm_delete_on_update",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Delete the project before syncing."
+      },
+      {
+        "name": "scm_refspec",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "For git projects, an additional refspec to fetch."
+      },
+      {
+        "name": "scm_revision",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The SCM Revision discovered by this update for the given project and branch."
+      },
+      {
+        "name": "scm_track_submodules",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Track submodules latest commits on defined branch."
+      },
+      {
+        "name": "scm_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Specifies the source control system used to store the project.\n\n* `` - Manual\n* `git` - Git\n* `svn` - Subversion\n* `insights` - Red Hat Insights\n* `archive` - Remote Archive"
+      },
+      {
+        "name": "scm_url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The location where the project is stored."
+      },
+      {
+        "name": "started",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job was queued for starting."
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `new` - New\n* `pending` - Pending\n* `waiting` - Waiting\n* `running` - Running\n* `successful` - Successful\n* `failed` - Failed\n* `error` - Error\n* `canceled` - Canceled"
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The amount of time (in seconds) to run before the task is canceled."
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "work_unit_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The Receptor work unit ID associated with this job."
+      }
+    ]
+  },
+  {
+    "name": "projects",
+    "singularName": "project",
+    "resourceName": "awx_project",
+    "dataSourceName": "awx_project",
+    "collectionPath": "/api/v2/projects/",
+    "detailPath": "/api/v2/projects/{id}/",
+    "requestSchema": "ProjectRequest",
+    "responseSchema": "Project",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "allow_override",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Allow changing the SCM branch or revision in a job template that uses this project."
+      },
+      {
+        "name": "credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "default_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The default execution environment for jobs run using this project."
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "local_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The organization used to determine access to this template."
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Specific branch, tag or commit to checkout."
+      },
+      {
+        "name": "scm_clean",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Discard any local changes before syncing the project."
+      },
+      {
+        "name": "scm_delete_on_update",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Delete the project before syncing."
+      },
+      {
+        "name": "scm_refspec",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "For git projects, an additional refspec to fetch."
+      },
+      {
+        "name": "scm_track_submodules",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Track submodules latest commits on defined branch."
+      },
+      {
+        "name": "scm_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Specifies the source control system used to store the project.\n\n* `` - Manual\n* `git` - Git\n* `svn` - Subversion\n* `insights` - Red Hat Insights\n* `archive` - Remote Archive"
+      },
+      {
+        "name": "scm_update_cache_timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The number of seconds after the last project update ran that a new project update will be launched as a job dependency."
+      },
+      {
+        "name": "scm_update_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Update the project when a job is launched that uses the project."
+      },
+      {
+        "name": "scm_url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The location where the project is stored."
+      },
+      {
+        "name": "signature_validation_credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "An optional credential used for validating files in the project against unexpected changes."
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The amount of time (in seconds) to run before the task is canceled."
+      }
+    ]
+  },
+  {
+    "name": "receptor_addresses",
+    "singularName": "receptor_address",
+    "resourceName": "awx_receptor_address",
+    "dataSourceName": "awx_receptor_address",
+    "collectionPath": "/api/v2/receptor_addresses/",
+    "detailPath": "/api/v2/receptor_addresses/{id}/",
+    "responseSchema": "ReceptorAddress",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Receptor addresses are runtime transport data.",
+    "fields": [
+      {
+        "name": "address",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Routable address for this instance."
+      },
+      {
+        "name": "canonical",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If True, this address is the canonical address for the instance."
+      },
+      {
+        "name": "full_address",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "instance",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "is_internal",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If True, only routable within the Kubernetes cluster."
+      },
+      {
+        "name": "peers_from_control_nodes",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If True, control plane cluster nodes should automatically peer to it."
+      },
+      {
+        "name": "port",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Port for the address."
+      },
+      {
+        "name": "protocol",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Protocol to use for the Receptor listener, 'tcp', 'wss', or 'ws'.\n\n* `tcp` - TCP\n* `ws` - WS\n* `wss` - WSS"
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "websocket_path",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Websocket path."
+      }
+    ]
+  },
+  {
+    "name": "role_definitions",
+    "singularName": "role_definition",
+    "resourceName": "awx_role_definition",
+    "dataSourceName": "awx_role_definition",
+    "collectionPath": "/api/v2/role_definitions/",
+    "detailPath": "/api/v2/role_definitions/{id}/",
+    "requestSchema": "RoleDefinitionRequest",
+    "responseSchema": "RoleDefinition",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "content_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "String to use for references to this type from other models in the API."
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A description of this role."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The name of this role."
+      },
+      {
+        "name": "permissions",
+        "type": "array",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "role_team_assignments",
+    "singularName": "role_team_assignment",
+    "resourceName": "awx_role_team_assignment",
+    "dataSourceName": "awx_role_team_assignment",
+    "collectionPath": "/api/v2/role_team_assignments/",
+    "detailPath": "/api/v2/role_team_assignments/{id}/",
+    "requestSchema": "RoleTeamAssignmentRequest",
+    "responseSchema": "RoleTeamAssignment",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "object_ansible_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The resource id of the object this role applies to. An alternative to the object_id field."
+      },
+      {
+        "name": "object_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The primary key of the object this assignment applies to; null value indicates system-wide assignment."
+      },
+      {
+        "name": "role_definition",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The role definition which defines permissions conveyed by this assignment."
+      },
+      {
+        "name": "team",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "team_ansible_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The resource ID of the team who will receive permissions from this assignment. An alternative to team field."
+      }
+    ]
+  },
+  {
+    "name": "role_user_assignments",
+    "singularName": "role_user_assignment",
+    "resourceName": "awx_role_user_assignment",
+    "dataSourceName": "awx_role_user_assignment",
+    "collectionPath": "/api/v2/role_user_assignments/",
+    "detailPath": "/api/v2/role_user_assignments/{id}/",
+    "responseSchema": "RoleUserAssignment",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "content_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "String to use for references to this type from other models in the API."
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date/time this resource was created."
+      },
+      {
+        "name": "created_by",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The user who created this resource."
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "object_ansible_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The resource id of the object this role applies to. An alternative to the object_id field."
+      },
+      {
+        "name": "object_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The primary key of the object this assignment applies to; null value indicates system-wide assignment."
+      },
+      {
+        "name": "related",
+        "type": "object",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "role_definition",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The role definition which defines permissions conveyed by this assignment."
+      },
+      {
+        "name": "summary_fields",
+        "type": "object",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "user",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "user_ansible_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The resource ID of the user who will receive permissions from this assignment. An alternative to user field."
+      }
+    ]
+  },
+  {
+    "name": "roles",
+    "singularName": "role",
+    "resourceName": "awx_role",
+    "dataSourceName": "awx_role",
+    "collectionPath": "/api/v2/roles/",
+    "detailPath": "/api/v2/roles/{id}/",
+    "responseSchema": "Role",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "schedules",
+    "singularName": "schedule",
+    "resourceName": "awx_schedule",
+    "dataSourceName": "awx_schedule",
+    "collectionPath": "/api/v2/schedules/",
+    "detailPath": "/api/v2/schedules/{id}/",
+    "requestSchema": "ScheduleRequest",
+    "responseSchema": "Schedule",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "diff_mode",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Enables processing of this schedule."
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "extra_data",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "forks",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory applied as a prompt, assuming job template prompts for inventory"
+      },
+      {
+        "name": "job_slice_count",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `run` - Run\n* `check` - Check"
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "rrule",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A value representing the schedules iCal recurrence rule."
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "skip_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
+      }
+    ]
+  },
+  {
+    "name": "system_job_templates",
+    "singularName": "system_job_template",
+    "resourceName": "awx_system_job_template",
+    "dataSourceName": "awx_system_job_template",
+    "collectionPath": "/api/v2/system_job_templates/",
+    "detailPath": "/api/v2/system_job_templates/{id}/",
+    "responseSchema": "SystemJobTemplate",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "System job templates are runtime/operator endpoints not in managed desired-state scope.",
+    "fields": [
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `cleanup_jobs` - Remove jobs older than a certain number of days\n* `cleanup_activitystream` - Remove activity stream entries older than a certain number of days\n* `cleanup_sessions` - Removes expired browser sessions from the database"
+      },
+      {
+        "name": "last_job_failed",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "last_job_run",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "next_job_run",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `new` - New\n* `pending` - Pending\n* `waiting` - Waiting\n* `running` - Running\n* `successful` - Successful\n* `failed` - Failed\n* `error` - Error\n* `canceled` - Canceled\n* `never updated` - Never Updated\n* `ok` - OK\n* `missing` - Missing\n* `none` - No External Source\n* `updating` - Updating"
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "system_jobs",
+    "singularName": "system_job",
+    "resourceName": "awx_system_job",
+    "dataSourceName": "awx_system_job",
+    "collectionPath": "/api/v2/system_jobs/",
+    "detailPath": "/api/v2/system_jobs/{id}/",
+    "responseSchema": "SystemJob",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "System jobs are runtime execution records.",
+    "fields": [
+      {
+        "name": "canceled_on",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time when the cancel request was sent."
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "elapsed",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Elapsed time in seconds that the job ran."
+      },
+      {
+        "name": "event_processing_finished",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Indicates whether all of the events generated by this unified job have been saved to the database."
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "execution_node",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The node the job executed on."
+      },
+      {
+        "name": "extra_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "failed",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "finished",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job finished execution."
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_args",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_cwd",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_env",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_explanation",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A status field to indicate the state of the job if it wasn't able to run and capture stdout"
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `cleanup_jobs` - Remove jobs older than a certain number of days\n* `cleanup_activitystream` - Remove activity stream entries older than a certain number of days\n* `cleanup_sessions` - Removes expired browser sessions from the database"
+      },
+      {
+        "name": "launch_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `manual` - Manual\n* `relaunch` - Relaunch\n* `callback` - Callback\n* `scheduled` - Scheduled\n* `dependency` - Dependency\n* `workflow` - Workflow\n* `webhook` - Webhook\n* `sync` - Sync\n* `scm` - SCM Update"
+      },
+      {
+        "name": "launched_by",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "result_stdout",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "result_traceback",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "started",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job was queued for starting."
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `new` - New\n* `pending` - Pending\n* `waiting` - Waiting\n* `running` - Running\n* `successful` - Successful\n* `failed` - Failed\n* `error` - Error\n* `canceled` - Canceled"
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "system_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "work_unit_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The Receptor work unit ID associated with this job."
+      }
+    ]
+  },
+  {
+    "name": "teams",
+    "singularName": "team",
+    "resourceName": "awx_team",
+    "dataSourceName": "awx_team",
+    "collectionPath": "/api/v2/teams/",
+    "detailPath": "/api/v2/teams/{id}/",
+    "requestSchema": "TeamRequest",
+    "responseSchema": "Team",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "users",
+    "singularName": "user",
+    "resourceName": "awx_user",
+    "dataSourceName": "awx_user",
+    "collectionPath": "/api/v2/users/",
+    "detailPath": "/api/v2/users/{id}/",
+    "requestSchema": "UserRequest",
+    "responseSchema": "User",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "email",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "first_name",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "is_superuser",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Designates that this user has all permissions without explicitly assigning them."
+      },
+      {
+        "name": "is_system_auditor",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "last_name",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "required": false,
+        "sensitive": true,
+        "writeOnly": true,
+        "description": "Field used to change the password."
+      },
+      {
+        "name": "username",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+      }
+    ]
+  },
+  {
+    "name": "workflow_approvals",
+    "singularName": "workflow_approval",
+    "resourceName": "awx_workflow_approval",
+    "dataSourceName": "awx_workflow_approval",
+    "collectionPath": "/api/v2/workflow_approvals/",
+    "detailPath": "/api/v2/workflow_approvals/{id}/",
+    "responseSchema": "WorkflowApproval",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Workflow approvals are runtime workflow execution records.",
+    "fields": [
+      {
+        "name": "approval_expiration",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "can_approve_or_deny",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "canceled_on",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time when the cancel request was sent."
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "elapsed",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Elapsed time in seconds that the job ran."
+      },
+      {
+        "name": "event_processing_finished",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Indicates whether all of the events generated by this unified job have been saved to the database."
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "failed",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "finished",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job finished execution."
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_args",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_cwd",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_env",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_explanation",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A status field to indicate the state of the job if it wasn't able to run and capture stdout"
+      },
+      {
+        "name": "launch_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `manual` - Manual\n* `relaunch` - Relaunch\n* `callback` - Callback\n* `scheduled` - Scheduled\n* `dependency` - Dependency\n* `workflow` - Workflow\n* `webhook` - Webhook\n* `sync` - Sync\n* `scm` - SCM Update"
+      },
+      {
+        "name": "launched_by",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "result_traceback",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "started",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job was queued for starting."
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `new` - New\n* `pending` - Pending\n* `waiting` - Waiting\n* `running` - Running\n* `successful` - Successful\n* `failed` - Failed\n* `error` - Error\n* `canceled` - Canceled"
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timed_out",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Shows when an approval node (with a timeout assigned to it) has timed out."
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "work_unit_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The Receptor work unit ID associated with this job."
+      }
+    ]
+  },
+  {
+    "name": "workflow_job_nodes",
+    "singularName": "workflow_job_node",
+    "resourceName": "awx_workflow_job_node",
+    "dataSourceName": "awx_workflow_job_node",
+    "collectionPath": "/api/v2/workflow_job_nodes/",
+    "detailPath": "/api/v2/workflow_job_nodes/{id}/",
+    "responseSchema": "WorkflowJobNodeDetail",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Workflow job nodes are runtime execution records.",
+    "fields": [
+      {
+        "name": "all_parents_must_converge",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node"
+      },
+      {
+        "name": "always_nodes",
+        "type": "array",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "diff_mode",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "do_not_run",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Indicates that a job will not be created when True. Workflow runtime semantics will mark this True if the node is in a path that will decidedly not be ran. A value of False means the node may not run."
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "extra_data",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "failure_nodes",
+        "type": "array",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "forks",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "identifier",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "An identifier coresponding to the workflow job template node that this node was created from."
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory applied as a prompt, assuming job template prompts for inventory"
+      },
+      {
+        "name": "job",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_slice_count",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `run` - Run\n* `check` - Check"
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "skip_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "success_nodes",
+        "type": "array",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
+      },
+      {
+        "name": "workflow_job",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "workflow_job_template_nodes",
+    "singularName": "workflow_job_template_node",
+    "resourceName": "awx_workflow_job_template_node",
+    "dataSourceName": "awx_workflow_job_template_node",
+    "collectionPath": "/api/v2/workflow_job_template_nodes/",
+    "detailPath": "/api/v2/workflow_job_template_nodes/{id}/",
+    "requestSchema": "WorkflowJobTemplateNodeRequest",
+    "responseSchema": "WorkflowJobTemplateNodeDetail",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "all_parents_must_converge",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node"
+      },
+      {
+        "name": "diff_mode",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "execution_environment",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The container image to be used for execution."
+      },
+      {
+        "name": "extra_data",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "forks",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "identifier",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "An identifier for this node that is unique within its workflow. It is copied to workflow job nodes corresponding to this node."
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory applied as a prompt, assuming job template prompts for inventory"
+      },
+      {
+        "name": "job_slice_count",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `run` - Run\n* `check` - Check"
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "skip_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "timeout",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "verbosity",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `0` - 0 (Normal)\n* `1` - 1 (Verbose)\n* `2` - 2 (More Verbose)\n* `3` - 3 (Debug)\n* `4` - 4 (Connection Debug)\n* `5` - 5 (WinRM Debug)"
+      },
+      {
+        "name": "workflow_job_template",
+        "type": "integer",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  },
+  {
+    "name": "workflow_job_templates",
+    "singularName": "workflow_job_template",
+    "resourceName": "awx_workflow_job_template",
+    "dataSourceName": "awx_workflow_job_template",
+    "collectionPath": "/api/v2/workflow_job_templates/",
+    "detailPath": "/api/v2/workflow_job_templates/{id}/",
+    "requestSchema": "WorkflowJobTemplateRequest",
+    "responseSchema": "WorkflowJobTemplate",
+    "resourceEligible": true,
+    "dataSourceEligible": true,
+    "runtimeExcluded": false,
+    "fields": [
+      {
+        "name": "allow_simultaneous",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_inventory_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_labels_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_limit_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_scm_branch_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_skip_tags_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_tags_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "ask_variables_on_launch",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "extra_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory applied as a prompt, assuming job template prompts for inventory"
+      },
+      {
+        "name": "job_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "organization",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The organization used to determine access to this template."
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "skip_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "survey_enabled",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "webhook_credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Personal Access Token for posting back the status to the service API"
+      },
+      {
+        "name": "webhook_service",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Service that webhook requests will be accepted from\n\n* `github` - GitHub\n* `gitlab` - GitLab\n* `bitbucket_dc` - BitBucket DataCenter"
+      }
+    ]
+  },
+  {
+    "name": "workflow_jobs",
+    "singularName": "workflow_job",
+    "resourceName": "awx_workflow_job",
+    "dataSourceName": "awx_workflow_job",
+    "collectionPath": "/api/v2/workflow_jobs/",
+    "detailPath": "/api/v2/workflow_jobs/{id}/",
+    "responseSchema": "WorkflowJob",
+    "resourceEligible": false,
+    "dataSourceEligible": true,
+    "runtimeExcluded": true,
+    "exclusionReason": "Workflow jobs are runtime execution records.",
+    "fields": [
+      {
+        "name": "allow_simultaneous",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "canceled_on",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time when the cancel request was sent."
+      },
+      {
+        "name": "created",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "elapsed",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Elapsed time in seconds that the job ran."
+      },
+      {
+        "name": "extra_vars",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "failed",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "finished",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job finished execution."
+      },
+      {
+        "name": "id",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "inventory",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Inventory applied as a prompt, assuming job template prompts for inventory"
+      },
+      {
+        "name": "is_sliced_job",
+        "type": "boolean",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_args",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_cwd",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_env",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_explanation",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "A status field to indicate the state of the job if it wasn't able to run and capture stdout"
+      },
+      {
+        "name": "job_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "If automatically created for a sliced job run, the job template the workflow job was created from."
+      },
+      {
+        "name": "launch_type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `manual` - Manual\n* `relaunch` - Relaunch\n* `callback` - Callback\n* `scheduled` - Scheduled\n* `dependency` - Dependency\n* `workflow` - Workflow\n* `webhook` - Webhook\n* `sync` - Sync\n* `scm` - SCM Update"
+      },
+      {
+        "name": "launched_by",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "modified",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "related",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "result_traceback",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "scm_branch",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "skip_tags",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "started",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The date and time the job was queued for starting."
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "* `new` - New\n* `pending` - Pending\n* `waiting` - Waiting\n* `running` - Running\n* `successful` - Successful\n* `failed` - Failed\n* `error` - Error\n* `canceled` - Canceled"
+      },
+      {
+        "name": "summary_fields",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "unified_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "url",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      },
+      {
+        "name": "webhook_credential",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Personal Access Token for posting back the status to the service API"
+      },
+      {
+        "name": "webhook_guid",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Unique identifier of the event that triggered this webhook"
+      },
+      {
+        "name": "webhook_service",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "Service that webhook requests will be accepted from\n\n* `github` - GitHub\n* `gitlab` - GitLab\n* `bitbucket_dc` - BitBucket DataCenter"
+      },
+      {
+        "name": "work_unit_id",
+        "type": "string",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false,
+        "description": "The Receptor work unit ID associated with this job."
+      },
+      {
+        "name": "workflow_job_template",
+        "type": "integer",
+        "required": false,
+        "sensitive": false,
+        "writeOnly": false
+      }
+    ]
+  }
+]

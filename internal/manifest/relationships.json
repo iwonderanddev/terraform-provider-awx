@@ -1,0 +1,346 @@
+[
+  {
+    "name": "team_user_association",
+    "resourceName": "awx_team_user_association",
+    "parentObject": "teams",
+    "childObject": "users",
+    "path": "/api/v2/teams/{id}/users/",
+    "priority": 10
+  },
+  {
+    "name": "organization_user_association",
+    "resourceName": "awx_organization_user_association",
+    "parentObject": "organizations",
+    "childObject": "users",
+    "path": "/api/v2/organizations/{id}/users/",
+    "priority": 11
+  },
+  {
+    "name": "organization_team_association",
+    "resourceName": "awx_organization_team_association",
+    "parentObject": "organizations",
+    "childObject": "teams",
+    "path": "/api/v2/organizations/{id}/teams/",
+    "priority": 12
+  },
+  {
+    "name": "inventory_host_association",
+    "resourceName": "awx_inventory_host_association",
+    "parentObject": "inventories",
+    "childObject": "hosts",
+    "path": "/api/v2/inventories/{id}/hosts/",
+    "priority": 13
+  },
+  {
+    "name": "inventory_group_association",
+    "resourceName": "awx_inventory_group_association",
+    "parentObject": "inventories",
+    "childObject": "groups",
+    "path": "/api/v2/inventories/{id}/groups/",
+    "priority": 14
+  },
+  {
+    "name": "group_host_association",
+    "resourceName": "awx_group_host_association",
+    "parentObject": "groups",
+    "childObject": "hosts",
+    "path": "/api/v2/groups/{id}/hosts/",
+    "priority": 15
+  },
+  {
+    "name": "job_template_credential_association",
+    "resourceName": "awx_job_template_credential_association",
+    "parentObject": "job_templates",
+    "childObject": "credentials",
+    "path": "/api/v2/job_templates/{id}/credentials/",
+    "priority": 17
+  },
+  {
+    "name": "workflow_job_template_label_association",
+    "resourceName": "awx_workflow_job_template_label_association",
+    "parentObject": "workflow_job_templates",
+    "childObject": "labels",
+    "path": "/api/v2/workflow_job_templates/{id}/labels/",
+    "priority": 18
+  },
+  {
+    "name": "credential_type_credential_association",
+    "resourceName": "awx_credential_type_credential_association",
+    "parentObject": "credential_types",
+    "childObject": "credentials",
+    "path": "/api/v2/credential_types/{id}/credentials/",
+    "priority": 100
+  },
+  {
+    "name": "host_group_association",
+    "resourceName": "awx_host_group_association",
+    "parentObject": "hosts",
+    "childObject": "groups",
+    "path": "/api/v2/hosts/{id}/groups/",
+    "priority": 100
+  },
+  {
+    "name": "instance_group_instance_association",
+    "resourceName": "awx_instance_group_instance_association",
+    "parentObject": "instance_groups",
+    "childObject": "instances",
+    "path": "/api/v2/instance_groups/{id}/instances/",
+    "priority": 100
+  },
+  {
+    "name": "instance_instance_group_association",
+    "resourceName": "awx_instance_instance_group_association",
+    "parentObject": "instances",
+    "childObject": "instance_groups",
+    "path": "/api/v2/instances/{id}/instance_groups/",
+    "priority": 100
+  },
+  {
+    "name": "inventory_instance_group_association",
+    "resourceName": "awx_inventory_instance_group_association",
+    "parentObject": "inventories",
+    "childObject": "instance_groups",
+    "path": "/api/v2/inventories/{id}/instance_groups/",
+    "priority": 100
+  },
+  {
+    "name": "inventory_inventory_source_association",
+    "resourceName": "awx_inventory_inventory_source_association",
+    "parentObject": "inventories",
+    "childObject": "inventory_sources",
+    "path": "/api/v2/inventories/{id}/inventory_sources/",
+    "priority": 100
+  },
+  {
+    "name": "inventory_label_association",
+    "resourceName": "awx_inventory_label_association",
+    "parentObject": "inventories",
+    "childObject": "labels",
+    "path": "/api/v2/inventories/{id}/labels/",
+    "priority": 100
+  },
+  {
+    "name": "inventory_source_credential_association",
+    "resourceName": "awx_inventory_source_credential_association",
+    "parentObject": "inventory_sources",
+    "childObject": "credentials",
+    "path": "/api/v2/inventory_sources/{id}/credentials/",
+    "priority": 100
+  },
+  {
+    "name": "inventory_source_schedule_association",
+    "resourceName": "awx_inventory_source_schedule_association",
+    "parentObject": "inventory_sources",
+    "childObject": "schedules",
+    "path": "/api/v2/inventory_sources/{id}/schedules/",
+    "priority": 100
+  },
+  {
+    "name": "job_template_instance_group_association",
+    "resourceName": "awx_job_template_instance_group_association",
+    "parentObject": "job_templates",
+    "childObject": "instance_groups",
+    "path": "/api/v2/job_templates/{id}/instance_groups/",
+    "priority": 100
+  },
+  {
+    "name": "job_template_label_association",
+    "resourceName": "awx_job_template_label_association",
+    "parentObject": "job_templates",
+    "childObject": "labels",
+    "path": "/api/v2/job_templates/{id}/labels/",
+    "priority": 100
+  },
+  {
+    "name": "job_template_schedule_association",
+    "resourceName": "awx_job_template_schedule_association",
+    "parentObject": "job_templates",
+    "childObject": "schedules",
+    "path": "/api/v2/job_templates/{id}/schedules/",
+    "priority": 100
+  },
+  {
+    "name": "organization_credential_association",
+    "resourceName": "awx_organization_credential_association",
+    "parentObject": "organizations",
+    "childObject": "credentials",
+    "path": "/api/v2/organizations/{id}/credentials/",
+    "priority": 100
+  },
+  {
+    "name": "organization_execution_environment_association",
+    "resourceName": "awx_organization_execution_environment_association",
+    "parentObject": "organizations",
+    "childObject": "execution_environments",
+    "path": "/api/v2/organizations/{id}/execution_environments/",
+    "priority": 100
+  },
+  {
+    "name": "organization_instance_group_association",
+    "resourceName": "awx_organization_instance_group_association",
+    "parentObject": "organizations",
+    "childObject": "instance_groups",
+    "path": "/api/v2/organizations/{id}/instance_groups/",
+    "priority": 100
+  },
+  {
+    "name": "organization_job_template_association",
+    "resourceName": "awx_organization_job_template_association",
+    "parentObject": "organizations",
+    "childObject": "job_templates",
+    "path": "/api/v2/organizations/{id}/job_templates/",
+    "priority": 100
+  },
+  {
+    "name": "organization_notification_template_association",
+    "resourceName": "awx_organization_notification_template_association",
+    "parentObject": "organizations",
+    "childObject": "notification_templates",
+    "path": "/api/v2/organizations/{id}/notification_templates/",
+    "priority": 100
+  },
+  {
+    "name": "organization_project_association",
+    "resourceName": "awx_organization_project_association",
+    "parentObject": "organizations",
+    "childObject": "projects",
+    "path": "/api/v2/organizations/{id}/projects/",
+    "priority": 100
+  },
+  {
+    "name": "organization_workflow_job_template_association",
+    "resourceName": "awx_organization_workflow_job_template_association",
+    "parentObject": "organizations",
+    "childObject": "workflow_job_templates",
+    "path": "/api/v2/organizations/{id}/workflow_job_templates/",
+    "priority": 100
+  },
+  {
+    "name": "project_schedule_association",
+    "resourceName": "awx_project_schedule_association",
+    "parentObject": "projects",
+    "childObject": "schedules",
+    "path": "/api/v2/projects/{id}/schedules/",
+    "priority": 100
+  },
+  {
+    "name": "role_team_association",
+    "resourceName": "awx_role_team_association",
+    "parentObject": "roles",
+    "childObject": "teams",
+    "path": "/api/v2/roles/{id}/teams/",
+    "priority": 100
+  },
+  {
+    "name": "role_user_association",
+    "resourceName": "awx_role_user_association",
+    "parentObject": "roles",
+    "childObject": "users",
+    "path": "/api/v2/roles/{id}/users/",
+    "priority": 100
+  },
+  {
+    "name": "schedule_credential_association",
+    "resourceName": "awx_schedule_credential_association",
+    "parentObject": "schedules",
+    "childObject": "credentials",
+    "path": "/api/v2/schedules/{id}/credentials/",
+    "priority": 100
+  },
+  {
+    "name": "schedule_instance_group_association",
+    "resourceName": "awx_schedule_instance_group_association",
+    "parentObject": "schedules",
+    "childObject": "instance_groups",
+    "path": "/api/v2/schedules/{id}/instance_groups/",
+    "priority": 100
+  },
+  {
+    "name": "schedule_label_association",
+    "resourceName": "awx_schedule_label_association",
+    "parentObject": "schedules",
+    "childObject": "labels",
+    "path": "/api/v2/schedules/{id}/labels/",
+    "priority": 100
+  },
+  {
+    "name": "system_job_template_schedule_association",
+    "resourceName": "awx_system_job_template_schedule_association",
+    "parentObject": "system_job_templates",
+    "childObject": "schedules",
+    "path": "/api/v2/system_job_templates/{id}/schedules/",
+    "priority": 100
+  },
+  {
+    "name": "team_credential_association",
+    "resourceName": "awx_team_credential_association",
+    "parentObject": "teams",
+    "childObject": "credentials",
+    "path": "/api/v2/teams/{id}/credentials/",
+    "priority": 100
+  },
+  {
+    "name": "team_role_association",
+    "resourceName": "awx_team_role_association",
+    "parentObject": "teams",
+    "childObject": "roles",
+    "path": "/api/v2/teams/{id}/roles/",
+    "priority": 100
+  },
+  {
+    "name": "user_credential_association",
+    "resourceName": "awx_user_credential_association",
+    "parentObject": "users",
+    "childObject": "credentials",
+    "path": "/api/v2/users/{id}/credentials/",
+    "priority": 100
+  },
+  {
+    "name": "user_role_association",
+    "resourceName": "awx_user_role_association",
+    "parentObject": "users",
+    "childObject": "roles",
+    "path": "/api/v2/users/{id}/roles/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_node_instance_group_association",
+    "resourceName": "awx_workflow_job_node_instance_group_association",
+    "parentObject": "workflow_job_nodes",
+    "childObject": "instance_groups",
+    "path": "/api/v2/workflow_job_nodes/{id}/instance_groups/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_node_credential_association",
+    "resourceName": "awx_workflow_job_template_node_credential_association",
+    "parentObject": "workflow_job_template_nodes",
+    "childObject": "credentials",
+    "path": "/api/v2/workflow_job_template_nodes/{id}/credentials/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_node_instance_group_association",
+    "resourceName": "awx_workflow_job_template_node_instance_group_association",
+    "parentObject": "workflow_job_template_nodes",
+    "childObject": "instance_groups",
+    "path": "/api/v2/workflow_job_template_nodes/{id}/instance_groups/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_node_label_association",
+    "resourceName": "awx_workflow_job_template_node_label_association",
+    "parentObject": "workflow_job_template_nodes",
+    "childObject": "labels",
+    "path": "/api/v2/workflow_job_template_nodes/{id}/labels/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_schedule_association",
+    "resourceName": "awx_workflow_job_template_schedule_association",
+    "parentObject": "workflow_job_templates",
+    "childObject": "schedules",
+    "path": "/api/v2/workflow_job_templates/{id}/schedules/",
+    "priority": 100
+  }
+]
