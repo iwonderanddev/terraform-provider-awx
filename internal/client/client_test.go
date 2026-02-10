@@ -173,6 +173,20 @@ func TestClientBuildURLUsesBasePath(t *testing.T) {
 	}
 }
 
+func TestResolvePathParameter(t *testing.T) {
+	t.Parallel()
+
+	got := resolvePathParameter("/api/v2/settings/{category_slug}/", "system")
+	if got != "/api/v2/settings/system/" {
+		t.Fatalf("unexpected resolved path: got=%q want=%q", got, "/api/v2/settings/system/")
+	}
+
+	got = resolvePathParameter("/api/v2/teams/{id}/users/", "12")
+	if got != "/api/v2/teams/12/users/" {
+		t.Fatalf("unexpected resolved path: got=%q want=%q", got, "/api/v2/teams/12/users/")
+	}
+}
+
 func newTestClient(t *testing.T) *Client {
 	t.Helper()
 

@@ -128,6 +128,30 @@
     "priority": 100
   },
   {
+    "name": "inventory_source_notification_template_error",
+    "resourceName": "awx_inventory_source_notification_template_error",
+    "parentObject": "inventory_sources",
+    "childObject": "notification_templates",
+    "path": "/api/v2/inventory_sources/{id}/notification_templates_error/",
+    "priority": 100
+  },
+  {
+    "name": "inventory_source_notification_template_started",
+    "resourceName": "awx_inventory_source_notification_template_started",
+    "parentObject": "inventory_sources",
+    "childObject": "notification_templates",
+    "path": "/api/v2/inventory_sources/{id}/notification_templates_started/",
+    "priority": 100
+  },
+  {
+    "name": "inventory_source_notification_template_success",
+    "resourceName": "awx_inventory_source_notification_template_success",
+    "parentObject": "inventory_sources",
+    "childObject": "notification_templates",
+    "path": "/api/v2/inventory_sources/{id}/notification_templates_success/",
+    "priority": 100
+  },
+  {
     "name": "inventory_source_schedule_association",
     "resourceName": "awx_inventory_source_schedule_association",
     "parentObject": "inventory_sources",
@@ -152,11 +176,43 @@
     "priority": 100
   },
   {
+    "name": "job_template_notification_template_error",
+    "resourceName": "awx_job_template_notification_template_error",
+    "parentObject": "job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/job_templates/{id}/notification_templates_error/",
+    "priority": 100
+  },
+  {
+    "name": "job_template_notification_template_started",
+    "resourceName": "awx_job_template_notification_template_started",
+    "parentObject": "job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/job_templates/{id}/notification_templates_started/",
+    "priority": 100
+  },
+  {
+    "name": "job_template_notification_template_success",
+    "resourceName": "awx_job_template_notification_template_success",
+    "parentObject": "job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/job_templates/{id}/notification_templates_success/",
+    "priority": 100
+  },
+  {
     "name": "job_template_schedule_association",
     "resourceName": "awx_job_template_schedule_association",
     "parentObject": "job_templates",
     "childObject": "schedules",
     "path": "/api/v2/job_templates/{id}/schedules/",
+    "priority": 100
+  },
+  {
+    "name": "job_template_survey_spec",
+    "resourceName": "awx_job_template_survey_spec",
+    "parentObject": "job_templates",
+    "childObject": "survey_spec",
+    "path": "/api/v2/job_templates/{id}/survey_spec/",
     "priority": 100
   },
   {
@@ -192,11 +248,43 @@
     "priority": 100
   },
   {
+    "name": "organization_notification_template_approval",
+    "resourceName": "awx_organization_notification_template_approval",
+    "parentObject": "organizations",
+    "childObject": "notification_templates",
+    "path": "/api/v2/organizations/{id}/notification_templates_approvals/",
+    "priority": 100
+  },
+  {
     "name": "organization_notification_template_association",
     "resourceName": "awx_organization_notification_template_association",
     "parentObject": "organizations",
     "childObject": "notification_templates",
     "path": "/api/v2/organizations/{id}/notification_templates/",
+    "priority": 100
+  },
+  {
+    "name": "organization_notification_template_error",
+    "resourceName": "awx_organization_notification_template_error",
+    "parentObject": "organizations",
+    "childObject": "notification_templates",
+    "path": "/api/v2/organizations/{id}/notification_templates_error/",
+    "priority": 100
+  },
+  {
+    "name": "organization_notification_template_started",
+    "resourceName": "awx_organization_notification_template_started",
+    "parentObject": "organizations",
+    "childObject": "notification_templates",
+    "path": "/api/v2/organizations/{id}/notification_templates_started/",
+    "priority": 100
+  },
+  {
+    "name": "organization_notification_template_success",
+    "resourceName": "awx_organization_notification_template_success",
+    "parentObject": "organizations",
+    "childObject": "notification_templates",
+    "path": "/api/v2/organizations/{id}/notification_templates_success/",
     "priority": 100
   },
   {
@@ -213,6 +301,30 @@
     "parentObject": "organizations",
     "childObject": "workflow_job_templates",
     "path": "/api/v2/organizations/{id}/workflow_job_templates/",
+    "priority": 100
+  },
+  {
+    "name": "project_notification_template_error",
+    "resourceName": "awx_project_notification_template_error",
+    "parentObject": "projects",
+    "childObject": "notification_templates",
+    "path": "/api/v2/projects/{id}/notification_templates_error/",
+    "priority": 100
+  },
+  {
+    "name": "project_notification_template_started",
+    "resourceName": "awx_project_notification_template_started",
+    "parentObject": "projects",
+    "childObject": "notification_templates",
+    "path": "/api/v2/projects/{id}/notification_templates_started/",
+    "priority": 100
+  },
+  {
+    "name": "project_notification_template_success",
+    "resourceName": "awx_project_notification_template_success",
+    "parentObject": "projects",
+    "childObject": "notification_templates",
+    "path": "/api/v2/projects/{id}/notification_templates_success/",
     "priority": 100
   },
   {
@@ -261,6 +373,30 @@
     "parentObject": "schedules",
     "childObject": "labels",
     "path": "/api/v2/schedules/{id}/labels/",
+    "priority": 100
+  },
+  {
+    "name": "system_job_template_notification_template_error",
+    "resourceName": "awx_system_job_template_notification_template_error",
+    "parentObject": "system_job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/system_job_templates/{id}/notification_templates_error/",
+    "priority": 100
+  },
+  {
+    "name": "system_job_template_notification_template_started",
+    "resourceName": "awx_system_job_template_notification_template_started",
+    "parentObject": "system_job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/system_job_templates/{id}/notification_templates_started/",
+    "priority": 100
+  },
+  {
+    "name": "system_job_template_notification_template_success",
+    "resourceName": "awx_system_job_template_notification_template_success",
+    "parentObject": "system_job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/system_job_templates/{id}/notification_templates_success/",
     "priority": 100
   },
   {
@@ -336,11 +472,51 @@
     "priority": 100
   },
   {
+    "name": "workflow_job_template_notification_template_approval",
+    "resourceName": "awx_workflow_job_template_notification_template_approval",
+    "parentObject": "workflow_job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/workflow_job_templates/{id}/notification_templates_approvals/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_notification_template_error",
+    "resourceName": "awx_workflow_job_template_notification_template_error",
+    "parentObject": "workflow_job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/workflow_job_templates/{id}/notification_templates_error/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_notification_template_started",
+    "resourceName": "awx_workflow_job_template_notification_template_started",
+    "parentObject": "workflow_job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/workflow_job_templates/{id}/notification_templates_started/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_notification_template_success",
+    "resourceName": "awx_workflow_job_template_notification_template_success",
+    "parentObject": "workflow_job_templates",
+    "childObject": "notification_templates",
+    "path": "/api/v2/workflow_job_templates/{id}/notification_templates_success/",
+    "priority": 100
+  },
+  {
     "name": "workflow_job_template_schedule_association",
     "resourceName": "awx_workflow_job_template_schedule_association",
     "parentObject": "workflow_job_templates",
     "childObject": "schedules",
     "path": "/api/v2/workflow_job_templates/{id}/schedules/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_survey_spec",
+    "resourceName": "awx_workflow_job_template_survey_spec",
+    "parentObject": "workflow_job_templates",
+    "childObject": "survey_spec",
+    "path": "/api/v2/workflow_job_templates/{id}/survey_spec/",
     "priority": 100
   }
 ]

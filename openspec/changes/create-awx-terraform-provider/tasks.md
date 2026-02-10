@@ -16,15 +16,15 @@
 
 - [x] 3.1 Implement shared CRUD scaffolding for one-resource-per-AWX-object modeling with AWX-native naming
 - [x] 3.2 Implement shared data source scaffolding with deterministic lookup behavior and ambiguity/not-found diagnostics
-- [x] 3.3 Implement import/state normalization for object resources using numeric AWX IDs
+- [x] 3.3 Implement import/state normalization for object resources using endpoint-aligned object identifiers (numeric or detail-key)
 - [x] 3.4 Implement generated field mapping and override hooks for endpoint/schema mismatches
 
 ## 4. Relationship Resources and Import Semantics
 
 - [x] 4.1 Design relationship resource pattern for AWX associations with independent lifecycle semantics
 - [x] 4.2 Implement relationship resources for prioritized association types using explicit parent/child references
-- [x] 4.3 Implement composite import ID handling for relationship resources (`<parent_id>:<child_id>`)
-- [x] 4.4 Add relationship identity refresh logic that preserves stable composite IDs in state
+- [x] 4.3 Implement relationship import ID handling for both association resources (`<parent_id>:<child_id>`) and singleton parent-scoped resources (`<parent_id>`)
+- [x] 4.4 Add relationship identity refresh logic that preserves stable endpoint-aligned IDs in state
 
 ## 5. Sensitive Field and State Safety
 
@@ -43,7 +43,7 @@
 
 - [x] 7.1 Set up Terraform Registry-compatible docs structure for provider, resources, and data sources
 - [x] 7.2 Generate baseline docs per resource/data source including arguments and computed attributes
-- [x] 7.3 Add runnable usage examples and import examples (numeric IDs for objects, composite IDs for relationships)
+- [x] 7.3 Add runnable usage examples and import examples for all supported identifier formats (numeric/detail-key for objects, composite/parent-key for relationships)
 - [x] 7.4 Document compatibility scope (AWX 24.6.1 API v2 only) and runtime-only exclusion policy
 
 ## 8. Test Suite Implementation

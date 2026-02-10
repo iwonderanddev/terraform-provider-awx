@@ -113,7 +113,7 @@ func TestSetStateOptionalStringPreservesNullForEmptyAPIValue(t *testing.T) {
 	diags := resource.setState(
 		context.Background(),
 		target,
-		42,
+		"42",
 		map[string]any{"description": ""},
 		nil,
 		map[string]types.String{"description": types.StringNull()},
@@ -155,7 +155,7 @@ func TestSetStateOptionalStringKeepsExplicitEmptyString(t *testing.T) {
 	diags := resource.setState(
 		context.Background(),
 		target,
-		42,
+		"42",
 		map[string]any{"description": ""},
 		nil,
 		map[string]types.String{"description": types.StringValue("")},

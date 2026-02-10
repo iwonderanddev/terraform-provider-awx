@@ -22,13 +22,13 @@ func TestResolveObjectDataSourceTargetByID(t *testing.T) {
 
 	var called bool
 	target, diags := resolveObjectDataSourceTarget(context.Background(), &fakeObjectLookupClient{
-		getObjectFn: func(_ context.Context, detailPath string, id int64) (map[string]any, error) {
+		getObjectFn: func(_ context.Context, detailPath string, id string) (map[string]any, error) {
 			called = true
 			if detailPath != object.DetailPath {
 				t.Fatalf("unexpected detail path: got=%q want=%q", detailPath, object.DetailPath)
 			}
-			if id != 42 {
-				t.Fatalf("unexpected id: got=%d want=42", id)
+			if id != "42" {
+				t.Fatalf("unexpected id: got=%q want=%q", id, "42")
 			}
 			return map[string]any{"id": 42, "name": "demo"}, nil
 		},
@@ -42,8 +42,46 @@ func TestResolveObjectDataSourceTargetByID(t *testing.T) {
 	if !called {
 		t.Fatalf("expected GetObject to be called")
 	}
-	if got := fmt.Sprintf("%v", target["name"]); got != "demo" {
+	if got := fmt.Sprintf("%v", target.Object["name"]); got != "demo" {
 		t.Fatalf("unexpected target name: got=%q want=%q", got, "demo")
+	}
+	if target.ID != "42" {
+		t.Fatalf("unexpected target id: got=%q want=%q", target.ID, "42")
+	}
+}
+
+func TestResolveObjectDataSourceTargetByStringIDForDetailOnlyObject(t *testing.T) {
+	t.Parallel()
+
+	object := manifest.ManagedObject{
+		Name:             "settings",
+		DetailPath:       "/api/v2/settings/{category_slug}/",
+		CollectionCreate: false,
+	}
+
+	var called bool
+	target, diags := resolveObjectDataSourceTarget(context.Background(), &fakeObjectLookupClient{
+		getObjectFn: func(_ context.Context, detailPath string, id string) (map[string]any, error) {
+			called = true
+			if detailPath != object.DetailPath {
+				t.Fatalf("unexpected detail path: got=%q want=%q", detailPath, object.DetailPath)
+			}
+			if id != "system" {
+				t.Fatalf("unexpected id: got=%q want=%q", id, "system")
+			}
+			return map[string]any{"tower_url_base": "https://awx.example.com"}, nil
+		},
+	}, object, dataSourceLookupInput{
+		ID: types.StringValue("system"),
+	})
+	if diags.HasError() {
+		t.Fatalf("expected no diagnostics errors, got: %v", diags)
+	}
+	if !called {
+		t.Fatalf("expected GetObject to be called")
+	}
+	if target.ID != "system" {
+		t.Fatalf("unexpected target id: got=%q want=%q", target.ID, "system")
 	}
 }
 
@@ -58,13 +96,13 @@ func TestResolveObjectDataSourceTargetByIDPrefersIDWhenNameAlsoSet(t *testing.T)
 
 	var getCalled bool
 	target, diags := resolveObjectDataSourceTarget(context.Background(), &fakeObjectLookupClient{
-		getObjectFn: func(_ context.Context, detailPath string, id int64) (map[string]any, error) {
+		getObjectFn: func(_ context.Context, detailPath string, id string) (map[string]any, error) {
 			getCalled = true
 			if detailPath != object.DetailPath {
 				t.Fatalf("unexpected detail path: got=%q want=%q", detailPath, object.DetailPath)
 			}
-			if id != 9 {
-				t.Fatalf("unexpected id: got=%d want=9", id)
+			if id != "9" {
+				t.Fatalf("unexpected id: got=%q want=%q", id, "9")
 			}
 			return map[string]any{"id": 9, "name": "from-id"}, nil
 		},
@@ -84,8 +122,11 @@ func TestResolveObjectDataSourceTargetByIDPrefersIDWhenNameAlsoSet(t *testing.T)
 	if !getCalled {
 		t.Fatalf("expected GetObject to be called")
 	}
-	if got := fmt.Sprintf("%v", target["name"]); got != "from-id" {
+	if got := fmt.Sprintf("%v", target.Object["name"]); got != "from-id" {
 		t.Fatalf("unexpected lookup target: got=%q want=%q", got, "from-id")
+	}
+	if target.ID != "9" {
+		t.Fatalf("unexpected target id: got=%q want=%q", target.ID, "9")
 	}
 }
 
@@ -122,8 +163,11 @@ func TestResolveObjectDataSourceTargetByNameSingleMatch(t *testing.T) {
 	if !called {
 		t.Fatalf("expected FindByField to be called")
 	}
-	if got := fmt.Sprintf("%v", target["id"]); got != "7" {
+	if got := fmt.Sprintf("%v", target.Object["id"]); got != "7" {
 		t.Fatalf("unexpected target id: got=%q want=%q", got, "7")
+	}
+	if target.ID != "7" {
+		t.Fatalf("unexpected resolved id: got=%q want=%q", target.ID, "7")
 	}
 }
 
@@ -191,7 +235,7 @@ func TestResolveObjectDataSourceTargetMissingLookupInput(t *testing.T) {
 func TestResolveObjectDataSourceTargetInvalidID(t *testing.T) {
 	t.Parallel()
 
-	object := manifest.ManagedObject{Name: "projects", DetailPath: "/api/v2/projects/{id}/"}
+	object := manifest.ManagedObject{Name: "projects", DetailPath: "/api/v2/projects/{id}/", CollectionCreate: true}
 	_, diags := resolveObjectDataSourceTarget(context.Background(), &fakeObjectLookupClient{}, object, dataSourceLookupInput{
 		ID: types.StringValue("not-a-number"),
 	})
@@ -230,7 +274,7 @@ func TestResolveObjectDataSourceTargetGetObjectError(t *testing.T) {
 
 	object := manifest.ManagedObject{Name: "projects", DetailPath: "/api/v2/projects/{id}/"}
 	_, diags := resolveObjectDataSourceTarget(context.Background(), &fakeObjectLookupClient{
-		getObjectFn: func(_ context.Context, _ string, _ int64) (map[string]any, error) {
+		getObjectFn: func(_ context.Context, _ string, _ string) (map[string]any, error) {
 			return nil, errors.New("boom")
 		},
 	}, object, dataSourceLookupInput{
@@ -263,11 +307,11 @@ func TestResolveObjectDataSourceTargetNameIgnoredWhenFieldUnavailable(t *testing
 }
 
 type fakeObjectLookupClient struct {
-	getObjectFn   func(context.Context, string, int64) (map[string]any, error)
+	getObjectFn   func(context.Context, string, string) (map[string]any, error)
 	findByFieldFn func(context.Context, string, string, string) ([]map[string]any, error)
 }
 
-func (f *fakeObjectLookupClient) GetObject(ctx context.Context, detailPath string, id int64) (map[string]any, error) {
+func (f *fakeObjectLookupClient) GetObject(ctx context.Context, detailPath string, id string) (map[string]any, error) {
 	if f.getObjectFn == nil {
 		return nil, errors.New("unexpected GetObject call")
 	}

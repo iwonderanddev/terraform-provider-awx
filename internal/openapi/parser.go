@@ -14,6 +14,7 @@ import (
 
 var (
 	collectionPathPattern   = regexp.MustCompile(`^/api/v2/([a-z0-9_]+)/$`)
+	detailPathPattern       = regexp.MustCompile(`^/api/v2/([a-z0-9_]+)/\{([a-zA-Z0-9_]+)\}/$`)
 	relationshipPathPattern = regexp.MustCompile(`^/api/v2/([a-z0-9_]+)/\{id\}/([a-z0-9_]+)/$`)
 )
 
@@ -158,6 +159,7 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 	}
 
 	paths := sortedPathKeys(doc.Paths)
+	detailEndpoints := buildDetailPathIndex(doc)
 	objects := make([]manifest.ManagedObject, 0)
 
 	for _, endpointPath := range paths {
@@ -168,11 +170,12 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 
 		collectionName := matches[1]
 		collectionOps := doc.Paths[endpointPath]
-		detailPath := fmt.Sprintf("/api/v2/%s/{id}/", collectionName)
-		detailOps, ok := doc.Paths[detailPath]
-		if !ok || detailOps.Get == nil {
+		detailEndpoint, ok := detailEndpoints[collectionName]
+		if !ok {
 			continue
 		}
+		detailPath := detailEndpoint.Path
+		detailOps := doc.Paths[detailPath]
 
 		requestSchema := requestSchemaName(collectionOps.Post)
 		if requestSchema == "" {
@@ -189,7 +192,11 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 		}
 
 		exclusion, runtimeExcluded := exclusions[collectionName]
-		resourceEligible := collectionOps.Post != nil && detailOps.Delete != nil && (detailOps.Patch != nil || detailOps.Put != nil)
+		collectionCreate := collectionOps.Post != nil
+		resourceEligible := detailOps.Delete != nil && (detailOps.Patch != nil || detailOps.Put != nil)
+		if !collectionCreate && detailEndpoint.PathParameter == "id" {
+			resourceEligible = false
+		}
 		if runtimeExcluded {
 			resourceEligible = false
 		}
@@ -201,6 +208,7 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 			DataSourceName:   fmt.Sprintf("awx_%s", singularize(collectionName)),
 			CollectionPath:   endpointPath,
 			DetailPath:       detailPath,
+			CollectionCreate: collectionCreate,
 			RequestSchema:    requestSchema,
 			ResponseSchema:   responseSchema,
 			ResourceEligible: resourceEligible,
@@ -240,14 +248,43 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 		parentCollection := matches[1]
 		childCollection := matches[2]
 
-		if !isRelationshipCandidate(childCollection) {
+		if isSurveySpecChild(childCollection) {
+			if _, ok := objectByCollection[parentCollection]; !ok {
+				continue
+			}
+
+			ops := doc.Paths[endpointPath]
+			if ops.Get == nil || ops.Post == nil || ops.Delete == nil {
+				continue
+			}
+
+			name := fmt.Sprintf("%s_survey_spec", singularize(parentCollection))
+			if _, exists := seen[name]; exists {
+				continue
+			}
+			seen[name] = struct{}{}
+
+			priority := 100
+			if explicit, ok := priorities[name]; ok {
+				priority = explicit
+			}
+
+			relationships = append(relationships, manifest.Relationship{
+				Name:         name,
+				ResourceName: fmt.Sprintf("awx_%s", name),
+				ParentObject: parentCollection,
+				ChildObject:  childCollection,
+				Path:         endpointPath,
+				Priority:     priority,
+			})
 			continue
 		}
 
 		if _, ok := objectByCollection[parentCollection]; !ok {
 			continue
 		}
-		if _, ok := objectByCollection[childCollection]; !ok {
+		resolvedChildCollection, childToken, specialVariant := resolveRelationshipChildCollection(childCollection, objectByCollection)
+		if resolvedChildCollection == "" {
 			continue
 		}
 
@@ -256,7 +293,10 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 			continue
 		}
 
-		name := fmt.Sprintf("%s_%s_association", singularize(parentCollection), singularize(childCollection))
+		name := fmt.Sprintf("%s_%s_association", singularize(parentCollection), childToken)
+		if specialVariant {
+			name = fmt.Sprintf("%s_%s", singularize(parentCollection), childToken)
+		}
 		if _, exists := seen[name]; exists {
 			continue
 		}
@@ -271,7 +311,7 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 			Name:         name,
 			ResourceName: fmt.Sprintf("awx_%s", name),
 			ParentObject: parentCollection,
-			ChildObject:  childCollection,
+			ChildObject:  resolvedChildCollection,
 			Path:         endpointPath,
 			Priority:     priority,
 		})
@@ -341,6 +381,42 @@ func sortedPathKeys(paths map[string]PathItem) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+type detailEndpoint struct {
+	Path          string
+	PathParameter string
+}
+
+func buildDetailPathIndex(doc *Document) map[string]detailEndpoint {
+	if doc == nil {
+		return map[string]detailEndpoint{}
+	}
+
+	out := make(map[string]detailEndpoint)
+	for _, endpointPath := range sortedPathKeys(doc.Paths) {
+		matches := detailPathPattern.FindStringSubmatch(endpointPath)
+		if len(matches) != 3 {
+			continue
+		}
+		collectionName := matches[1]
+		pathParameter := matches[2]
+
+		ops := doc.Paths[endpointPath]
+		if ops.Get == nil {
+			continue
+		}
+
+		current, exists := out[collectionName]
+		if !exists || (current.PathParameter != "id" && pathParameter == "id") {
+			out[collectionName] = detailEndpoint{
+				Path:          endpointPath,
+				PathParameter: pathParameter,
+			}
+		}
+	}
+
+	return out
 }
 
 func requestSchemaName(op *Operation) string {
@@ -612,6 +688,36 @@ func isRelationshipCandidate(childCollection string) bool {
 	}
 	_, blocked := blacklist[childCollection]
 	return !blocked
+}
+
+func isSurveySpecChild(childCollection string) bool {
+	return childCollection == "survey_spec"
+}
+
+func resolveRelationshipChildCollection(childCollection string, objectByCollection map[string]manifest.ManagedObject) (string, string, bool) {
+	if childCollection == "" {
+		return "", "", false
+	}
+	if !isRelationshipCandidate(childCollection) {
+		return "", "", false
+	}
+	if _, ok := objectByCollection[childCollection]; ok {
+		return childCollection, singularize(childCollection), false
+	}
+
+	const notificationTemplatePrefix = "notification_templates_"
+	if strings.HasPrefix(childCollection, notificationTemplatePrefix) {
+		if _, ok := objectByCollection["notification_templates"]; !ok {
+			return "", "", false
+		}
+		suffix := strings.TrimPrefix(childCollection, notificationTemplatePrefix)
+		if strings.TrimSpace(suffix) == "" {
+			return "", "", false
+		}
+		return "notification_templates", fmt.Sprintf("notification_template_%s", singularize(suffix)), true
+	}
+
+	return "", "", false
 }
 
 func uniqueSorted(values []string) []string {

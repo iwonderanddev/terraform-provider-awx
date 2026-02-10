@@ -2,7 +2,9 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -40,6 +42,31 @@ func (r *relationshipResource) Metadata(_ context.Context, _ resource.MetadataRe
 }
 
 func (r *relationshipResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	if r.isSurveySpecRelationship() {
+		resp.Schema = resourceschema.Schema{
+			Description: fmt.Sprintf("Manages AWX `%s` survey specification.", r.relationship.Name),
+			Attributes: map[string]resourceschema.Attribute{
+				"id": resourceschema.StringAttribute{
+					Description: "Survey spec resource identifier (same as parent_id).",
+					Computed:    true,
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.UseStateForUnknown(),
+					},
+				},
+				"parent_id": resourceschema.Int64Attribute{
+					Description: fmt.Sprintf("Numeric ID for parent `%s` object.", r.relationship.ParentObject),
+					Required:    true,
+				},
+				"spec": resourceschema.StringAttribute{
+					Description: "JSON-encoded survey specification payload.",
+					Optional:    true,
+					Computed:    true,
+				},
+			},
+		}
+		return
+	}
+
 	resp.Schema = resourceschema.Schema{
 		Description: fmt.Sprintf("Manages AWX `%s` relationship resources.", r.relationship.Name),
 		Attributes: map[string]resourceschema.Attribute{
@@ -79,6 +106,29 @@ func (r *relationshipResource) Create(ctx context.Context, req resource.CreateRe
 		resp.Diagnostics.AddError("Provider not configured", "Expected configured AWX client but provider data was not available.")
 		return
 	}
+	if r.isSurveySpecRelationship() {
+		parentID, payload, spec, diags := surveySpecConfig(ctx, req.Plan)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		resolvedPath := strings.Replace(r.relationship.Path, "{id}", strconv.FormatInt(parentID, 10), 1)
+		if _, err := r.data.client.DoJSON(ctx, http.MethodPost, resolvedPath, nil, payload); err != nil {
+			resp.Diagnostics.AddError("Failed to create survey specification", err.Error())
+			return
+		}
+
+		stateSpec := spec
+		if refreshed, err := r.data.client.GetObject(ctx, r.relationship.Path, strconv.FormatInt(parentID, 10)); err == nil && len(refreshed) > 0 {
+			if encoded, encodeErr := json.Marshal(refreshed); encodeErr == nil {
+				stateSpec = types.StringValue(string(encoded))
+			}
+		}
+
+		setSurveySpecState(ctx, parentID, stateSpec, &resp.State, &resp.Diagnostics)
+		return
+	}
 
 	parentID, childID, diags := relationshipIDsFromConfig(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
@@ -97,6 +147,44 @@ func (r *relationshipResource) Create(ctx context.Context, req resource.CreateRe
 func (r *relationshipResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	if r.data == nil || r.data.client == nil {
 		resp.Diagnostics.AddError("Provider not configured", "Expected configured AWX client but provider data was not available.")
+		return
+	}
+	if r.isSurveySpecRelationship() {
+		parentID, diags := surveySpecParentID(ctx, req.State)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		payload, err := r.data.client.GetObject(ctx, r.relationship.Path, strconv.FormatInt(parentID, 10))
+		if err != nil {
+			if shouldRemoveFromStateOnReadError(err) {
+				resp.State.RemoveResource(ctx)
+				return
+			}
+			resp.Diagnostics.AddError("Failed to read survey specification", err.Error())
+			return
+		}
+
+		var currentSpec types.String
+		resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("spec"), &currentSpec)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		stateSpec := currentSpec
+		if len(payload) > 0 {
+			encoded, encodeErr := json.Marshal(payload)
+			if encodeErr != nil {
+				resp.Diagnostics.AddError("Failed to encode survey specification state", encodeErr.Error())
+				return
+			}
+			stateSpec = types.StringValue(string(encoded))
+		} else if stateSpec.IsUnknown() {
+			stateSpec = types.StringNull()
+		}
+
+		setSurveySpecState(ctx, parentID, stateSpec, &resp.State, &resp.Diagnostics)
 		return
 	}
 
@@ -122,6 +210,22 @@ func (r *relationshipResource) Read(ctx context.Context, req resource.ReadReques
 func (r *relationshipResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	if r.data == nil || r.data.client == nil {
 		resp.Diagnostics.AddError("Provider not configured", "Expected configured AWX client but provider data was not available.")
+		return
+	}
+	if r.isSurveySpecRelationship() {
+		parentID, payload, spec, diags := surveySpecConfig(ctx, req.Plan)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		resolvedPath := strings.Replace(r.relationship.Path, "{id}", strconv.FormatInt(parentID, 10), 1)
+		if _, err := r.data.client.DoJSON(ctx, http.MethodPost, resolvedPath, nil, payload); err != nil {
+			resp.Diagnostics.AddError("Failed to update survey specification", err.Error())
+			return
+		}
+
+		setSurveySpecState(ctx, parentID, spec, &resp.State, &resp.Diagnostics)
 		return
 	}
 
@@ -156,6 +260,23 @@ func (r *relationshipResource) Delete(ctx context.Context, req resource.DeleteRe
 		resp.Diagnostics.AddError("Provider not configured", "Expected configured AWX client but provider data was not available.")
 		return
 	}
+	if r.isSurveySpecRelationship() {
+		parentID, diags := surveySpecParentID(ctx, req.State)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		resolvedPath := strings.Replace(r.relationship.Path, "{id}", strconv.FormatInt(parentID, 10), 1)
+		_, err := r.data.client.DoJSON(ctx, http.MethodDelete, resolvedPath, nil, nil)
+		if apiErr := asAPIError(err); apiErr != nil && apiErr.StatusCode == http.StatusNotFound {
+			return
+		}
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to delete survey specification", err.Error())
+		}
+		return
+	}
 
 	parentID, childID, diags := relationshipIDsFromConfig(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
@@ -170,6 +291,17 @@ func (r *relationshipResource) Delete(ctx context.Context, req resource.DeleteRe
 }
 
 func (r *relationshipResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	if r.isSurveySpecRelationship() {
+		identifier := strings.TrimSpace(req.ID)
+		parentID, err := strconv.ParseInt(identifier, 10, 64)
+		if err != nil {
+			resp.Diagnostics.AddError("Invalid survey specification import ID", "Use <parent_id>, for example 12.")
+			return
+		}
+		setSurveySpecState(ctx, parentID, types.StringNull(), &resp.State, &resp.Diagnostics)
+		return
+	}
+
 	matches := compositeIDPattern.FindStringSubmatch(strings.TrimSpace(req.ID))
 	if len(matches) != 3 {
 		resp.Diagnostics.AddError("Invalid relationship import ID", "Use <parent_id>:<child_id>, for example 12:34.")
@@ -202,9 +334,58 @@ func relationshipIDsFromConfig(ctx context.Context, source attributeSource) (int
 	return parentID.ValueInt64(), childID.ValueInt64(), diags
 }
 
+func surveySpecParentID(ctx context.Context, source attributeSource) (int64, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+	var parentID types.Int64
+	diags.Append(source.GetAttribute(ctx, path.Root("parent_id"), &parentID)...)
+	if parentID.IsNull() || parentID.IsUnknown() {
+		diags.AddAttributeError(path.Root("parent_id"), "Missing parent ID", "parent_id is required.")
+		return 0, diags
+	}
+	return parentID.ValueInt64(), diags
+}
+
+func surveySpecConfig(ctx context.Context, source attributeSource) (int64, any, types.String, diag.Diagnostics) {
+	parentID, diags := surveySpecParentID(ctx, source)
+	if diags.HasError() {
+		return 0, nil, types.StringNull(), diags
+	}
+
+	var spec types.String
+	diags.Append(source.GetAttribute(ctx, path.Root("spec"), &spec)...)
+	if spec.IsNull() || spec.IsUnknown() {
+		diags.AddAttributeError(path.Root("spec"), "Missing survey specification", "spec is required for survey specification resources.")
+		return 0, nil, types.StringNull(), diags
+	}
+
+	decoded, err := decodeJSONString(spec.ValueString())
+	if err != nil {
+		diags.AddAttributeError(path.Root("spec"), "Invalid JSON payload", err.Error())
+		return 0, nil, types.StringNull(), diags
+	}
+
+	encoded, err := json.Marshal(decoded)
+	if err != nil {
+		diags.AddAttributeError(path.Root("spec"), "Invalid JSON payload", err.Error())
+		return 0, nil, types.StringNull(), diags
+	}
+
+	return parentID, decoded, types.StringValue(string(encoded)), diags
+}
+
 func setRelationshipState(ctx context.Context, parentID, childID int64, target attributeTarget, diags *diag.Diagnostics) {
 	compositeID := fmt.Sprintf("%d:%d", parentID, childID)
 	diags.Append(target.SetAttribute(ctx, path.Root("id"), compositeID)...)
 	diags.Append(target.SetAttribute(ctx, path.Root("parent_id"), types.Int64Value(parentID))...)
 	diags.Append(target.SetAttribute(ctx, path.Root("child_id"), types.Int64Value(childID))...)
+}
+
+func setSurveySpecState(ctx context.Context, parentID int64, spec types.String, target attributeTarget, diags *diag.Diagnostics) {
+	diags.Append(target.SetAttribute(ctx, path.Root("id"), fmt.Sprintf("%d", parentID))...)
+	diags.Append(target.SetAttribute(ctx, path.Root("parent_id"), types.Int64Value(parentID))...)
+	diags.Append(target.SetAttribute(ctx, path.Root("spec"), spec)...)
+}
+
+func (r *relationshipResource) isSurveySpecRelationship() bool {
+	return strings.HasSuffix(r.relationship.Path, "/survey_spec/")
 }

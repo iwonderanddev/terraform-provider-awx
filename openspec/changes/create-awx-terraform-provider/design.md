@@ -14,7 +14,7 @@ Confirmed constraints:
 - Acceptance/e2e testing: local opt-in only (not CI-required)
 - Documentation: Terraform Registry-style provider/resource/data source docs with examples
 - Naming: keep AWX object naming in resource/data source names for consistency
-- Import format: numeric IDs for object resources, composite IDs for relationship resources
+- Import format: endpoint-aligned identifiers (numeric or detail-key for object resources; composite or parent-key for relationship resources)
 
 This design follows HashiCorp provider design principles around predictable resource boundaries and composable configurations.
 
@@ -171,19 +171,24 @@ Alternatives considered:
 ### 11) Import ID contract
 
 Decision:
-- Use numeric AWX IDs for normal object resources.
-- Use composite IDs for relationship resources that have no standalone object ID.
+- Use endpoint-aligned identifiers for object resources.
+- Use numeric AWX IDs for standard object resources with numeric identity.
+- Use detail-path identifiers for singleton/detail-key object resources (for example `settings` category slugs).
+- Use composite IDs for association relationship resources that bind parent and child objects.
+- Use parent-key identifiers for singleton relationship resources that are scoped only by parent identity (for example survey specification subresources).
 
 Examples:
 - `terraform import awx_project.main 42`
+- `terraform import awx_setting.main system`
 - `terraform import awx_team_user_membership.main 12:34`
+- `terraform import awx_job_template_survey_spec.main 12`
 
 Rationale:
-- Matches AWX object identity model while keeping relationship resource imports deterministic.
+- Matches AWX endpoint identity semantics while keeping resource and relationship imports deterministic.
 
 Alternatives considered:
-- Composite IDs for all resources: unnecessary verbosity for object resources with native IDs.
-- Numeric IDs for relationship resources only: not possible where association endpoints expose no unique standalone ID.
+- Composite IDs for all resources: unnecessary verbosity for object resources and incompatible with singleton/detail-key endpoints.
+- Numeric IDs for relationship resources only: not possible where association endpoints require both parent and child identity.
 
 ### 12) Server-default field normalization contract
 

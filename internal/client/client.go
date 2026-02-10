@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +25,8 @@ const (
 	defaultRetryMaxAttempts    = 3
 	defaultRetryInitialBackoff = 500 * time.Millisecond
 )
+
+var pathParameterPattern = regexp.MustCompile(`\{[^/}]+\}`)
 
 // Config controls shared AWX API client behavior.
 type Config struct {
@@ -128,9 +131,9 @@ func (c *Client) Ping(ctx context.Context) error {
 	return err
 }
 
-// GetObject retrieves an object by numeric AWX id.
-func (c *Client) GetObject(ctx context.Context, detailPath string, id int64) (map[string]any, error) {
-	relative := strings.Replace(detailPath, "{id}", strconv.FormatInt(id, 10), 1)
+// GetObject retrieves an object by AWX identifier.
+func (c *Client) GetObject(ctx context.Context, detailPath string, id string) (map[string]any, error) {
+	relative := resolvePathParameter(detailPath, id)
 	body, err := c.DoJSON(ctx, http.MethodGet, relative, nil, nil)
 	if err != nil {
 		return nil, err
@@ -148,8 +151,8 @@ func (c *Client) CreateObject(ctx context.Context, collectionPath string, payloa
 }
 
 // UpdateObject applies partial updates to an AWX object.
-func (c *Client) UpdateObject(ctx context.Context, detailPath string, id int64, payload map[string]any) (map[string]any, error) {
-	relative := strings.Replace(detailPath, "{id}", strconv.FormatInt(id, 10), 1)
+func (c *Client) UpdateObject(ctx context.Context, detailPath string, id string, payload map[string]any) (map[string]any, error) {
+	relative := resolvePathParameter(detailPath, id)
 	body, err := c.DoJSON(ctx, http.MethodPatch, relative, nil, payload)
 	if err != nil {
 		return nil, err
@@ -157,9 +160,9 @@ func (c *Client) UpdateObject(ctx context.Context, detailPath string, id int64, 
 	return body, nil
 }
 
-// DeleteObject deletes an object by numeric AWX id.
-func (c *Client) DeleteObject(ctx context.Context, detailPath string, id int64) error {
-	relative := strings.Replace(detailPath, "{id}", strconv.FormatInt(id, 10), 1)
+// DeleteObject deletes an object by AWX identifier.
+func (c *Client) DeleteObject(ctx context.Context, detailPath string, id string) error {
+	relative := resolvePathParameter(detailPath, id)
 	_, err := c.DoJSON(ctx, http.MethodDelete, relative, nil, nil)
 	if apiErr := asAPIError(err); apiErr != nil && apiErr.StatusCode == http.StatusNotFound {
 		return nil
@@ -240,7 +243,7 @@ func (c *Client) FindByField(ctx context.Context, endpointPath string, field str
 
 // Associate creates a relationship between a parent and child object using an AWX association endpoint.
 func (c *Client) Associate(ctx context.Context, relationshipPath string, parentID, childID int64) error {
-	resolvedPath := strings.Replace(relationshipPath, "{id}", strconv.FormatInt(parentID, 10), 1)
+	resolvedPath := resolvePathParameter(relationshipPath, strconv.FormatInt(parentID, 10))
 
 	payload := map[string]any{"id": childID}
 	_, err := c.DoJSON(ctx, http.MethodPost, resolvedPath, nil, payload)
@@ -256,7 +259,7 @@ func (c *Client) Associate(ctx context.Context, relationshipPath string, parentI
 
 // Disassociate removes a relationship between a parent and child object.
 func (c *Client) Disassociate(ctx context.Context, relationshipPath string, parentID, childID int64) error {
-	resolvedPath := strings.Replace(relationshipPath, "{id}", strconv.FormatInt(parentID, 10), 1)
+	resolvedPath := resolvePathParameter(relationshipPath, strconv.FormatInt(parentID, 10))
 
 	payload := map[string]any{
 		"id":           childID,
@@ -281,7 +284,7 @@ func (c *Client) Disassociate(ctx context.Context, relationshipPath string, pare
 
 // RelationshipExists checks whether parent-child association exists by scanning the relationship list endpoint.
 func (c *Client) RelationshipExists(ctx context.Context, relationshipPath string, parentID, childID int64) (bool, error) {
-	resolvedPath := strings.Replace(relationshipPath, "{id}", strconv.FormatInt(parentID, 10), 1)
+	resolvedPath := resolvePathParameter(relationshipPath, strconv.FormatInt(parentID, 10))
 	items, err := c.ListAll(ctx, resolvedPath, nil)
 	if err != nil {
 		return false, err
@@ -297,6 +300,16 @@ func (c *Client) RelationshipExists(ctx context.Context, relationshipPath string
 		}
 	}
 	return false, nil
+}
+
+func resolvePathParameter(pathTemplate string, identifier string) string {
+	if strings.TrimSpace(pathTemplate) == "" {
+		return pathTemplate
+	}
+	if !pathParameterPattern.MatchString(pathTemplate) {
+		return pathTemplate
+	}
+	return pathParameterPattern.ReplaceAllString(pathTemplate, identifier)
 }
 
 // DoJSON executes an HTTP request with retry behavior and decodes the JSON response body.

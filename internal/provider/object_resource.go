@@ -53,12 +53,22 @@ func (r *objectResource) Metadata(_ context.Context, req resource.MetadataReques
 func (r *objectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	attributes := map[string]resourceschema.Attribute{
 		"id": resourceschema.StringAttribute{
+			Description: "AWX identifier for this object.",
+		},
+	}
+	if r.object.CollectionCreate {
+		attributes["id"] = resourceschema.StringAttribute{
 			Computed:    true,
 			Description: "Numeric AWX ID for this object.",
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
-		},
+		}
+	} else {
+		attributes["id"] = resourceschema.StringAttribute{
+			Required:    true,
+			Description: "AWX detail-path identifier for this object.",
+		}
 	}
 
 	for _, field := range r.object.Fields {
@@ -101,13 +111,39 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	if !r.object.CollectionCreate {
+		id, idDiags := getResourceID(ctx, req.Plan, r.object.CollectionCreate)
+		resp.Diagnostics.Append(idDiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		_, err := r.data.client.UpdateObject(ctx, r.object.DetailPath, id, payload)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to create AWX object", err.Error())
+			return
+		}
+
+		refreshed, refreshErr := r.data.client.GetObject(ctx, r.object.DetailPath, id)
+		if refreshErr != nil {
+			resp.Diagnostics.AddWarning(
+				"Read-after-create refresh failed",
+				fmt.Sprintf("Falling back to planned state because post-create read failed: %s", refreshErr.Error()),
+			)
+			refreshed = map[string]any{}
+		}
+
+		resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values)...)
+		return
+	}
+
 	created, err := r.data.client.CreateObject(ctx, r.object.CollectionPath, payload)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create AWX object", err.Error())
 		return
 	}
 
-	id, err := parseNumericID(created["id"])
+	id, err := parseAPIObjectID(created["id"])
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse created object ID", err.Error())
 		return
@@ -131,7 +167,7 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	id, diags := getResourceID(ctx, req.State)
+	id, diags := getResourceID(ctx, req.State, r.object.CollectionCreate)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -167,7 +203,7 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	id, diags := getResourceID(ctx, req.State)
+	id, diags := getResourceID(ctx, req.State, r.object.CollectionCreate)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -205,7 +241,7 @@ func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	id, diags := getResourceID(ctx, req.State)
+	id, diags := getResourceID(ctx, req.State, r.object.CollectionCreate)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -219,7 +255,11 @@ func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 func (r *objectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	id := strings.TrimSpace(req.ID)
-	if !numericIDPattern.MatchString(id) {
+	if id == "" {
+		resp.Diagnostics.AddError("Invalid import ID", "Object resources require a non-empty import identifier.")
+		return
+	}
+	if r.object.CollectionCreate && !numericIDPattern.MatchString(id) {
 		resp.Diagnostics.AddError("Invalid import ID", "Object resources use numeric AWX IDs. Example: 42")
 		return
 	}
@@ -323,13 +363,13 @@ func (r *objectResource) stringValuesFromSource(ctx context.Context, source attr
 func (r *objectResource) setState(
 	ctx context.Context,
 	state attributeTarget,
-	id int64,
+	id string,
 	apiObject map[string]any,
 	writeOnlyValues map[string]types.String,
 	priorStringValues map[string]types.String,
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	diags.Append(state.SetAttribute(ctx, path.Root("id"), strconv.FormatInt(id, 10))...)
+	diags.Append(state.SetAttribute(ctx, path.Root("id"), id)...)
 
 	for _, field := range r.object.Fields {
 		if field.WriteOnly {
@@ -475,21 +515,25 @@ func toTerraformValue(field manifest.FieldSpec, value any) (any, diag.Diagnostic
 	}
 }
 
-func getResourceID(ctx context.Context, state attributeSource) (int64, diag.Diagnostics) {
+func getResourceID(ctx context.Context, state attributeSource, collectionCreate bool) (string, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	var id types.String
 	diags.Append(state.GetAttribute(ctx, path.Root("id"), &id)...)
 	if id.IsUnknown() || id.IsNull() {
-		diags.AddError("Missing resource ID", "Expected state to contain a numeric AWX ID.")
-		return 0, diags
+		diags.AddError("Missing resource ID", "Expected state to contain an AWX identifier.")
+		return "", diags
 	}
 
-	parsed, err := strconv.ParseInt(id.ValueString(), 10, 64)
-	if err != nil {
-		diags.AddError("Invalid resource ID", err.Error())
-		return 0, diags
+	identifier := strings.TrimSpace(id.ValueString())
+	if identifier == "" {
+		diags.AddError("Invalid resource ID", "id cannot be empty.")
+		return "", diags
 	}
-	return parsed, diags
+	if collectionCreate && !numericIDPattern.MatchString(identifier) {
+		diags.AddError("Invalid resource ID", "Expected state to contain a numeric AWX ID.")
+		return "", diags
+	}
+	return identifier, diags
 }
 
 func parseNumericID(value any) (int64, error) {

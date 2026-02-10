@@ -12,7 +12,7 @@ AWX configuration is often managed manually or with ad-hoc scripts, which create
 - Exclude runtime-only AWX objects from managed resource scope for the initial release.
 - Treat sensitive and secret fields as write-only in Terraform schemas/state wherever applicable.
 - Normalize optional AWX fields with server-side defaults (OpenAPI `default`) as Terraform `Optional + Computed` to avoid post-apply null-to-default inconsistency errors.
-- Use numeric import IDs for normal object resources and composite import IDs for relationship resources.
+- Use endpoint-aligned import IDs: numeric IDs for standard object resources, detail-path identifiers for singleton/detail-key object resources, and composite or parent-key IDs for relationship resources depending on endpoint semantics.
 - Add comprehensive tests, including unit tests and acceptance/e2e coverage for CRUD, import, update reconciliation, and relationship management behavior.
 - Implement Terraform-driven acceptance tests using `terraform-plugin-testing` so resource/data source behavior is validated through Terraform plan/apply/import flows.
 - Add targeted Terraform-driven regression scenarios for server-defaulted fields (for example `max_hosts` and `prevent_instance_group_fallback`) using create + plan-only + import checks.

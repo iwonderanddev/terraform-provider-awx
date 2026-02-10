@@ -434,6 +434,9 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 	builder.WriteString("## Example Usage\n\n")
 	builder.WriteString("```hcl\n")
 	builder.WriteString(fmt.Sprintf("resource \"%s\" \"example\" {\n", obj.ResourceName))
+	if !obj.CollectionCreate {
+		builder.WriteString("  id = \"example\"\n")
+	}
 	for _, field := range obj.Fields {
 		if field.Required {
 			builder.WriteString(fmt.Sprintf("  %s = %s\n", field.Name, sampleValue(field.Type)))
@@ -447,6 +450,9 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 	builder.WriteString("- `Required`: Must be set in configuration.\n")
 	builder.WriteString("- `Optional`: May be omitted.\n")
 	builder.WriteString("- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.\n\n")
+	if !obj.CollectionCreate {
+		builder.WriteString("- `id` (Required) AWX detail-path identifier for this object.\n")
+	}
 	for _, field := range obj.Fields {
 		required := "Optional"
 		if field.Required {
@@ -465,10 +471,18 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 		builder.WriteString(fmt.Sprintf("- `%s` (%s%s) %s\n", field.Name, required, sensitive, description))
 	}
 	builder.WriteString("\n## Attributes Reference\n\n")
-	builder.WriteString("- `id` (String) Numeric AWX object identifier.\n")
+	if obj.CollectionCreate {
+		builder.WriteString("- `id` (String) Numeric AWX object identifier.\n")
+	} else {
+		builder.WriteString("- `id` (String) AWX detail-path identifier for this object.\n")
+	}
 	builder.WriteString("\n## Import\n\n")
 	builder.WriteString("```bash\n")
-	builder.WriteString(fmt.Sprintf("terraform import %s.example 42\n", obj.ResourceName))
+	importID := "42"
+	if !obj.CollectionCreate {
+		importID = "example"
+	}
+	builder.WriteString(fmt.Sprintf("terraform import %s.example %s\n", obj.ResourceName, importID))
 	builder.WriteString("```\n")
 
 	return os.WriteFile(filepath.Join(resourceDir, fmt.Sprintf("%s.md", obj.ResourceName)), []byte(builder.String()), 0o644)
@@ -481,16 +495,28 @@ func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject) error 
 	builder.WriteString("## Example Usage\n\n")
 	builder.WriteString("```hcl\n")
 	builder.WriteString(fmt.Sprintf("data \"%s\" \"example\" {\n", obj.DataSourceName))
-	builder.WriteString("  id = " + sampleValue(manifest.FieldTypeInt) + "\n")
+	idExample := sampleValue(manifest.FieldTypeInt)
+	if !obj.CollectionCreate {
+		idExample = sampleValue(manifest.FieldTypeString)
+	}
+	builder.WriteString("  id = " + idExample + "\n")
 	builder.WriteString("}\n")
 	builder.WriteString("```\n\n")
 	builder.WriteString("## Argument Reference\n\n")
-	builder.WriteString("- `id` (String, Optional) Numeric AWX object ID.\n")
+	if obj.CollectionCreate {
+		builder.WriteString("- `id` (String, Optional) Numeric AWX object ID.\n")
+	} else {
+		builder.WriteString("- `id` (String, Optional) AWX object identifier used in the detail endpoint path.\n")
+	}
 	if hasField(obj.Fields, "name") {
 		builder.WriteString("- `name` (String, Optional) Deterministic exact-name lookup if `id` is omitted.\n")
 	}
 	builder.WriteString("\n## Attributes Reference\n\n")
-	builder.WriteString("- `id` (String) Numeric AWX object ID.\n")
+	if obj.CollectionCreate {
+		builder.WriteString("- `id` (String) Numeric AWX object ID.\n")
+	} else {
+		builder.WriteString("- `id` (String) AWX detail-path identifier for this object.\n")
+	}
 	for _, field := range obj.Fields {
 		sensitive := ""
 		if field.Sensitive {
@@ -505,25 +531,55 @@ func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject) error 
 func writeRelationshipDoc(resourceDir string, rel manifest.Relationship) error {
 	builder := strings.Builder{}
 	builder.WriteString(fmt.Sprintf("# Resource: %s\n\n", rel.ResourceName))
-	builder.WriteString(fmt.Sprintf("Manages `%s` relationships between `%s` and `%s` objects.\n\n", rel.Name, rel.ParentObject, rel.ChildObject))
-	builder.WriteString("## Example Usage\n\n")
-	builder.WriteString("```hcl\n")
-	builder.WriteString(fmt.Sprintf("resource \"%s\" \"example\" {\n", rel.ResourceName))
-	builder.WriteString("  parent_id = 12\n")
-	builder.WriteString("  child_id  = 34\n")
-	builder.WriteString("}\n")
-	builder.WriteString("```\n\n")
-	builder.WriteString("## Argument Reference\n\n")
-	builder.WriteString("- `parent_id` (Number, Required) Parent object numeric ID.\n")
-	builder.WriteString("- `child_id` (Number, Required) Child object numeric ID.\n\n")
-	builder.WriteString("## Attributes Reference\n\n")
-	builder.WriteString("- `id` (String) Composite ID in `<parent_id>:<child_id>` format.\n\n")
-	builder.WriteString("## Import\n\n")
-	builder.WriteString("```bash\n")
-	builder.WriteString(fmt.Sprintf("terraform import %s.example 12:34\n", rel.ResourceName))
-	builder.WriteString("```\n")
+	if isSurveySpecRelationship(rel) {
+		builder.WriteString(fmt.Sprintf("Manages `%s` survey specification for `%s` objects.\n\n", rel.Name, rel.ParentObject))
+		builder.WriteString("## Example Usage\n\n")
+		builder.WriteString("```hcl\n")
+		builder.WriteString(fmt.Sprintf("resource \"%s\" \"example\" {\n", rel.ResourceName))
+		builder.WriteString("  parent_id = 12\n")
+		builder.WriteString("  spec = jsonencode({\n")
+		builder.WriteString("    name        = \"Example survey\"\n")
+		builder.WriteString("    description = \"Managed by Terraform\"\n")
+		builder.WriteString("    spec        = []\n")
+		builder.WriteString("  })\n")
+		builder.WriteString("}\n")
+		builder.WriteString("```\n\n")
+		builder.WriteString("## Argument Reference\n\n")
+		builder.WriteString("- `parent_id` (Number, Required) Parent object numeric ID.\n")
+		builder.WriteString("- `spec` (String, Optional) JSON-encoded survey specification payload.\n\n")
+		builder.WriteString("## Attributes Reference\n\n")
+		builder.WriteString("- `id` (String) Survey specification ID (same as `parent_id`).\n")
+		builder.WriteString("- `parent_id` (Number) Parent object numeric ID.\n")
+		builder.WriteString("- `spec` (String) JSON-encoded survey specification payload.\n\n")
+		builder.WriteString("## Import\n\n")
+		builder.WriteString("```bash\n")
+		builder.WriteString(fmt.Sprintf("terraform import %s.example 12\n", rel.ResourceName))
+		builder.WriteString("```\n")
+	} else {
+		builder.WriteString(fmt.Sprintf("Manages `%s` relationships between `%s` and `%s` objects.\n\n", rel.Name, rel.ParentObject, rel.ChildObject))
+		builder.WriteString("## Example Usage\n\n")
+		builder.WriteString("```hcl\n")
+		builder.WriteString(fmt.Sprintf("resource \"%s\" \"example\" {\n", rel.ResourceName))
+		builder.WriteString("  parent_id = 12\n")
+		builder.WriteString("  child_id  = 34\n")
+		builder.WriteString("}\n")
+		builder.WriteString("```\n\n")
+		builder.WriteString("## Argument Reference\n\n")
+		builder.WriteString("- `parent_id` (Number, Required) Parent object numeric ID.\n")
+		builder.WriteString("- `child_id` (Number, Required) Child object numeric ID.\n\n")
+		builder.WriteString("## Attributes Reference\n\n")
+		builder.WriteString("- `id` (String) Composite ID in `<parent_id>:<child_id>` format.\n\n")
+		builder.WriteString("## Import\n\n")
+		builder.WriteString("```bash\n")
+		builder.WriteString(fmt.Sprintf("terraform import %s.example 12:34\n", rel.ResourceName))
+		builder.WriteString("```\n")
+	}
 
 	return os.WriteFile(filepath.Join(resourceDir, fmt.Sprintf("%s.md", rel.ResourceName)), []byte(builder.String()), 0o644)
+}
+
+func isSurveySpecRelationship(rel manifest.Relationship) bool {
+	return strings.HasSuffix(rel.Path, "/survey_spec/")
 }
 
 func sampleValue(fieldType manifest.FieldType) string {

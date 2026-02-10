@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strconv"
+	"strings"
 
 	"github.com/damien/terraform-awx-provider/internal/manifest"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -24,7 +24,7 @@ type objectDataSource struct {
 }
 
 type objectLookupClient interface {
-	GetObject(context.Context, string, int64) (map[string]any, error)
+	GetObject(context.Context, string, string) (map[string]any, error)
 	FindByField(context.Context, string, string, string) ([]map[string]any, error)
 }
 
@@ -46,7 +46,7 @@ func (d *objectDataSource) Metadata(_ context.Context, _ datasource.MetadataRequ
 func (d *objectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	attributes := map[string]datasourceschema.Attribute{
 		"id": datasourceschema.StringAttribute{
-			Description: "Numeric AWX object ID for deterministic lookup.",
+			Description: "AWX object identifier for deterministic lookup.",
 			Optional:    true,
 			Computed:    true,
 		},
@@ -112,19 +112,13 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	id, err := parseNumericID(target["id"])
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse AWX object ID", err.Error())
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), strconv.FormatInt(id, 10))...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), target.ID)...)
 	for _, field := range d.object.Fields {
 		if field.WriteOnly {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(field.Name), types.StringNull())...)
 			continue
 		}
-		value, diags := toTerraformValue(field, target[field.Name])
+		value, diags := toTerraformValue(field, target.Object[field.Name])
 		resp.Diagnostics.Append(diags...)
 		if diags.HasError() {
 			continue
@@ -177,50 +171,82 @@ func copyDiags(in diag.Diagnostics) diag.Diagnostics {
 	return out
 }
 
-func resolveObjectDataSourceTarget(ctx context.Context, api objectLookupClient, object manifest.ManagedObject, lookup dataSourceLookupInput) (map[string]any, diag.Diagnostics) {
+type objectLookupResult struct {
+	Object map[string]any
+	ID     string
+}
+
+func resolveObjectDataSourceTarget(ctx context.Context, api objectLookupClient, object manifest.ManagedObject, lookup dataSourceLookupInput) (objectLookupResult, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	if !lookup.ID.IsNull() && !lookup.ID.IsUnknown() {
-		id, err := strconv.ParseInt(lookup.ID.ValueString(), 10, 64)
-		if err != nil {
-			diags.AddAttributeError(path.Root("id"), "Invalid AWX object ID", err.Error())
-			return nil, diags
+		id := strings.TrimSpace(lookup.ID.ValueString())
+		if id == "" {
+			diags.AddAttributeError(path.Root("id"), "Invalid AWX object ID", "id cannot be empty.")
+			return objectLookupResult{}, diags
+		}
+		if object.CollectionCreate && !numericIDPattern.MatchString(id) {
+			diags.AddAttributeError(path.Root("id"), "Invalid AWX object ID", "id must be numeric for this object type.")
+			return objectLookupResult{}, diags
 		}
 
 		obj, err := api.GetObject(ctx, object.DetailPath, id)
 		if err != nil {
 			diags.AddError("Failed to query AWX object", err.Error())
-			return nil, diags
+			return objectLookupResult{}, diags
 		}
-		return obj, diags
+		return objectLookupResult{Object: obj, ID: id}, diags
 	}
 
 	if lookup.HasNameField && !lookup.Name.IsNull() && !lookup.Name.IsUnknown() {
 		matches, err := api.FindByField(ctx, object.CollectionPath, "name", lookup.Name.ValueString())
 		if err != nil {
 			diags.AddError("Failed to query AWX object by name", err.Error())
-			return nil, diags
+			return objectLookupResult{}, diags
 		}
 		if len(matches) == 0 {
 			diags.AddError(
 				"AWX object not found",
 				fmt.Sprintf("No `%s` object matched name %q.", object.Name, lookup.Name.ValueString()),
 			)
-			return nil, diags
+			return objectLookupResult{}, diags
 		}
 		if len(matches) > 1 {
 			diags.AddError(
 				"Ambiguous AWX object lookup",
 				fmt.Sprintf("Lookup for `%s` matched %d objects. Refine the query or provide id.", object.Name, len(matches)),
 			)
-			return nil, diags
+			return objectLookupResult{}, diags
 		}
-		return matches[0], diags
+
+		id, err := parseAPIObjectID(matches[0]["id"])
+		if err != nil {
+			diags.AddError("Failed to parse AWX object ID", err.Error())
+			return objectLookupResult{}, diags
+		}
+		return objectLookupResult{Object: matches[0], ID: id}, diags
 	}
 
 	diags.AddError(
 		"Missing lookup input",
 		"Provide either id or name for deterministic lookup.",
 	)
-	return nil, diags
+	return objectLookupResult{}, diags
+}
+
+func parseAPIObjectID(value any) (string, error) {
+	switch typed := value.(type) {
+	case string:
+		identifier := strings.TrimSpace(typed)
+		if identifier == "" {
+			return "", fmt.Errorf("ID is empty")
+		}
+		return identifier, nil
+	default:
+		id, err := parseNumericID(value)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%d", id), nil
+	}
 }

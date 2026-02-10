@@ -56,16 +56,16 @@ func TestAcceptance_TeamCRUDAndImport(t *testing.T) {
 	}
 	defer func() {
 		t.Logf("cleanup: deleting team id=%d", teamID)
-		_ = awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", teamID)
+		_ = awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", strconv.FormatInt(teamID, 10))
 	}()
 
 	t.Logf("updating team id=%d description", teamID)
-	if _, err := awxClient.UpdateObject(ctx, "/api/v2/teams/{id}/", teamID, map[string]any{"description": "updated by acceptance test"}); err != nil {
+	if _, err := awxClient.UpdateObject(ctx, "/api/v2/teams/{id}/", strconv.FormatInt(teamID, 10), map[string]any{"description": "updated by acceptance test"}); err != nil {
 		t.Fatalf("failed to update team: %v", err)
 	}
 
 	t.Logf("reading team id=%d", teamID)
-	fetched, err := awxClient.GetObject(ctx, "/api/v2/teams/{id}/", teamID)
+	fetched, err := awxClient.GetObject(ctx, "/api/v2/teams/{id}/", strconv.FormatInt(teamID, 10))
 	if err != nil {
 		t.Fatalf("failed to read team: %v", err)
 	}
@@ -80,12 +80,12 @@ func TestAcceptance_TeamCRUDAndImport(t *testing.T) {
 	}
 
 	t.Logf("deleting team id=%d", teamID)
-	if err := awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", teamID); err != nil {
+	if err := awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", strconv.FormatInt(teamID, 10)); err != nil {
 		t.Fatalf("failed to delete team: %v", err)
 	}
 
 	t.Logf("confirming team id=%d no longer exists", teamID)
-	_, err = awxClient.GetObject(ctx, "/api/v2/teams/{id}/", teamID)
+	_, err = awxClient.GetObject(ctx, "/api/v2/teams/{id}/", strconv.FormatInt(teamID, 10))
 	if err == nil {
 		t.Fatalf("expected team lookup to fail after delete")
 	}
@@ -193,11 +193,11 @@ func TestAcceptance_TeamLookupByIDAndName(t *testing.T) {
 	}
 	defer func() {
 		t.Logf("cleanup: deleting lookup fixture team id=%d", teamID)
-		_ = awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", teamID)
+		_ = awxClient.DeleteObject(ctx, "/api/v2/teams/{id}/", strconv.FormatInt(teamID, 10))
 	}()
 
 	t.Logf("looking up team by id=%d", teamID)
-	byID, err := awxClient.GetObject(ctx, "/api/v2/teams/{id}/", teamID)
+	byID, err := awxClient.GetObject(ctx, "/api/v2/teams/{id}/", strconv.FormatInt(teamID, 10))
 	if err != nil {
 		t.Fatalf("lookup by id failed: %v", err)
 	}

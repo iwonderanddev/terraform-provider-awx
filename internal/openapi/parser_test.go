@@ -44,6 +44,9 @@ func TestDeriveManagedObjects(t *testing.T) {
 	if object.Name != "projects" {
 		t.Fatalf("unexpected object name: %s", object.Name)
 	}
+	if !object.CollectionCreate {
+		t.Fatalf("expected projects object to support collection create")
+	}
 	if !object.ResourceEligible {
 		t.Fatalf("expected projects resource to be resource-eligible")
 	}
@@ -59,6 +62,57 @@ func TestDeriveManagedObjects(t *testing.T) {
 	}
 	if !foundSensitive {
 		t.Fatalf("expected webhook_key field to be marked sensitive")
+	}
+}
+
+func TestDeriveManagedObjectsSupportsNonIDDetailPath(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/settings/": {
+				Get: &Operation{},
+			},
+			"/api/v2/settings/{category_slug}/": {
+				Get:    &Operation{Responses: map[string]Response{"200": {Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/SettingSingleton"}}}}}},
+				Patch:  &Operation{RequestBody: &RequestBody{Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/SettingSingletonRequest"}}}}},
+				Delete: &Operation{},
+			},
+		},
+		Components: Components{Schemas: map[string]*Schema{
+			"SettingSingletonRequest": {
+				Type:     "object",
+				Required: []string{"tower_url_base"},
+				Properties: map[string]*Schema{
+					"tower_url_base": {Type: "string"},
+				},
+			},
+			"SettingSingleton": {
+				Type: "object",
+				Properties: map[string]*Schema{
+					"tower_url_base": {Type: "string"},
+				},
+			},
+		}},
+	}
+
+	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{})
+	if len(objects) != 1 {
+		t.Fatalf("expected 1 object, got %d", len(objects))
+	}
+
+	object := objects[0]
+	if object.Name != "settings" {
+		t.Fatalf("unexpected object name: %s", object.Name)
+	}
+	if object.CollectionCreate {
+		t.Fatalf("expected settings to use detail-path lifecycle (no collection create)")
+	}
+	if !object.ResourceEligible {
+		t.Fatalf("expected settings to be resource-eligible")
+	}
+	if object.DetailPath != "/api/v2/settings/{category_slug}/" {
+		t.Fatalf("unexpected settings detail path: %s", object.DetailPath)
 	}
 }
 
@@ -106,6 +160,50 @@ func TestDeriveRelationships(t *testing.T) {
 	}
 	if relationships[0].Priority != 10 {
 		t.Fatalf("expected priority 10, got %d", relationships[0].Priority)
+	}
+}
+
+func TestDeriveRelationshipsDetectsNotificationTemplateVariantAndSurveySpec(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/job_templates/{id}/notification_templates_error/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+			"/api/v2/job_templates/{id}/survey_spec/": {
+				Get:    &Operation{},
+				Post:   &Operation{},
+				Delete: &Operation{},
+			},
+		},
+	}
+	objects := []manifest.ManagedObject{
+		{Name: "job_templates"},
+		{Name: "notification_templates"},
+	}
+
+	relationships := DeriveRelationships(doc, objects, map[string]int{})
+	if len(relationships) != 2 {
+		t.Fatalf("expected 2 relationships, got %d", len(relationships))
+	}
+
+	seen := map[string]manifest.Relationship{}
+	for _, rel := range relationships {
+		seen[rel.Name] = rel
+	}
+
+	errorRel, ok := seen["job_template_notification_template_error"]
+	if !ok {
+		t.Fatalf("missing notification template error relationship")
+	}
+	if errorRel.ChildObject != "notification_templates" {
+		t.Fatalf("unexpected child object mapping: got=%q want=%q", errorRel.ChildObject, "notification_templates")
+	}
+
+	if _, ok := seen["job_template_survey_spec"]; !ok {
+		t.Fatalf("missing survey spec relationship")
 	}
 }
 

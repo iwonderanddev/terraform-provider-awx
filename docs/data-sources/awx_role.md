@@ -6,18 +6,18 @@ Reads AWX `roles` objects.
 
 ```hcl
 data "awx_role" "example" {
-  id = 1
+  id = "example"
 }
 ```
 
 ## Argument Reference
 
-- `id` (String, Optional) Numeric AWX object ID.
+- `id` (String, Optional) AWX object identifier used in the detail endpoint path.
 - `name` (String, Optional) Deterministic exact-name lookup if `id` is omitted.
 
 ## Attributes Reference
 
-- `id` (String) Numeric AWX object ID.
+- `id` (String) AWX detail-path identifier for this object.
 - `description` (string)
 - `id` (integer)
 - `name` (string)
