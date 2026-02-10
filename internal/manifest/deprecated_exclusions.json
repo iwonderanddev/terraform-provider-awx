@@ -1,0 +1,26 @@
+{
+  "objects": [
+    {
+      "object": "roles",
+      "reason": "Legacy roles endpoint is deprecated and superseded by role_definitions."
+    }
+  ],
+  "relationships": [
+    {
+      "path": "/api/v2/roles/{id}/teams/",
+      "reason": "Deprecated in favor of role_team_assignments."
+    },
+    {
+      "path": "/api/v2/roles/{id}/users/",
+      "reason": "Deprecated in favor of role_user_assignments."
+    },
+    {
+      "path": "/api/v2/teams/{id}/roles/",
+      "reason": "Deprecated in favor of role_team_assignments."
+    },
+    {
+      "path": "/api/v2/users/{id}/roles/",
+      "reason": "Deprecated in favor of role_user_assignments."
+    }
+  ]
+}

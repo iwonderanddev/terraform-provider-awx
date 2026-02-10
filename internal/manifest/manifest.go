@@ -42,6 +42,7 @@ type ManagedObject struct {
 	CollectionPath   string      `json:"collectionPath"`
 	DetailPath       string      `json:"detailPath"`
 	CollectionCreate bool        `json:"collectionCreate"`
+	UpdateSupported  bool        `json:"updateSupported"`
 	RequestSchema    string      `json:"requestSchema,omitempty"`
 	ResponseSchema   string      `json:"responseSchema,omitempty"`
 	ResourceEligible bool        `json:"resourceEligible"`

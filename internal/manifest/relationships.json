@@ -336,22 +336,6 @@
     "priority": 100
   },
   {
-    "name": "role_team_association",
-    "resourceName": "awx_role_team_association",
-    "parentObject": "roles",
-    "childObject": "teams",
-    "path": "/api/v2/roles/{id}/teams/",
-    "priority": 100
-  },
-  {
-    "name": "role_user_association",
-    "resourceName": "awx_role_user_association",
-    "parentObject": "roles",
-    "childObject": "users",
-    "path": "/api/v2/roles/{id}/users/",
-    "priority": 100
-  },
-  {
     "name": "schedule_credential_association",
     "resourceName": "awx_schedule_credential_association",
     "parentObject": "schedules",
@@ -416,27 +400,11 @@
     "priority": 100
   },
   {
-    "name": "team_role_association",
-    "resourceName": "awx_team_role_association",
-    "parentObject": "teams",
-    "childObject": "roles",
-    "path": "/api/v2/teams/{id}/roles/",
-    "priority": 100
-  },
-  {
     "name": "user_credential_association",
     "resourceName": "awx_user_credential_association",
     "parentObject": "users",
     "childObject": "credentials",
     "path": "/api/v2/users/{id}/credentials/",
-    "priority": 100
-  },
-  {
-    "name": "user_role_association",
-    "resourceName": "awx_user_role_association",
-    "parentObject": "users",
-    "childObject": "roles",
-    "path": "/api/v2/users/{id}/roles/",
     "priority": 100
   },
   {

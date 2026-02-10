@@ -23,7 +23,7 @@ func TestNewResourceFieldAttributeSensitive(t *testing.T) {
 		Name:      "password",
 		Type:      manifest.FieldTypeString,
 		Sensitive: true,
-	})
+	}, true)
 
 	stringAttribute, ok := attribute.(resourceschema.StringAttribute)
 	if !ok {
@@ -42,7 +42,7 @@ func TestNewResourceFieldAttributeComputed(t *testing.T) {
 		Type:     manifest.FieldTypeInt,
 		Required: false,
 		Computed: true,
-	})
+	}, true)
 
 	intAttribute, ok := attribute.(resourceschema.Int64Attribute)
 	if !ok {
@@ -53,6 +53,23 @@ func TestNewResourceFieldAttributeComputed(t *testing.T) {
 	}
 	if !intAttribute.Computed {
 		t.Fatalf("expected attribute to be computed")
+	}
+}
+
+func TestNewResourceFieldAttributeRequiresReplaceWhenUpdateUnsupported(t *testing.T) {
+	t.Parallel()
+
+	attribute := newResourceFieldAttribute(manifest.FieldSpec{
+		Name: "user",
+		Type: manifest.FieldTypeInt,
+	}, false)
+
+	intAttribute, ok := attribute.(resourceschema.Int64Attribute)
+	if !ok {
+		t.Fatalf("expected int64 attribute, got %T", attribute)
+	}
+	if len(intAttribute.PlanModifiers) == 0 {
+		t.Fatalf("expected RequiresReplace plan modifier when update is unsupported")
 	}
 }
 

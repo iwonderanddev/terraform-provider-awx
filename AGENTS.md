@@ -31,6 +31,7 @@ Target compatibility is AWX `24.6.1` (API `/api/v2`), with HTTP Basic authentica
 
 ### Curated (manual edits expected)
 - `internal/manifest/runtime_exclusions.json`
+- `internal/manifest/deprecated_exclusions.json`
 - `internal/manifest/relationship_priorities.json`
 - `internal/manifest/field_overrides.json`
 - `external/awx-openapi/schema.json` (normally via update script)
@@ -54,7 +55,7 @@ After changing curated inputs or schema, always run:
 ## Core Architecture
 1. `awxgen` loads `external/awx-openapi/schema.json`.
 2. `internal/openapi` derives managed objects and relationship candidates.
-3. Curated exclusions/priorities/field overrides are applied.
+3. Curated exclusions/priorities/field overrides/deprecation exclusions are applied.
 4. Generated manifests are written to `internal/manifest/*.json`.
 5. `internal/manifest.Load()` embeds and loads catalog metadata at provider startup.
 6. Provider dynamically registers:
@@ -145,6 +146,10 @@ Suites:
 1. Modify `internal/manifest/relationship_priorities.json`
 2. Regenerate and validate manifests/docs/tests
 
+### 5) Deprecated endpoint should be removed from provider surface
+1. Add object/path entry to `internal/manifest/deprecated_exclusions.json`
+2. Regenerate and validate manifests/docs/tests
+
 ## Invariants To Preserve
 - Keep AWX-native naming alignment (`awx_<singular>` and generated relationship resource names).
 - Preserve import ID contracts (numeric/detail-key for objects; composite/parent-key for relationships).
@@ -153,9 +158,9 @@ Suites:
 - Treat runtime-only objects via explicit exclusions, not ad hoc runtime branching.
 
 ## Current Coverage Snapshot
-From `internal/manifest/coverage_report.json` (generated `2026-02-09`):
+From `internal/manifest/coverage_report.json` (generated `2026-02-10`):
 - `39` total object candidates
-- `21` managed object resources
-- `25` managed object data sources
+- `23` managed object resources
+- `24` managed object data sources
 - `14` runtime exclusions
-- `65` relationship resources
+- `61` relationship resources

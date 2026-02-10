@@ -153,7 +153,7 @@ func LoadRelationshipPriorities(path string) (map[string]int, error) {
 }
 
 // DeriveManagedObjects derives managed object metadata from OpenAPI paths and component schemas.
-func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeExclusion) []manifest.ManagedObject {
+func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeExclusion, deprecatedObjects map[string]string) []manifest.ManagedObject {
 	if doc == nil {
 		return nil
 	}
@@ -192,13 +192,28 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 		}
 
 		exclusion, runtimeExcluded := exclusions[collectionName]
+		_, deprecated := deprecatedObjects[collectionName]
 		collectionCreate := collectionOps.Post != nil
-		resourceEligible := detailOps.Delete != nil && (detailOps.Patch != nil || detailOps.Put != nil)
-		if !collectionCreate && detailEndpoint.PathParameter == "id" {
-			resourceEligible = false
+		updateSupported := detailOps.Patch != nil || detailOps.Put != nil
+		resourceEligible := false
+		if collectionCreate {
+			resourceEligible = detailOps.Delete != nil
+		} else {
+			resourceEligible = detailOps.Delete != nil && updateSupported
+			if detailEndpoint.PathParameter == "id" {
+				resourceEligible = false
+			}
 		}
 		if runtimeExcluded {
 			resourceEligible = false
+		}
+		if deprecated {
+			resourceEligible = false
+		}
+
+		dataSourceEligible := collectionOps.Get != nil && detailOps.Get != nil
+		if deprecated {
+			dataSourceEligible = false
 		}
 
 		obj := manifest.ManagedObject{
@@ -209,10 +224,11 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 			CollectionPath:   endpointPath,
 			DetailPath:       detailPath,
 			CollectionCreate: collectionCreate,
+			UpdateSupported:  updateSupported,
 			RequestSchema:    requestSchema,
 			ResponseSchema:   responseSchema,
 			ResourceEligible: resourceEligible,
-			DataSourceElig:   collectionOps.Get != nil && detailOps.Get != nil,
+			DataSourceElig:   dataSourceEligible,
 			RuntimeExcluded:  runtimeExcluded,
 			ExclusionReason:  exclusion.Reason,
 			Fields:           fields,
@@ -227,7 +243,7 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 }
 
 // DeriveRelationships derives relationship resource candidates.
-func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject, priorities map[string]int) []manifest.Relationship {
+func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject, priorities map[string]int, deprecatedRelationships map[string]string) []manifest.Relationship {
 	if doc == nil {
 		return nil
 	}
@@ -243,6 +259,9 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 	for _, endpointPath := range sortedPathKeys(doc.Paths) {
 		matches := relationshipPathPattern.FindStringSubmatch(endpointPath)
 		if len(matches) != 3 {
+			continue
+		}
+		if _, excluded := deprecatedRelationships[endpointPath]; excluded {
 			continue
 		}
 		parentCollection := matches[1]

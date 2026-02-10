@@ -20,6 +20,7 @@ const (
 	defaultManagedPath        = "internal/manifest/managed_objects.json"
 	defaultRelationshipsPath  = "internal/manifest/relationships.json"
 	defaultExclusionsPath     = "internal/manifest/runtime_exclusions.json"
+	defaultDeprecatedPath     = "internal/manifest/deprecated_exclusions.json"
 	defaultPrioritiesPath     = "internal/manifest/relationship_priorities.json"
 	defaultOverridesPath      = "internal/manifest/field_overrides.json"
 	defaultCoverageReportPath = "internal/manifest/coverage_report.json"
@@ -70,6 +71,7 @@ func runGenerate(args []string) error {
 	fs := flag.NewFlagSet("generate", flag.ContinueOnError)
 	schemaPath := fs.String("schema", defaultSchemaPath, "Path to AWX OpenAPI schema JSON")
 	exclusionsPath := fs.String("exclusions", defaultExclusionsPath, "Path to runtime exclusions JSON")
+	deprecatedPath := fs.String("deprecated", defaultDeprecatedPath, "Path to deprecated endpoint exclusions JSON")
 	prioritiesPath := fs.String("relationship-priorities", defaultPrioritiesPath, "Path to relationship priority JSON")
 	overridesPath := fs.String("overrides", defaultOverridesPath, "Path to field override JSON")
 	managedPath := fs.String("managed", defaultManagedPath, "Output path for managed object manifest")
@@ -79,7 +81,7 @@ func runGenerate(args []string) error {
 		return err
 	}
 
-	runtimeExclusions, priorities, objects, relationships, report, overrideCount, err := generate(*schemaPath, *exclusionsPath, *prioritiesPath, *overridesPath)
+	runtimeExclusions, priorities, objects, relationships, report, overrideCount, err := generate(*schemaPath, *exclusionsPath, *deprecatedPath, *prioritiesPath, *overridesPath)
 	if err != nil {
 		return err
 	}
@@ -114,6 +116,7 @@ func runValidate(args []string) error {
 	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
 	schemaPath := fs.String("schema", defaultSchemaPath, "Path to AWX OpenAPI schema JSON")
 	exclusionsPath := fs.String("exclusions", defaultExclusionsPath, "Path to runtime exclusions JSON")
+	deprecatedPath := fs.String("deprecated", defaultDeprecatedPath, "Path to deprecated endpoint exclusions JSON")
 	prioritiesPath := fs.String("relationship-priorities", defaultPrioritiesPath, "Path to relationship priority JSON")
 	overridesPath := fs.String("overrides", defaultOverridesPath, "Path to field override JSON")
 	managedPath := fs.String("managed", defaultManagedPath, "Managed object manifest path")
@@ -123,7 +126,7 @@ func runValidate(args []string) error {
 		return err
 	}
 
-	_, _, generatedObjects, generatedRelationships, report, _, err := generate(*schemaPath, *exclusionsPath, *prioritiesPath, *overridesPath)
+	_, _, generatedObjects, generatedRelationships, report, _, err := generate(*schemaPath, *exclusionsPath, *deprecatedPath, *prioritiesPath, *overridesPath)
 	if err != nil {
 		return err
 	}
@@ -248,13 +251,17 @@ func runReport(args []string) error {
 	return nil
 }
 
-func generate(schemaPath string, exclusionsPath string, prioritiesPath string, overridesPath string) (map[string]manifest.RuntimeExclusion, map[string]int, []manifest.ManagedObject, []manifest.Relationship, CoverageReport, int, error) {
+func generate(schemaPath string, exclusionsPath string, deprecatedPath string, prioritiesPath string, overridesPath string) (map[string]manifest.RuntimeExclusion, map[string]int, []manifest.ManagedObject, []manifest.Relationship, CoverageReport, int, error) {
 	doc, err := openapi.LoadDocument(schemaPath)
 	if err != nil {
 		return nil, nil, nil, nil, CoverageReport{}, 0, err
 	}
 
 	runtimeExclusions, err := openapi.LoadRuntimeExclusions(exclusionsPath)
+	if err != nil {
+		return nil, nil, nil, nil, CoverageReport{}, 0, err
+	}
+	deprecatedObjects, deprecatedRelationships, err := openapi.LoadDeprecatedExclusions(deprecatedPath)
 	if err != nil {
 		return nil, nil, nil, nil, CoverageReport{}, 0, err
 	}
@@ -268,13 +275,13 @@ func generate(schemaPath string, exclusionsPath string, prioritiesPath string, o
 		return nil, nil, nil, nil, CoverageReport{}, 0, err
 	}
 
-	objects := openapi.DeriveManagedObjects(doc, runtimeExclusions)
+	objects := openapi.DeriveManagedObjects(doc, runtimeExclusions, deprecatedObjects)
 	objects = openapi.ApplyFieldOverrides(objects, fieldOverrides)
 	if err := openapi.ValidateCoverage(objects, runtimeExclusions); err != nil {
 		return runtimeExclusions, priorities, objects, nil, buildReport(schemaPath, objects, nil, runtimeExclusions), len(fieldOverrides), err
 	}
 
-	relationships := openapi.DeriveRelationships(doc, objects, priorities)
+	relationships := openapi.DeriveRelationships(doc, objects, priorities, deprecatedRelationships)
 	report := buildReport(schemaPath, objects, relationships, runtimeExclusions)
 	return runtimeExclusions, priorities, objects, relationships, report, len(fieldOverrides), nil
 }
@@ -430,6 +437,9 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 	builder := strings.Builder{}
 	builder.WriteString(fmt.Sprintf("# Resource: %s\n\n", obj.ResourceName))
 	builder.WriteString(fmt.Sprintf("Manages AWX `%s` objects.\n\n", obj.Name))
+	if !obj.UpdateSupported {
+		builder.WriteString("This endpoint does not support in-place updates; Terraform replaces the resource when arguments change.\n\n")
+	}
 
 	builder.WriteString("## Example Usage\n\n")
 	builder.WriteString("```hcl\n")

@@ -15,6 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	resourceschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -72,7 +75,7 @@ func (r *objectResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	}
 
 	for _, field := range r.object.Fields {
-		attributes[field.Name] = newResourceFieldAttribute(field)
+		attributes[field.Name] = newResourceFieldAttribute(field, r.object.UpdateSupported)
 	}
 
 	resp.Schema = resourceschema.Schema{
@@ -200,6 +203,13 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	if r.data == nil || r.data.client == nil {
 		resp.Diagnostics.AddError("Provider not configured", "Expected configured AWX client but provider data was not available.")
+		return
+	}
+	if !r.object.UpdateSupported {
+		resp.Diagnostics.AddError(
+			"In-place update not supported",
+			fmt.Sprintf("AWX `%s` objects do not support PATCH/PUT updates. Configure changes require replacement.", r.object.Name),
+		)
 		return
 	}
 
@@ -417,41 +427,62 @@ func normalizeOptionalEmptyStringToNull(field manifest.FieldSpec, value any, pri
 	return types.StringNull(), true
 }
 
-func newResourceFieldAttribute(field manifest.FieldSpec) resourceschema.Attribute {
+func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) resourceschema.Attribute {
 	optional := !field.Required
 	computed := field.Computed && !field.Required
+	requiresReplace := !updateSupported
 	switch field.Type {
 	case manifest.FieldTypeInt:
+		planModifiers := []planmodifier.Int64{}
+		if requiresReplace {
+			planModifiers = append(planModifiers, int64planmodifier.RequiresReplace())
+		}
 		return resourceschema.Int64Attribute{
-			Description: fieldDescription(field),
-			Required:    field.Required,
-			Optional:    optional,
-			Computed:    computed,
-			Sensitive:   field.Sensitive,
+			Description:   fieldDescription(field),
+			Required:      field.Required,
+			Optional:      optional,
+			Computed:      computed,
+			Sensitive:     field.Sensitive,
+			PlanModifiers: planModifiers,
 		}
 	case manifest.FieldTypeBool:
+		planModifiers := []planmodifier.Bool{}
+		if requiresReplace {
+			planModifiers = append(planModifiers, boolplanmodifier.RequiresReplace())
+		}
 		return resourceschema.BoolAttribute{
-			Description: fieldDescription(field),
-			Required:    field.Required,
-			Optional:    optional,
-			Computed:    computed,
-			Sensitive:   field.Sensitive,
+			Description:   fieldDescription(field),
+			Required:      field.Required,
+			Optional:      optional,
+			Computed:      computed,
+			Sensitive:     field.Sensitive,
+			PlanModifiers: planModifiers,
 		}
 	case manifest.FieldTypeFloat:
+		planModifiers := []planmodifier.Float64{}
+		if requiresReplace {
+			planModifiers = append(planModifiers, float64planmodifier.RequiresReplace())
+		}
 		return resourceschema.Float64Attribute{
-			Description: fieldDescription(field),
-			Required:    field.Required,
-			Optional:    optional,
-			Computed:    computed,
-			Sensitive:   field.Sensitive,
+			Description:   fieldDescription(field),
+			Required:      field.Required,
+			Optional:      optional,
+			Computed:      computed,
+			Sensitive:     field.Sensitive,
+			PlanModifiers: planModifiers,
 		}
 	default:
+		planModifiers := []planmodifier.String{}
+		if requiresReplace {
+			planModifiers = append(planModifiers, stringplanmodifier.RequiresReplace())
+		}
 		return resourceschema.StringAttribute{
-			Description: fieldDescription(field),
-			Required:    field.Required,
-			Optional:    optional,
-			Computed:    computed,
-			Sensitive:   field.Sensitive,
+			Description:   fieldDescription(field),
+			Required:      field.Required,
+			Optional:      optional,
+			Computed:      computed,
+			Sensitive:     field.Sensitive,
+			PlanModifiers: planModifiers,
 		}
 	}
 }

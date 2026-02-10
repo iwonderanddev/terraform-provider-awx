@@ -35,7 +35,7 @@ func TestDeriveManagedObjects(t *testing.T) {
 		}},
 	}
 
-	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{})
+	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{}, map[string]string{})
 	if len(objects) != 1 {
 		t.Fatalf("expected 1 object, got %d", len(objects))
 	}
@@ -96,7 +96,7 @@ func TestDeriveManagedObjectsSupportsNonIDDetailPath(t *testing.T) {
 		}},
 	}
 
-	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{})
+	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{}, map[string]string{})
 	if len(objects) != 1 {
 		t.Fatalf("expected 1 object, got %d", len(objects))
 	}
@@ -113,6 +113,77 @@ func TestDeriveManagedObjectsSupportsNonIDDetailPath(t *testing.T) {
 	}
 	if object.DetailPath != "/api/v2/settings/{category_slug}/" {
 		t.Fatalf("unexpected settings detail path: %s", object.DetailPath)
+	}
+}
+
+func TestDeriveManagedObjectsSupportsCreateDeleteOnlyResources(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/role_user_assignments/": {
+				Get:  &Operation{},
+				Post: &Operation{RequestBody: &RequestBody{Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/RoleUserAssignmentRequest"}}}}},
+			},
+			"/api/v2/role_user_assignments/{id}/": {
+				Get:    &Operation{Responses: map[string]Response{"200": {Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/RoleUserAssignment"}}}}}},
+				Delete: &Operation{},
+			},
+		},
+		Components: Components{Schemas: map[string]*Schema{
+			"RoleUserAssignmentRequest": {
+				Type:     "object",
+				Required: []string{"role_definition", "user"},
+				Properties: map[string]*Schema{
+					"role_definition": {Type: "integer"},
+					"user":            {Type: "integer"},
+				},
+			},
+		}},
+	}
+
+	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{}, map[string]string{})
+	if len(objects) != 1 {
+		t.Fatalf("expected 1 object, got %d", len(objects))
+	}
+
+	object := objects[0]
+	if !object.CollectionCreate {
+		t.Fatalf("expected collection create support")
+	}
+	if object.UpdateSupported {
+		t.Fatalf("expected update support to be disabled for create/delete-only object")
+	}
+	if !object.ResourceEligible {
+		t.Fatalf("expected create/delete-only object to remain resource-eligible")
+	}
+}
+
+func TestDeriveManagedObjectsExcludesDeprecatedObjects(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/roles/": {
+				Get: &Operation{},
+			},
+			"/api/v2/roles/{id}/": {
+				Get: &Operation{},
+			},
+		},
+	}
+
+	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{}, map[string]string{
+		"roles": "Deprecated in favor of role_definitions.",
+	})
+	if len(objects) != 1 {
+		t.Fatalf("expected 1 object, got %d", len(objects))
+	}
+	if objects[0].ResourceEligible {
+		t.Fatalf("expected deprecated object to be excluded from resources")
+	}
+	if objects[0].DataSourceElig {
+		t.Fatalf("expected deprecated object to be excluded from data sources")
 	}
 }
 
@@ -151,7 +222,7 @@ func TestDeriveRelationships(t *testing.T) {
 	}
 	priorities := map[string]int{"team_user_association": 10}
 
-	relationships := DeriveRelationships(doc, objects, priorities)
+	relationships := DeriveRelationships(doc, objects, priorities, map[string]string{})
 	if len(relationships) != 1 {
 		t.Fatalf("expected 1 relationship, got %d", len(relationships))
 	}
@@ -184,7 +255,7 @@ func TestDeriveRelationshipsDetectsNotificationTemplateVariantAndSurveySpec(t *t
 		{Name: "notification_templates"},
 	}
 
-	relationships := DeriveRelationships(doc, objects, map[string]int{})
+	relationships := DeriveRelationships(doc, objects, map[string]int{}, map[string]string{})
 	if len(relationships) != 2 {
 		t.Fatalf("expected 2 relationships, got %d", len(relationships))
 	}
@@ -204,6 +275,30 @@ func TestDeriveRelationshipsDetectsNotificationTemplateVariantAndSurveySpec(t *t
 
 	if _, ok := seen["job_template_survey_spec"]; !ok {
 		t.Fatalf("missing survey spec relationship")
+	}
+}
+
+func TestDeriveRelationshipsExcludesDeprecatedPaths(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/users/{id}/roles/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+		},
+	}
+	objects := []manifest.ManagedObject{
+		{Name: "users"},
+		{Name: "roles"},
+	}
+
+	relationships := DeriveRelationships(doc, objects, map[string]int{}, map[string]string{
+		"/api/v2/users/{id}/roles/": "Deprecated in favor of role_user_assignments.",
+	})
+	if len(relationships) != 0 {
+		t.Fatalf("expected deprecated relationship path to be excluded, got %d entries", len(relationships))
 	}
 }
 
