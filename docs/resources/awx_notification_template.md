@@ -9,6 +9,7 @@ resource "awx_notification_template" "example" {
   name = "example"
   notification_type = "example"
   organization = 1
+  messages = { key = "value" }
 }
 ```
 
@@ -20,9 +21,9 @@ Argument qualifiers used below:
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
 - `description` (Optional) Managed field from AWX OpenAPI schema.
-- `messages` (Optional, Computed) Optional custom messages for notification template.
+- `messages` (Optional, Computed) Optional custom messages as a Terraform object.
 - `name` (Required) Managed field from AWX OpenAPI schema.
-- `notification_configuration` (Optional, Computed, Sensitive) Notification transport configuration may include secrets and is handled as sensitive JSON.
+- `notification_configuration` (Optional, Computed, Sensitive) Notification transport configuration as a write-only sensitive Terraform object.
 - `notification_type` (Required) * `awssns` - AWS SNS
   - `email` - Email
   - `grafana` - Grafana

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	resourceschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/dynamicplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -109,6 +111,11 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plannedObjects := r.objectValuesFromSource(ctx, req.Plan)
+	resp.Diagnostics.Append(plannedObjects.Diagnostics...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	if !r.object.CollectionCreate {
 		id, idDiags := getResourceID(ctx, req.Plan, r.object.CollectionCreate)
@@ -132,9 +139,9 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 			refreshed = map[string]any{}
 		}
 
-		resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values)...)
-		return
-	}
+			resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values)...)
+			return
+		}
 
 	created, err := r.data.client.CreateObject(ctx, r.object.CollectionPath, payload)
 	if err != nil {
@@ -158,7 +165,7 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 		refreshed = created
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values)...)
 }
 
 func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -183,6 +190,11 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		resp.Diagnostics.Append(currentStrings.Diagnostics...)
 		return
 	}
+	currentObjects := r.objectValuesFromSource(ctx, req.State)
+	if currentObjects.HasError() {
+		resp.Diagnostics.Append(currentObjects.Diagnostics...)
+		return
+	}
 
 	obj, err := r.data.client.GetObject(ctx, r.object.DetailPath, id)
 	if err != nil {
@@ -194,7 +206,7 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, obj, currentValues.Values, currentStrings.Values)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, obj, currentValues.Values, currentStrings.Values, currentObjects.Values)...)
 }
 
 func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -226,6 +238,11 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plannedObjects := r.objectValuesFromSource(ctx, req.Plan)
+	resp.Diagnostics.Append(plannedObjects.Diagnostics...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	_, err := r.data.client.UpdateObject(ctx, r.object.DetailPath, id, payload)
 	if err != nil {
@@ -239,7 +256,7 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values)...)
 }
 
 func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -329,6 +346,36 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 				plannedValues[field.Name] = value
 			}
 			payload[field.Name] = value.ValueFloat64()
+		case manifest.FieldTypeObject:
+			var value types.Dynamic
+			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
+			if value.IsNull() || value.IsUnknown() {
+				continue
+			}
+			if field.WriteOnly {
+				plannedValues[field.Name] = value
+			}
+
+			objectPayload, objectErr := terraformDynamicObjectToMap(value)
+			if objectErr != nil {
+				diags.AddAttributeError(path.Root(tfName), "Invalid object payload", objectErr.Error())
+				continue
+			}
+			if objectPayload == nil {
+				continue
+			}
+
+			if fieldUsesStringObjectTransport(r.object.Name, field.Name) {
+				encoded, encodeErr := json.Marshal(objectPayload)
+				if encodeErr != nil {
+					diags.AddAttributeError(path.Root(tfName), "Invalid object payload", encodeErr.Error())
+					continue
+				}
+				payload[field.Name] = string(encoded)
+				continue
+			}
+
+			payload[field.Name] = objectPayload
 		default:
 			var value types.String
 			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
@@ -339,7 +386,7 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 				plannedValues[field.Name] = value
 			}
 
-			if field.Type == manifest.FieldTypeArray || field.Type == manifest.FieldTypeObject {
+			if field.Type == manifest.FieldTypeArray {
 				decoded, decodeErr := decodeJSONString(value.ValueString())
 				if decodeErr != nil {
 					diags.AddAttributeError(path.Root(tfName), "Invalid JSON payload", decodeErr.Error())
@@ -385,6 +432,12 @@ func (r *objectResource) writeOnlyValuesFromSource(ctx context.Context, source a
 			if !value.IsNull() && !value.IsUnknown() {
 				values[field.Name] = value
 			}
+		case manifest.FieldTypeObject:
+			var value types.Dynamic
+			diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
+			if !value.IsNull() && !value.IsUnknown() {
+				values[field.Name] = value
+			}
 		default:
 			var value types.String
 			diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
@@ -418,6 +471,27 @@ func (r *objectResource) stringValuesFromSource(ctx context.Context, source attr
 	return valueSnapshot{Values: values, Diagnostics: diags}
 }
 
+func (r *objectResource) objectValuesFromSource(ctx context.Context, source attributeSource) objectValueSnapshot {
+	values := make(map[string]types.Dynamic)
+	diags := diag.Diagnostics{}
+
+	for _, field := range r.object.Fields {
+		if field.Type != manifest.FieldTypeObject {
+			continue
+		}
+
+		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
+		var value types.Dynamic
+		diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
+		if value.IsUnknown() {
+			continue
+		}
+		values[field.Name] = value
+	}
+
+	return objectValueSnapshot{Values: values, Diagnostics: diags}
+}
+
 func (r *objectResource) setState(
 	ctx context.Context,
 	state attributeTarget,
@@ -425,6 +499,7 @@ func (r *objectResource) setState(
 	apiObject map[string]any,
 	writeOnlyValues map[string]any,
 	priorStringValues map[string]types.String,
+	priorObjectValues map[string]types.Dynamic,
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	if r.object.CollectionCreate {
@@ -445,7 +520,7 @@ func (r *objectResource) setState(
 			if ok {
 				diags.Append(state.SetAttribute(ctx, path.Root(tfName), preserved)...)
 			} else {
-				nullValue, nullDiags := toTerraformValue(field, nil)
+				nullValue, nullDiags := toTerraformValue(r.object.Name, field, nil)
 				diags.Append(nullDiags...)
 				if !nullDiags.HasError() {
 					diags.Append(state.SetAttribute(ctx, path.Root(tfName), nullValue)...)
@@ -455,12 +530,47 @@ func (r *objectResource) setState(
 		}
 
 		value := apiObject[field.Name]
+		if field.Computed && !field.Required {
+			if field.Type == manifest.FieldTypeObject {
+				if priorObject, ok := priorObjectValues[field.Name]; ok && !priorObject.IsUnknown() {
+					diags.Append(state.SetAttribute(ctx, path.Root(tfName), priorObject)...)
+					continue
+				}
+			}
+			if field.Type == manifest.FieldTypeString {
+				if priorString, ok := priorStringValues[field.Name]; ok && !priorString.IsUnknown() && priorString.IsNull() {
+					diags.Append(state.SetAttribute(ctx, path.Root(tfName), priorString)...)
+					continue
+				}
+			}
+		}
+
+		if value == nil && field.Type == manifest.FieldTypeObject {
+			if priorObject, ok := priorObjectValues[field.Name]; ok && !priorObject.IsUnknown() && priorObject.IsNull() {
+				diags.Append(state.SetAttribute(ctx, path.Root(tfName), priorObject)...)
+				continue
+			}
+		}
 		if normalized, ok := normalizeOptionalEmptyStringToNull(field, value, priorStringValues); ok {
 			diags.Append(state.SetAttribute(ctx, path.Root(tfName), normalized)...)
 			continue
 		}
 
-		converted, convDiags := toTerraformValue(field, value)
+		if field.Type == manifest.FieldTypeObject {
+			if priorObject, ok := priorObjectValues[field.Name]; ok && !priorObject.IsUnknown() {
+				preserve, preserveErr := shouldPreserveObjectValue(r.object.Name, field.Name, value, priorObject)
+				if preserveErr != nil {
+					diags.AddError("Failed to compare object field values", fmt.Sprintf("field=%s err=%s", field.Name, preserveErr.Error()))
+					continue
+				}
+				if preserve {
+					diags.Append(state.SetAttribute(ctx, path.Root(tfName), priorObject)...)
+					continue
+				}
+			}
+		}
+
+		converted, convDiags := toTerraformValue(r.object.Name, field, value)
 		diags.Append(convDiags...)
 		if convDiags.HasError() {
 			continue
@@ -489,6 +599,31 @@ func normalizeOptionalEmptyStringToNull(field manifest.FieldSpec, value any, pri
 	return types.StringNull(), true
 }
 
+func shouldPreserveObjectValue(objectName string, fieldName string, apiValue any, prior types.Dynamic) (bool, error) {
+	if prior.IsUnknown() {
+		return false, nil
+	}
+	if apiValue == nil {
+		return prior.IsNull(), nil
+	}
+
+	priorMap, err := terraformDynamicObjectToMap(prior)
+	if err != nil {
+		return false, err
+	}
+
+	apiDynamic, err := terraformObjectValueFromAPIValue(objectName, fieldName, apiValue)
+	if err != nil {
+		return false, err
+	}
+	apiMap, err := terraformDynamicObjectToMap(apiDynamic)
+	if err != nil {
+		return false, err
+	}
+
+	return reflect.DeepEqual(priorMap, apiMap), nil
+}
+
 func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) resourceschema.Attribute {
 	optional := !field.Required
 	computed := field.Computed && !field.Required
@@ -496,6 +631,9 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 	switch field.Type {
 	case manifest.FieldTypeInt:
 		planModifiers := []planmodifier.Int64{}
+		if computed {
+			planModifiers = append(planModifiers, int64planmodifier.UseStateForUnknown())
+		}
 		if requiresReplace {
 			planModifiers = append(planModifiers, int64planmodifier.RequiresReplace())
 		}
@@ -509,6 +647,9 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 		}
 	case manifest.FieldTypeBool:
 		planModifiers := []planmodifier.Bool{}
+		if computed {
+			planModifiers = append(planModifiers, boolplanmodifier.UseStateForUnknown())
+		}
 		if requiresReplace {
 			planModifiers = append(planModifiers, boolplanmodifier.RequiresReplace())
 		}
@@ -522,6 +663,9 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 		}
 	case manifest.FieldTypeFloat:
 		planModifiers := []planmodifier.Float64{}
+		if computed {
+			planModifiers = append(planModifiers, float64planmodifier.UseStateForUnknown())
+		}
 		if requiresReplace {
 			planModifiers = append(planModifiers, float64planmodifier.RequiresReplace())
 		}
@@ -533,8 +677,27 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 			Sensitive:     field.Sensitive,
 			PlanModifiers: planModifiers,
 		}
+	case manifest.FieldTypeObject:
+		planModifiers := []planmodifier.Dynamic{}
+		if computed {
+			planModifiers = append(planModifiers, dynamicplanmodifier.UseStateForUnknown())
+		}
+		if requiresReplace {
+			planModifiers = append(planModifiers, dynamicplanmodifier.RequiresReplace())
+		}
+		return resourceschema.DynamicAttribute{
+			Description:   fieldDescription(field),
+			Required:      field.Required,
+			Optional:      optional,
+			Computed:      computed,
+			Sensitive:     field.Sensitive,
+			PlanModifiers: planModifiers,
+		}
 	default:
 		planModifiers := []planmodifier.String{}
+		if computed {
+			planModifiers = append(planModifiers, stringplanmodifier.UseStateForUnknown())
+		}
 		if requiresReplace {
 			planModifiers = append(planModifiers, stringplanmodifier.RequiresReplace())
 		}
@@ -553,13 +716,16 @@ func fieldDescription(field manifest.FieldSpec) string {
 	if strings.TrimSpace(field.Description) != "" {
 		return field.Description
 	}
-	if field.Type == manifest.FieldTypeArray || field.Type == manifest.FieldTypeObject {
+	if field.Type == manifest.FieldTypeArray {
 		return "JSON-encoded value for this AWX field."
+	}
+	if field.Type == manifest.FieldTypeObject {
+		return "Object value for this AWX field."
 	}
 	return "Managed field from AWX schema."
 }
 
-func toTerraformValue(field manifest.FieldSpec, value any) (any, diag.Diagnostics) {
+func toTerraformValue(objectName string, field manifest.FieldSpec, value any) (any, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	if value == nil {
 		switch field.Type {
@@ -569,6 +735,8 @@ func toTerraformValue(field manifest.FieldSpec, value any) (any, diag.Diagnostic
 			return types.BoolNull(), diags
 		case manifest.FieldTypeFloat:
 			return types.Float64Null(), diags
+		case manifest.FieldTypeObject:
+			return types.DynamicNull(), diags
 		default:
 			return types.StringNull(), diags
 		}
@@ -596,7 +764,14 @@ func toTerraformValue(field manifest.FieldSpec, value any) (any, diag.Diagnostic
 			return types.Float64Null(), diags
 		}
 		return types.Float64Value(parsed), diags
-	case manifest.FieldTypeArray, manifest.FieldTypeObject:
+	case manifest.FieldTypeObject:
+		dynamicValue, err := terraformObjectValueFromAPIValue(objectName, field.Name, value)
+		if err != nil {
+			diags.AddError("Failed to convert object field", fmt.Sprintf("field=%s err=%s", field.Name, err.Error()))
+			return types.DynamicNull(), diags
+		}
+		return dynamicValue, diags
+	case manifest.FieldTypeArray:
 		encoded, err := json.Marshal(value)
 		if err != nil {
 			diags.AddError("Failed to encode complex field as JSON", fmt.Sprintf("field=%s err=%s", field.Name, err.Error()))
@@ -717,5 +892,14 @@ type writeOnlyValueSnapshot struct {
 }
 
 func (s writeOnlyValueSnapshot) HasError() bool {
+	return s.Diagnostics.HasError()
+}
+
+type objectValueSnapshot struct {
+	Values      map[string]types.Dynamic
+	Diagnostics diag.Diagnostics
+}
+
+func (s objectValueSnapshot) HasError() bool {
 	return s.Diagnostics.HasError()
 }

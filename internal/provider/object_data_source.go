@@ -146,7 +146,7 @@ func (d *objectDataSource) setState(ctx context.Context, state attributeTarget, 
 	for _, field := range d.object.Fields {
 		tfName := manifest.TerraformAttributeName(d.object.Name, field.Name)
 		if field.WriteOnly {
-			nullValue, nullDiags := toTerraformValue(field, nil)
+			nullValue, nullDiags := toTerraformValue(d.object.Name, field, nil)
 			diags.Append(nullDiags...)
 			if nullDiags.HasError() {
 				continue
@@ -155,7 +155,7 @@ func (d *objectDataSource) setState(ctx context.Context, state attributeTarget, 
 			continue
 		}
 
-		value, valueDiags := toTerraformValue(field, target.Object[field.Name])
+		value, valueDiags := toTerraformValue(d.object.Name, field, target.Object[field.Name])
 		diags.Append(valueDiags...)
 		if valueDiags.HasError() {
 			continue
@@ -182,6 +182,12 @@ func newDataSourceFieldAttribute(field manifest.FieldSpec) datasourceschema.Attr
 		}
 	case manifest.FieldTypeFloat:
 		return datasourceschema.Float64Attribute{
+			Description: fieldDescription(field),
+			Computed:    true,
+			Sensitive:   field.Sensitive,
+		}
+	case manifest.FieldTypeObject:
+		return datasourceschema.DynamicAttribute{
 			Description: fieldDescription(field),
 			Computed:    true,
 			Sensitive:   field.Sensitive,

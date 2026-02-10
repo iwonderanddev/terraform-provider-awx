@@ -27,7 +27,7 @@ data "awx_workflow_job_template" "example" {
 - `ask_tags_on_launch` (boolean)
 - `ask_variables_on_launch` (boolean)
 - `description` (string)
-- `extra_vars` (string)
+- `extra_vars` (object)
 - `inventory` (integer)
 - `job_tags` (string)
 - `limit` (string)

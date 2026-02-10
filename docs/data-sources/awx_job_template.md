@@ -39,7 +39,7 @@ data "awx_job_template" "example" {
 - `description` (string)
 - `diff_mode` (boolean)
 - `execution_environment` (integer)
-- `extra_vars` (string)
+- `extra_vars` (object)
 - `force_handlers` (boolean)
 - `forks` (integer)
 - `host_config_key` (string)

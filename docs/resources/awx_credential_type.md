@@ -8,6 +8,7 @@ Manages AWX `credential_types` objects.
 resource "awx_credential_type" "example" {
   kind = "example"
   name = "example"
+  injectors = { key = "value" }
 }
 ```
 
@@ -19,8 +20,8 @@ Argument qualifiers used below:
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
 - `description` (Optional) Managed field from AWX OpenAPI schema.
-- `injectors` (Optional, Computed) Enter injectors using either JSON or YAML syntax. Refer to the documentation for example syntax.
-- `inputs` (Optional, Computed) Enter inputs using either JSON or YAML syntax. Refer to the documentation for example syntax.
+- `injectors` (Optional, Computed) Terraform object defining credential type injectors. Refer to the documentation for expected structure.
+- `inputs` (Optional, Computed) Terraform object defining credential type inputs. Refer to the documentation for expected structure.
 - `kind` (Required) * `cloud` - Cloud\n* `net` - Network
 - `name` (Required) Managed field from AWX OpenAPI schema.
 

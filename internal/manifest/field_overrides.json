@@ -6,19 +6,19 @@
       "type": "object",
       "sensitive": true,
       "writeOnly": true,
-      "description": "Credential inputs are treated as write-only secret payloads."
+      "description": "Credential inputs are a write-only sensitive Terraform object payload."
     },
     {
       "object": "credential_types",
       "field": "inputs",
       "type": "object",
-      "description": "Enter inputs using either JSON or YAML syntax. Refer to the documentation for example syntax."
+      "description": "Terraform object defining credential type inputs. Refer to the documentation for expected structure."
     },
     {
       "object": "credential_types",
       "field": "injectors",
       "type": "object",
-      "description": "Enter injectors using either JSON or YAML syntax. Refer to the documentation for example syntax."
+      "description": "Terraform object defining credential type injectors. Refer to the documentation for expected structure."
     },
     {
       "object": "notification_templates",
@@ -26,13 +26,25 @@
       "type": "object",
       "sensitive": true,
       "writeOnly": true,
-      "description": "Notification transport configuration may include secrets and is handled as sensitive JSON."
+      "description": "Notification transport configuration as a write-only sensitive Terraform object."
     },
     {
       "object": "notification_templates",
       "field": "messages",
       "type": "object",
-      "description": "Optional custom messages for notification template."
+      "description": "Optional custom messages as a Terraform object."
+    },
+    {
+      "object": "job_templates",
+      "field": "extra_vars",
+      "type": "object",
+      "description": "Structured extra variables as a Terraform object."
+    },
+    {
+      "object": "workflow_job_templates",
+      "field": "extra_vars",
+      "type": "object",
+      "description": "Structured extra variables as a Terraform object."
     },
     {
       "object": "organizations",

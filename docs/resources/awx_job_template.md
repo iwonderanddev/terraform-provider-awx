@@ -7,6 +7,7 @@ Manages AWX `job_templates` objects.
 ```hcl
 resource "awx_job_template" "example" {
   name = "example"
+  extra_vars = { key = "value" }
 }
 ```
 
@@ -38,7 +39,7 @@ Argument qualifiers used below:
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `diff_mode` (Optional, Computed) If enabled, textual changes made to any templated files on the host are shown in the standard output
 - `execution_environment` (Optional) The container image to be used for execution.
-- `extra_vars` (Optional) Managed field from AWX OpenAPI schema.
+- `extra_vars` (Optional) Structured extra variables as a Terraform object.
 - `force_handlers` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `forks` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `host_config_key` (Optional) Managed field from AWX OpenAPI schema.

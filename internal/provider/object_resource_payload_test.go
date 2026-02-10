@@ -2,17 +2,20 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"math/big"
 	"strings"
 	"testing"
 
 	"github.com/damien/terraform-awx-provider/internal/manifest"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TestPayloadFromConfigDecodesJSONAndTracksWriteOnly(t *testing.T) {
+func TestPayloadFromConfigConvertsObjectValuesAndTracksWriteOnly(t *testing.T) {
 	t.Parallel()
 
 	resource := &objectResource{
@@ -30,7 +33,7 @@ func TestPayloadFromConfigDecodesJSONAndTracksWriteOnly(t *testing.T) {
 	source := &mockConfigSource{
 		values: map[string]any{
 			"name":      types.StringValue("demo"),
-			"settings":  types.StringValue(`{"enabled":true}`),
+			"settings":  types.DynamicValue(types.ObjectValueMust(map[string]attr.Type{"enabled": types.BoolType}, map[string]attr.Value{"enabled": types.BoolValue(true)})),
 			"tags":      types.StringValue(`["a","b"]`),
 			"max_hosts": types.Int64Null(),
 			"token":     types.StringValue("secret-value"),
@@ -75,7 +78,61 @@ func TestPayloadFromConfigDecodesJSONAndTracksWriteOnly(t *testing.T) {
 	}
 }
 
-func TestPayloadFromConfigInvalidJSONReturnsDiagnostic(t *testing.T) {
+func TestPayloadFromConfigEncodesExtraVarsObjectForTransport(t *testing.T) {
+	t.Parallel()
+
+	tests := []string{"job_templates", "workflow_job_templates"}
+	for _, objectName := range tests {
+		objectName := objectName
+		t.Run(objectName, func(t *testing.T) {
+			t.Parallel()
+
+			resource := &objectResource{
+				object: manifest.ManagedObject{
+					Name: objectName,
+					Fields: []manifest.FieldSpec{
+						{Name: "name", Type: manifest.FieldTypeString, Required: true},
+						{Name: "extra_vars", Type: manifest.FieldTypeObject},
+					},
+				},
+			}
+
+			source := &mockConfigSource{
+				values: map[string]any{
+					"name": types.StringValue("demo"),
+					"extra_vars": types.DynamicValue(types.ObjectValueMust(
+						map[string]attr.Type{
+							"enabled": types.BoolType,
+						},
+						map[string]attr.Value{
+							"enabled": types.BoolValue(true),
+						},
+					)),
+				},
+			}
+
+			payload, _, diags := resource.payloadFromConfig(context.Background(), source)
+			if diags.HasError() {
+				t.Fatalf("unexpected diagnostics: %v", diags)
+			}
+
+			raw, ok := payload["extra_vars"].(string)
+			if !ok {
+				t.Fatalf("expected %s.extra_vars payload to be string transport, got %T", objectName, payload["extra_vars"])
+			}
+
+			var decoded map[string]any
+			if err := json.Unmarshal([]byte(raw), &decoded); err != nil {
+				t.Fatalf("expected valid JSON transport string, got error: %v", err)
+			}
+			if got, ok := decoded["enabled"].(bool); !ok || !got {
+				t.Fatalf("unexpected decoded extra_vars.enabled value: %#v", decoded["enabled"])
+			}
+		})
+	}
+}
+
+func TestPayloadFromConfigInvalidObjectReturnsDiagnostic(t *testing.T) {
 	t.Parallel()
 
 	resource := &objectResource{
@@ -88,13 +145,39 @@ func TestPayloadFromConfigInvalidJSONReturnsDiagnostic(t *testing.T) {
 
 	source := &mockConfigSource{
 		values: map[string]any{
-			"settings": types.StringValue("{"),
+			"settings": types.DynamicValue(types.StringValue("not-an-object")),
 		},
 	}
 
 	_, _, diags := resource.payloadFromConfig(context.Background(), source)
 	if !diags.HasError() {
-		t.Fatalf("expected invalid JSON to return diagnostics")
+		t.Fatalf("expected invalid object payload to return diagnostics")
+	}
+}
+
+func TestPayloadFromConfigAllowsNullObjectValues(t *testing.T) {
+	t.Parallel()
+
+	resource := &objectResource{
+		object: manifest.ManagedObject{
+			Fields: []manifest.FieldSpec{
+				{Name: "extra_vars", Type: manifest.FieldTypeObject},
+			},
+		},
+	}
+
+	source := &mockConfigSource{
+		values: map[string]any{
+			"extra_vars": types.DynamicValue(types.MapNull(types.DynamicType)),
+		},
+	}
+
+	payload, _, diags := resource.payloadFromConfig(context.Background(), source)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics for null object value: %v", diags)
+	}
+	if _, exists := payload["extra_vars"]; exists {
+		t.Fatalf("expected null object value to be omitted from payload")
 	}
 }
 
@@ -108,6 +191,7 @@ func TestWriteOnlyValuesFromSourcePreservesOnlyKnownWriteOnlyValues(t *testing.T
 				{Name: "token", Type: manifest.FieldTypeString, WriteOnly: true},
 				{Name: "password", Type: manifest.FieldTypeString, WriteOnly: true},
 				{Name: "team", Type: manifest.FieldTypeInt, WriteOnly: true},
+				{Name: "config", Type: manifest.FieldTypeObject, WriteOnly: true},
 			},
 		},
 	}
@@ -118,6 +202,14 @@ func TestWriteOnlyValuesFromSourcePreservesOnlyKnownWriteOnlyValues(t *testing.T
 			"token":    types.StringValue("token-value"),
 			"password": types.StringUnknown(),
 			"team":     types.Int64Value(22),
+			"config": types.DynamicValue(types.ObjectValueMust(
+				map[string]attr.Type{
+					"threshold": types.NumberType,
+				},
+				map[string]attr.Value{
+					"threshold": types.NumberValue(big.NewFloat(2.5)),
+				},
+			)),
 		},
 	}
 
@@ -125,8 +217,8 @@ func TestWriteOnlyValuesFromSourcePreservesOnlyKnownWriteOnlyValues(t *testing.T
 	if snapshot.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", snapshot.Diagnostics)
 	}
-	if len(snapshot.Values) != 2 {
-		t.Fatalf("unexpected write-only snapshot count: got=%d want=2", len(snapshot.Values))
+	if len(snapshot.Values) != 3 {
+		t.Fatalf("unexpected write-only snapshot count: got=%d want=3", len(snapshot.Values))
 	}
 	tokenValue, ok := snapshot.Values["token"].(types.String)
 	if !ok {
@@ -141,6 +233,13 @@ func TestWriteOnlyValuesFromSourcePreservesOnlyKnownWriteOnlyValues(t *testing.T
 	}
 	if got := teamValue.ValueInt64(); got != 22 {
 		t.Fatalf("unexpected write-only snapshot team value: got=%d want=%d", got, 22)
+	}
+	configValue, ok := snapshot.Values["config"].(types.Dynamic)
+	if !ok {
+		t.Fatalf("expected config write-only value to be types.Dynamic, got %T", snapshot.Values["config"])
+	}
+	if configValue.IsNull() {
+		t.Fatalf("expected config write-only value to be non-null")
 	}
 	if _, exists := snapshot.Values["password"]; exists {
 		t.Fatalf("expected unknown write-only value to be skipped")
@@ -231,6 +330,13 @@ func assignMockAttribute(target any, value any) diag.Diagnostics {
 			return diags
 		}
 		*t = v
+	case *types.Dynamic:
+		v, ok := value.(types.Dynamic)
+		if !ok {
+			diags.AddError("mock type mismatch", fmt.Sprintf("expected types.Dynamic, got %T", value))
+			return diags
+		}
+		*t = v
 	default:
 		diags.AddError("unsupported mock target", fmt.Sprintf("target type %T is not supported", target))
 	}
@@ -247,6 +353,8 @@ func assignMockNull(target any) diag.Diagnostics {
 		*t = types.BoolNull()
 	case *types.Float64:
 		*t = types.Float64Null()
+	case *types.Dynamic:
+		*t = types.DynamicNull()
 	default:
 		diags := diag.Diagnostics{}
 		diags.AddError("unsupported mock target", fmt.Sprintf("target type %T is not supported", target))

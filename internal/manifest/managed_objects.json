@@ -404,7 +404,7 @@
         "computed": true,
         "sensitive": false,
         "writeOnly": false,
-        "description": "Enter injectors using either JSON or YAML syntax. Refer to the documentation for example syntax."
+        "description": "Terraform object defining credential type injectors. Refer to the documentation for expected structure."
       },
       {
         "name": "inputs",
@@ -413,7 +413,7 @@
         "computed": true,
         "sensitive": false,
         "writeOnly": false,
-        "description": "Enter inputs using either JSON or YAML syntax. Refer to the documentation for example syntax."
+        "description": "Terraform object defining credential type inputs. Refer to the documentation for expected structure."
       },
       {
         "name": "kind",
@@ -469,7 +469,7 @@
         "computed": true,
         "sensitive": true,
         "writeOnly": true,
-        "description": "Credential inputs are treated as write-only secret payloads."
+        "description": "Credential inputs are a write-only sensitive Terraform object payload."
       },
       {
         "name": "name",
@@ -1793,10 +1793,11 @@
       },
       {
         "name": "extra_vars",
-        "type": "string",
+        "type": "object",
         "required": false,
         "sensitive": false,
-        "writeOnly": false
+        "writeOnly": false,
+        "description": "Structured extra variables as a Terraform object."
       },
       {
         "name": "force_handlers",
@@ -2503,7 +2504,7 @@
         "computed": true,
         "sensitive": false,
         "writeOnly": false,
-        "description": "Optional custom messages for notification template."
+        "description": "Optional custom messages as a Terraform object."
       },
       {
         "name": "name",
@@ -2519,7 +2520,7 @@
         "computed": true,
         "sensitive": true,
         "writeOnly": true,
-        "description": "Notification transport configuration may include secrets and is handled as sensitive JSON."
+        "description": "Notification transport configuration as a write-only sensitive Terraform object."
       },
       {
         "name": "notification_type",
@@ -7572,10 +7573,11 @@
       },
       {
         "name": "extra_vars",
-        "type": "string",
+        "type": "object",
         "required": false,
         "sensitive": false,
-        "writeOnly": false
+        "writeOnly": false,
+        "description": "Structured extra variables as a Terraform object."
       },
       {
         "name": "inventory",

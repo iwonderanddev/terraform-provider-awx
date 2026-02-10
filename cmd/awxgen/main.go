@@ -447,10 +447,22 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 	if !obj.CollectionCreate {
 		builder.WriteString("  id = \"example\"\n")
 	}
+	exampleFields := map[string]struct{}{}
 	for _, field := range obj.Fields {
 		if field.Required {
 			builder.WriteString(fmt.Sprintf("  %s = %s\n", manifest.TerraformAttributeName(obj.Name, field.Name), sampleValue(field.Type)))
+			exampleFields[field.Name] = struct{}{}
 		}
+	}
+	for _, field := range obj.Fields {
+		if field.Type != manifest.FieldTypeObject || field.WriteOnly {
+			continue
+		}
+		if _, alreadyIncluded := exampleFields[field.Name]; alreadyIncluded {
+			continue
+		}
+		builder.WriteString(fmt.Sprintf("  %s = %s\n", manifest.TerraformAttributeName(obj.Name, field.Name), sampleValue(field.Type)))
+		break
 	}
 	builder.WriteString("}\n")
 	builder.WriteString("```\n\n")
@@ -474,10 +486,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 		if field.Sensitive {
 			sensitive = ", Sensitive"
 		}
-		description := strings.TrimSpace(field.Description)
-		if description == "" {
-			description = "Managed field from AWX OpenAPI schema."
-		}
+		description := resourceFieldDescription(field)
 		builder.WriteString(fmt.Sprintf("- `%s` (%s%s) %s\n", manifest.TerraformAttributeName(obj.Name, field.Name), required, sensitive, formatListItemDescription(description)))
 	}
 	builder.WriteString("\n## Attributes Reference\n\n")
@@ -496,6 +505,17 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 	builder.WriteString("```\n")
 
 	return os.WriteFile(filepath.Join(resourceDir, fmt.Sprintf("%s.md", obj.ResourceName)), []byte(builder.String()), 0o644)
+}
+
+func resourceFieldDescription(field manifest.FieldSpec) string {
+	description := strings.TrimSpace(field.Description)
+	if description == "" {
+		description = "Managed field from AWX OpenAPI schema."
+	}
+	if field.Type == manifest.FieldTypeObject && !strings.Contains(strings.ToLower(description), "object") {
+		description = "Terraform object value. " + description
+	}
+	return description
 }
 
 func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject) error {
@@ -603,7 +623,7 @@ func sampleValue(fieldType manifest.FieldType) string {
 	case manifest.FieldTypeArray:
 		return "jsonencode([\"value\"])"
 	case manifest.FieldTypeObject:
-		return "jsonencode({ key = \"value\" })"
+		return "{ key = \"value\" }"
 	default:
 		return "\"example\""
 	}

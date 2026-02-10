@@ -146,6 +146,50 @@ func TestNotificationTemplateConfigurationIsWriteOnlySensitiveObject(t *testing.
 	t.Fatalf("expected notification_configuration field on notification_templates object")
 }
 
+func TestJobTemplateExtraVarsIsObjectField(t *testing.T) {
+	t.Parallel()
+
+	catalog := MustLoad()
+	object, ok := catalog.ObjectByName("job_templates")
+	if !ok {
+		t.Fatalf("expected job_templates object in catalog")
+	}
+
+	for _, field := range object.Fields {
+		if field.Name != "extra_vars" {
+			continue
+		}
+		if field.Type != FieldTypeObject {
+			t.Fatalf("expected job_templates.extra_vars type=%q, got=%q", FieldTypeObject, field.Type)
+		}
+		return
+	}
+
+	t.Fatalf("expected extra_vars field on job_templates object")
+}
+
+func TestWorkflowJobTemplateExtraVarsIsObjectField(t *testing.T) {
+	t.Parallel()
+
+	catalog := MustLoad()
+	object, ok := catalog.ObjectByName("workflow_job_templates")
+	if !ok {
+		t.Fatalf("expected workflow_job_templates object in catalog")
+	}
+
+	for _, field := range object.Fields {
+		if field.Name != "extra_vars" {
+			continue
+		}
+		if field.Type != FieldTypeObject {
+			t.Fatalf("expected workflow_job_templates.extra_vars type=%q, got=%q", FieldTypeObject, field.Type)
+		}
+		return
+	}
+
+	t.Fatalf("expected extra_vars field on workflow_job_templates object")
+}
+
 func TestSettingsHostMetricTimestampsAreComputed(t *testing.T) {
 	t.Parallel()
 
@@ -156,10 +200,10 @@ func TestSettingsHostMetricTimestampsAreComputed(t *testing.T) {
 	}
 
 	requiredComputed := map[string]bool{
-		"CLEANUP_HOST_METRICS_LAST_TS":       false,
-		"HOST_METRIC_SUMMARY_TASK_LAST_TS":   false,
-		"AUTOMATION_ANALYTICS_LAST_ENTRIES":  false,
-		"AUTOMATION_ANALYTICS_LAST_GATHER":   false,
+		"CLEANUP_HOST_METRICS_LAST_TS":      false,
+		"HOST_METRIC_SUMMARY_TASK_LAST_TS":  false,
+		"AUTOMATION_ANALYTICS_LAST_ENTRIES": false,
+		"AUTOMATION_ANALYTICS_LAST_GATHER":  false,
 	}
 
 	for _, field := range object.Fields {

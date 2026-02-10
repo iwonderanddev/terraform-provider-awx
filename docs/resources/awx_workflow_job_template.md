@@ -7,6 +7,7 @@ Manages AWX `workflow_job_templates` objects.
 ```hcl
 resource "awx_workflow_job_template" "example" {
   name = "example"
+  extra_vars = { key = "value" }
 }
 ```
 
@@ -26,7 +27,7 @@ Argument qualifiers used below:
 - `ask_tags_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `ask_variables_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
-- `extra_vars` (Optional) Managed field from AWX OpenAPI schema.
+- `extra_vars` (Optional) Structured extra variables as a Terraform object.
 - `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
 - `job_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `limit` (Optional) Managed field from AWX OpenAPI schema.

@@ -117,6 +117,7 @@ func TestSetStateOptionalStringPreservesNullForEmptyAPIValue(t *testing.T) {
 		map[string]any{"description": ""},
 		nil,
 		map[string]types.String{"description": types.StringNull()},
+		nil,
 	)
 	if diags.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diags)
@@ -159,6 +160,7 @@ func TestSetStateOptionalStringKeepsExplicitEmptyString(t *testing.T) {
 		map[string]any{"description": ""},
 		nil,
 		map[string]types.String{"description": types.StringValue("")},
+		nil,
 	)
 	if diags.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diags)
@@ -202,6 +204,7 @@ func TestSetStateWriteOnlyIntegerDefaultsToTypedNull(t *testing.T) {
 		target,
 		"42",
 		map[string]any{},
+		nil,
 		nil,
 		nil,
 	)
