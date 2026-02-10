@@ -19,7 +19,7 @@ data "awx_notification_template" "example" {
 
 - `id` (String) Numeric AWX object ID.
 - `description` (string)
-- `messages` (string)
+- `messages` (object)
 - `name` (string)
 - `notification_configuration` (object, Sensitive)
 - `notification_type` (string)

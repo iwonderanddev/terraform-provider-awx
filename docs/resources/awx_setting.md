@@ -134,8 +134,8 @@ Argument qualifiers used below:
 - `auth_ldap_user_flags_by_group` (Optional, Computed) Retrieve users from a given group. At this time, superuser and system auditors are the only groups supported. Refer to the documentation for more detail.
 - `auth_ldap_user_search` (Optional, Computed) LDAP search query to find users. Any user that matches the given pattern will be able to login to the service. The user should also be mapped into an organization (as defined in the AUTH_LDAP_ORGANIZATION_MAP setting). If multiple search queries need to be supported use of "LDAPUnion" is possible. See the documentation for details.
 - `automation_analytics_gather_interval` (Optional, Computed) Interval (in seconds) between data gathering.
-- `automation_analytics_last_entries` (Optional) Managed field from AWX OpenAPI schema.
-- `automation_analytics_last_gather` (Optional) Managed field from AWX OpenAPI schema.
+- `automation_analytics_last_entries` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `automation_analytics_last_gather` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `automation_analytics_url` (Optional, Computed) This setting is used to to configure the upload URL for data collection for Automation Analytics.
 - `awx_ansible_callback_plugins` (Optional, Computed) List of paths to search for extra callback plugins to be used when running jobs. Enter one path per line.
 - `awx_cleanup_paths` (Optional, Computed) Enable or Disable TMP Dir cleanup
@@ -151,7 +151,7 @@ Argument qualifiers used below:
 - `bulk_host_max_create` (Optional, Computed) Max number of hosts to allow to be created in a single bulk action
 - `bulk_host_max_delete` (Optional, Computed) Max number of hosts to allow to be deleted in a single bulk action
 - `bulk_job_max_launch` (Optional, Computed) Max jobs to allow bulk jobs to launch
-- `cleanup_host_metrics_last_ts` (Optional) Managed field from AWX OpenAPI schema.
+- `cleanup_host_metrics_last_ts` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `csrf_trusted_origins` (Optional, Computed) If the service is behind a reverse proxy/load balancer, use this setting to configure the schema://addresses from which the service should trust Origin header values.
 - `custom_login_info` (Optional) If needed, you can add specific information (such as a legal notice or a disclaimer) to a text box in the login modal using this setting. Any content added must be in plain text or an HTML fragment, as other markup languages are not supported.
 - `custom_logo` (Optional) To set up a custom logo, provide a file that you create. For the custom logo to look its best, use a .png file with a transparent background. GIF, PNG and JPEG formats are supported.
@@ -168,7 +168,7 @@ Argument qualifiers used below:
 - `event_stdout_max_bytes_display` (Optional, Computed) Maximum Size of Standard Output in bytes to display for a single job or ad hoc command event. `stdout` will end with `…` when truncated.
 - `galaxy_ignore_certs` (Optional, Computed) If set to true, certificate validation will not be done when installing content from any Galaxy server.
 - `galaxy_task_env` (Optional, Computed) Additional environment variables set for invocations of ansible-galaxy within project updates. Useful if you must use a proxy server for ansible-galaxy but not git.
-- `host_metric_summary_task_last_ts` (Optional) Managed field from AWX OpenAPI schema.
+- `host_metric_summary_task_last_ts` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `insights_tracking_state` (Optional, Computed) Enables the service to gather data on automation and send it to Automation Analytics.
 - `install_uuid` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `is_k8s` (Optional, Computed) Indicates whether the instance is part of a kubernetes-based deployment.

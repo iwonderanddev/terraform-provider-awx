@@ -399,7 +399,7 @@
       },
       {
         "name": "injectors",
-        "type": "string",
+        "type": "object",
         "required": false,
         "computed": true,
         "sensitive": false,
@@ -408,7 +408,7 @@
       },
       {
         "name": "inputs",
-        "type": "string",
+        "type": "object",
         "required": false,
         "computed": true,
         "sensitive": false,
@@ -2498,7 +2498,7 @@
       },
       {
         "name": "messages",
-        "type": "string",
+        "type": "object",
         "required": false,
         "computed": true,
         "sensitive": false,
@@ -2518,7 +2518,7 @@
         "required": false,
         "computed": true,
         "sensitive": true,
-        "writeOnly": false,
+        "writeOnly": true,
         "description": "Notification transport configuration may include secrets and is handled as sensitive JSON."
       },
       {
@@ -4747,6 +4747,7 @@
         "name": "AUTOMATION_ANALYTICS_LAST_ENTRIES",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4754,6 +4755,7 @@
         "name": "AUTOMATION_ANALYTICS_LAST_GATHER",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -4896,6 +4898,7 @@
         "name": "CLEANUP_HOST_METRICS_LAST_TS",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -5042,6 +5045,7 @@
         "name": "HOST_METRIC_SUMMARY_TASK_LAST_TS",
         "type": "string",
         "required": false,
+        "computed": true,
         "sensitive": false,
         "writeOnly": false
       },

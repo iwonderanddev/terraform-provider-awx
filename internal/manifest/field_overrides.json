@@ -9,15 +9,54 @@
       "description": "Credential inputs are treated as write-only secret payloads."
     },
     {
+      "object": "credential_types",
+      "field": "inputs",
+      "type": "object",
+      "description": "Enter inputs using either JSON or YAML syntax. Refer to the documentation for example syntax."
+    },
+    {
+      "object": "credential_types",
+      "field": "injectors",
+      "type": "object",
+      "description": "Enter injectors using either JSON or YAML syntax. Refer to the documentation for example syntax."
+    },
+    {
       "object": "notification_templates",
       "field": "notification_configuration",
       "type": "object",
       "sensitive": true,
+      "writeOnly": true,
       "description": "Notification transport configuration may include secrets and is handled as sensitive JSON."
+    },
+    {
+      "object": "notification_templates",
+      "field": "messages",
+      "type": "object",
+      "description": "Optional custom messages for notification template."
     },
     {
       "object": "organizations",
       "field": "max_hosts",
+      "computed": true
+    },
+    {
+      "object": "settings",
+      "field": "AUTOMATION_ANALYTICS_LAST_ENTRIES",
+      "computed": true
+    },
+    {
+      "object": "settings",
+      "field": "AUTOMATION_ANALYTICS_LAST_GATHER",
+      "computed": true
+    },
+    {
+      "object": "settings",
+      "field": "CLEANUP_HOST_METRICS_LAST_TS",
+      "computed": true
+    },
+    {
+      "object": "settings",
+      "field": "HOST_METRIC_SUMMARY_TASK_LAST_TS",
       "computed": true
     },
     {

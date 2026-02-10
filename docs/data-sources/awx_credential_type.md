@@ -19,7 +19,7 @@ data "awx_credential_type" "example" {
 
 - `id` (String) Numeric AWX object ID.
 - `description` (string)
-- `injectors` (string)
-- `inputs` (string)
+- `injectors` (object)
+- `inputs` (object)
 - `kind` (string)
 - `name` (string)
