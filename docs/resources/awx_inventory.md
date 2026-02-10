@@ -21,10 +21,9 @@ Argument qualifiers used below:
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `host_filter` (Optional) Filter that will be applied to the hosts of this inventory.
 - `kind` (Optional) Kind of inventory being represented.
-
-* `` - Hosts have a direct link to this inventory.
-* `smart` - Hosts for inventory generated using the host_filter property.
-* `constructed` - Parse list of source inventories with the constructed inventory plugin.
+  - `` - Hosts have a direct link to this inventory.
+  - `smart` - Hosts for inventory generated using the host_filter property.
+  - `constructed` - Parse list of source inventories with the constructed inventory plugin.
 - `name` (Required) Managed field from AWX OpenAPI schema.
 - `opa_query_path` (Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
 - `organization` (Required) Organization containing this inventory.

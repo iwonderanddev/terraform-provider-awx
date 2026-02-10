@@ -30,12 +30,11 @@ Argument qualifiers used below:
 - `scm_refspec` (Optional) For git projects, an additional refspec to fetch.
 - `scm_track_submodules` (Optional, Computed) Track submodules latest commits on defined branch.
 - `scm_type` (Optional) Specifies the source control system used to store the project.
-
-* `` - Manual
-* `git` - Git
-* `svn` - Subversion
-* `insights` - Red Hat Insights
-* `archive` - Remote Archive
+  - `` - Manual
+  - `git` - Git
+  - `svn` - Subversion
+  - `insights` - Red Hat Insights
+  - `archive` - Remote Archive
 - `scm_update_cache_timeout` (Optional, Computed) The number of seconds after the last project update ran that a new project update will be launched as a job dependency.
 - `scm_update_on_launch` (Optional, Computed) Update the project when a job is launched that uses the project.
 - `scm_url` (Optional) The location where the project is stored.

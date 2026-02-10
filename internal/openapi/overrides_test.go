@@ -40,3 +40,60 @@ func TestApplyFieldOverridesSetsComputed(t *testing.T) {
 		t.Fatalf("expected max_hosts to be computed after override")
 	}
 }
+
+func TestApplyFieldOverridesAddsMissingField(t *testing.T) {
+	t.Parallel()
+
+	computed := true
+	sensitive := true
+	objects := []manifest.ManagedObject{
+		{
+			Name: "settings",
+			Fields: []manifest.FieldSpec{
+				{Name: "AUTH_BASIC_ENABLED", Type: manifest.FieldTypeBool},
+			},
+		},
+	}
+
+	updated := ApplyFieldOverrides(objects, map[string]FieldOverride{
+		"settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": {
+			Object:      "settings",
+			Field:       "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET",
+			Type:        manifest.FieldTypeString,
+			Computed:    &computed,
+			Sensitive:   &sensitive,
+			Description: "Google OAuth2 secret.",
+		},
+	})
+
+	if len(updated) != 1 {
+		t.Fatalf("unexpected object count: got=%d want=1", len(updated))
+	}
+	if len(updated[0].Fields) != 2 {
+		t.Fatalf("unexpected field count: got=%d want=2", len(updated[0].Fields))
+	}
+
+	var secret manifest.FieldSpec
+	for _, field := range updated[0].Fields {
+		if field.Name == "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET" {
+			secret = field
+			break
+		}
+	}
+
+	if secret.Name == "" {
+		t.Fatalf("missing added field SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
+	}
+	if !secret.Computed {
+		t.Fatalf("expected added field to be computed")
+	}
+	if !secret.Sensitive {
+		t.Fatalf("expected added field to be sensitive")
+	}
+	if !secret.WriteOnly {
+		t.Fatalf("expected added field to infer writeOnly from sensitive=true")
+	}
+	if secret.Description != "Google OAuth2 secret." {
+		t.Fatalf("unexpected description: got=%q", secret.Description)
+	}
+}

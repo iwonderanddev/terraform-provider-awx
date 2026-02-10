@@ -98,3 +98,20 @@ func TestWriteProviderDocIncludesQualifierGuidance(t *testing.T) {
 		t.Fatalf("expected Optional, Computed guidance in provider docs, got:\n%s", content)
 	}
 }
+
+func TestFormatListItemDescriptionConvertsNestedBullets(t *testing.T) {
+	t.Parallel()
+
+	description := "Allowed values:\n\n* `always` - Always\n* `never` - Never"
+	formatted := formatListItemDescription(description)
+
+	if !strings.Contains(formatted, "Allowed values:") {
+		t.Fatalf("expected primary description line, got=%q", formatted)
+	}
+	if !strings.Contains(formatted, "\n  - `always` - Always") {
+		t.Fatalf("expected nested bullet conversion for first value, got=%q", formatted)
+	}
+	if !strings.Contains(formatted, "\n  - `never` - Never") {
+		t.Fatalf("expected nested bullet conversion for second value, got=%q", formatted)
+	}
+}

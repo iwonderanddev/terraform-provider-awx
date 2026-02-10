@@ -24,10 +24,9 @@ Argument qualifiers used below:
 - `name` (Required) Managed field from AWX OpenAPI schema.
 - `organization` (Optional) The organization used to determine access to this execution environment.
 - `pull` (Optional) Pull image before running?
-
-* `always` - Always pull container before running.
-* `missing` - Only pull the image if not present before running.
-* `never` - Never pull container before running.
+  - `always` - Always pull container before running.
+  - `missing` - Only pull the image if not present before running.
+  - `never` - Never pull container before running.
 
 ## Attributes Reference
 

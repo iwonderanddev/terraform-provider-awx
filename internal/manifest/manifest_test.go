@@ -67,3 +67,15 @@ func TestCredentialsDescriptionNotComputed(t *testing.T) {
 
 	t.Fatalf("expected description field on credentials object")
 }
+
+func TestTerraformAttributeName(t *testing.T) {
+	t.Parallel()
+
+	if got := TerraformAttributeName("settings", "AUTH_LDAP_4_SERVER_URI"); got != "auth_ldap_4_server_uri" {
+		t.Fatalf("unexpected settings field mapping: got=%q want=%q", got, "auth_ldap_4_server_uri")
+	}
+
+	if got := TerraformAttributeName("inventories", "name"); got != "name" {
+		t.Fatalf("unexpected non-settings field mapping: got=%q want=%q", got, "name")
+	}
+}

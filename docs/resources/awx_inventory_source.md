@@ -32,18 +32,18 @@ Argument qualifiers used below:
 - `overwrite_vars` (Optional, Computed) Overwrite local variables from remote inventory source.
 - `scm_branch` (Optional) Inventory source SCM branch. Project default used if blank. Only allowed if project allow_override field is set to true.
 - `source` (Required) * `azure_rm` - Microsoft Azure Resource Manager
-* `controller` - Red Hat Ansible Automation Platform
-* `ec2` - Amazon EC2
-* `gce` - Google Compute Engine
-* `insights` - Red Hat Insights
-* `openshift_virtualization` - OpenShift Virtualization
-* `openstack` - OpenStack
-* `rhv` - Red Hat Virtualization
-* `satellite6` - Red Hat Satellite 6
-* `terraform` - Terraform State
-* `vmware` - VMware vCenter
-* `scm` - Sourced from a Project
-* `constructed` - Template additional groups and hostvars at runtime
+  - `controller` - Red Hat Ansible Automation Platform
+  - `ec2` - Amazon EC2
+  - `gce` - Google Compute Engine
+  - `insights` - Red Hat Insights
+  - `openshift_virtualization` - OpenShift Virtualization
+  - `openstack` - OpenStack
+  - `rhv` - Red Hat Virtualization
+  - `satellite6` - Red Hat Satellite 6
+  - `terraform` - Terraform State
+  - `vmware` - VMware vCenter
+  - `scm` - Sourced from a Project
+  - `constructed` - Template additional groups and hostvars at runtime
 - `source_path` (Optional) Managed field from AWX OpenAPI schema.
 - `source_project` (Optional) Project containing inventory file used as source.
 - `source_vars` (Optional) Inventory source variables in YAML or JSON format.
@@ -51,8 +51,8 @@ Argument qualifiers used below:
 - `update_cache_timeout` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `update_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `verbosity` (Optional, Computed) * `0` - 0 (WARNING)
-* `1` - 1 (INFO)
-* `2` - 2 (DEBUG)
+  - `1` - 1 (INFO)
+  - `2` - 2 (DEBUG)
 
 ## Attributes Reference
 

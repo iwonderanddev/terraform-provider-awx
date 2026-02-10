@@ -46,7 +46,7 @@ Argument qualifiers used below:
 - `job_slice_count` (Optional, Computed) The number of jobs to slice into at runtime. Will cause the Job Template to launch a workflow if value is greater than 1.
 - `job_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `job_type` (Optional, Computed) * `run` - Run
-* `check` - Check
+  - `check` - Check
 - `limit` (Optional) Managed field from AWX OpenAPI schema.
 - `name` (Required) Managed field from AWX OpenAPI schema.
 - `opa_query_path` (Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
@@ -60,17 +60,16 @@ Argument qualifiers used below:
 - `timeout` (Optional, Computed) The amount of time (in seconds) to run before the task is canceled.
 - `use_fact_cache` (Optional, Computed) If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible.
 - `verbosity` (Optional, Computed) * `0` - 0 (Normal)
-* `1` - 1 (Verbose)
-* `2` - 2 (More Verbose)
-* `3` - 3 (Debug)
-* `4` - 4 (Connection Debug)
-* `5` - 5 (WinRM Debug)
+  - `1` - 1 (Verbose)
+  - `2` - 2 (More Verbose)
+  - `3` - 3 (Debug)
+  - `4` - 4 (Connection Debug)
+  - `5` - 5 (WinRM Debug)
 - `webhook_credential` (Optional) Personal Access Token for posting back the status to the service API
 - `webhook_service` (Optional) Service that webhook requests will be accepted from
-
-* `github` - GitHub
-* `gitlab` - GitLab
-* `bitbucket_dc` - BitBucket DataCenter
+  - `github` - GitHub
+  - `gitlab` - GitLab
+  - `bitbucket_dc` - BitBucket DataCenter
 
 ## Attributes Reference
 

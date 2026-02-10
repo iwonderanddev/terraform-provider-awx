@@ -75,7 +75,7 @@ func (r *objectResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	}
 
 	for _, field := range r.object.Fields {
-		attributes[field.Name] = newResourceFieldAttribute(field, r.object.UpdateSupported)
+		attributes[manifest.TerraformAttributeName(r.object.Name, field.Name)] = newResourceFieldAttribute(field, r.object.UpdateSupported)
 	}
 
 	resp.Schema = resourceschema.Schema{
@@ -283,31 +283,32 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 	diags := diag.Diagnostics{}
 
 	for _, field := range r.object.Fields {
+		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
 		switch field.Type {
 		case manifest.FieldTypeInt:
 			var value types.Int64
-			diags.Append(config.GetAttribute(ctx, path.Root(field.Name), &value)...)
+			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
 			if value.IsNull() || value.IsUnknown() {
 				continue
 			}
 			payload[field.Name] = value.ValueInt64()
 		case manifest.FieldTypeBool:
 			var value types.Bool
-			diags.Append(config.GetAttribute(ctx, path.Root(field.Name), &value)...)
+			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
 			if value.IsNull() || value.IsUnknown() {
 				continue
 			}
 			payload[field.Name] = value.ValueBool()
 		case manifest.FieldTypeFloat:
 			var value types.Float64
-			diags.Append(config.GetAttribute(ctx, path.Root(field.Name), &value)...)
+			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
 			if value.IsNull() || value.IsUnknown() {
 				continue
 			}
 			payload[field.Name] = value.ValueFloat64()
 		default:
 			var value types.String
-			diags.Append(config.GetAttribute(ctx, path.Root(field.Name), &value)...)
+			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
 			if value.IsNull() || value.IsUnknown() {
 				continue
 			}
@@ -318,7 +319,7 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 			if field.Type == manifest.FieldTypeArray || field.Type == manifest.FieldTypeObject {
 				decoded, decodeErr := decodeJSONString(value.ValueString())
 				if decodeErr != nil {
-					diags.AddAttributeError(path.Root(field.Name), "Invalid JSON payload", decodeErr.Error())
+					diags.AddAttributeError(path.Root(tfName), "Invalid JSON payload", decodeErr.Error())
 					continue
 				}
 				payload[field.Name] = decoded
@@ -340,8 +341,9 @@ func (r *objectResource) valuesFromConfig(ctx context.Context, config attributeS
 		if !field.WriteOnly {
 			continue
 		}
+		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
 		var value types.String
-		diags.Append(config.GetAttribute(ctx, path.Root(field.Name), &value)...)
+		diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
 		if !value.IsNull() && !value.IsUnknown() {
 			values[field.Name] = value
 		}
@@ -359,8 +361,9 @@ func (r *objectResource) stringValuesFromSource(ctx context.Context, source attr
 			continue
 		}
 
+		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
 		var value types.String
-		diags.Append(source.GetAttribute(ctx, path.Root(field.Name), &value)...)
+		diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
 		if value.IsUnknown() {
 			continue
 		}
@@ -382,19 +385,20 @@ func (r *objectResource) setState(
 	diags.Append(state.SetAttribute(ctx, path.Root("id"), id)...)
 
 	for _, field := range r.object.Fields {
+		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
 		if field.WriteOnly {
 			preserved, ok := writeOnlyValues[field.Name]
 			if ok {
-				diags.Append(state.SetAttribute(ctx, path.Root(field.Name), preserved)...)
+				diags.Append(state.SetAttribute(ctx, path.Root(tfName), preserved)...)
 			} else {
-				diags.Append(state.SetAttribute(ctx, path.Root(field.Name), types.StringNull())...)
+				diags.Append(state.SetAttribute(ctx, path.Root(tfName), types.StringNull())...)
 			}
 			continue
 		}
 
 		value := apiObject[field.Name]
 		if normalized, ok := normalizeOptionalEmptyStringToNull(field, value, priorStringValues); ok {
-			diags.Append(state.SetAttribute(ctx, path.Root(field.Name), normalized)...)
+			diags.Append(state.SetAttribute(ctx, path.Root(tfName), normalized)...)
 			continue
 		}
 
@@ -403,7 +407,7 @@ func (r *objectResource) setState(
 		if convDiags.HasError() {
 			continue
 		}
-		diags.Append(state.SetAttribute(ctx, path.Root(field.Name), converted)...)
+		diags.Append(state.SetAttribute(ctx, path.Root(tfName), converted)...)
 	}
 
 	return diags

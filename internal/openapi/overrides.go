@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/damien/terraform-awx-provider/internal/manifest"
@@ -62,7 +63,10 @@ func ApplyFieldOverrides(objects []manifest.ManagedObject, overrides map[string]
 	updated := make([]manifest.ManagedObject, 0, len(objects))
 	for _, object := range objects {
 		fields := make([]manifest.FieldSpec, 0, len(object.Fields))
+		existingFields := make(map[string]struct{}, len(object.Fields))
 		for _, field := range object.Fields {
+			existingFields[field.Name] = struct{}{}
+
 			key := object.Name + "." + field.Name
 			override, ok := overrides[key]
 			if !ok {
@@ -90,9 +94,76 @@ func ApplyFieldOverrides(objects []manifest.ManagedObject, overrides map[string]
 			}
 			fields = append(fields, field)
 		}
+
+		additions := additionsForObject(overrides, object.Name)
+		for _, override := range additions {
+			if _, exists := existingFields[override.Field]; exists {
+				continue
+			}
+			fields = append(fields, fieldFromOverride(override))
+		}
+
+		sort.SliceStable(fields, func(i, j int) bool {
+			return fields[i].Name < fields[j].Name
+		})
+
 		object.Fields = fields
 		updated = append(updated, object)
 	}
 
 	return updated
+}
+
+func additionsForObject(overrides map[string]FieldOverride, objectName string) []FieldOverride {
+	out := make([]FieldOverride, 0)
+	for _, override := range overrides {
+		if override.Object != objectName {
+			continue
+		}
+		if strings.TrimSpace(override.Field) == "" {
+			continue
+		}
+		out = append(out, override)
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		return out[i].Field < out[j].Field
+	})
+	return out
+}
+
+func fieldFromOverride(override FieldOverride) manifest.FieldSpec {
+	fieldType := override.Type
+	if fieldType == "" {
+		fieldType = manifest.FieldTypeString
+	}
+
+	required := false
+	if override.Required != nil {
+		required = *override.Required
+	}
+
+	computed := false
+	if override.Computed != nil {
+		computed = *override.Computed
+	}
+
+	sensitive := false
+	if override.Sensitive != nil {
+		sensitive = *override.Sensitive
+	}
+
+	writeOnly := sensitive
+	if override.WriteOnly != nil {
+		writeOnly = *override.WriteOnly
+	}
+
+	return manifest.FieldSpec{
+		Name:        override.Field,
+		Type:        fieldType,
+		Required:    required,
+		Computed:    computed,
+		Sensitive:   sensitive,
+		WriteOnly:   writeOnly,
+		Description: strings.TrimSpace(override.Description),
+	}
 }

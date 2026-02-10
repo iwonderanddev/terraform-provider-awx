@@ -59,11 +59,12 @@ func (d *objectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 	}
 
 	for _, field := range d.object.Fields {
-		if _, exists := attributes[field.Name]; exists {
+		tfName := manifest.TerraformAttributeName(d.object.Name, field.Name)
+		if _, exists := attributes[tfName]; exists {
 			// Preserve explicit lookup arguments such as id and name.
 			continue
 		}
-		attributes[field.Name] = newDataSourceFieldAttribute(field)
+		attributes[tfName] = newDataSourceFieldAttribute(field)
 	}
 
 	resp.Schema = datasourceschema.Schema{
@@ -114,8 +115,9 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), target.ID)...)
 	for _, field := range d.object.Fields {
+		tfName := manifest.TerraformAttributeName(d.object.Name, field.Name)
 		if field.WriteOnly {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(field.Name), types.StringNull())...)
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(tfName), types.StringNull())...)
 			continue
 		}
 		value, diags := toTerraformValue(field, target.Object[field.Name])
@@ -123,7 +125,7 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		if diags.HasError() {
 			continue
 		}
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(field.Name), value)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(tfName), value)...)
 	}
 }
 

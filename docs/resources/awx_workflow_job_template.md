@@ -37,10 +37,9 @@ Argument qualifiers used below:
 - `survey_enabled` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `webhook_credential` (Optional) Personal Access Token for posting back the status to the service API
 - `webhook_service` (Optional) Service that webhook requests will be accepted from
-
-* `github` - GitHub
-* `gitlab` - GitLab
-* `bitbucket_dc` - BitBucket DataCenter
+  - `github` - GitHub
+  - `gitlab` - GitLab
+  - `bitbucket_dc` - BitBucket DataCenter
 
 ## Attributes Reference
 

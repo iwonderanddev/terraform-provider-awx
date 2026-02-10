@@ -449,7 +449,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 	}
 	for _, field := range obj.Fields {
 		if field.Required {
-			builder.WriteString(fmt.Sprintf("  %s = %s\n", field.Name, sampleValue(field.Type)))
+			builder.WriteString(fmt.Sprintf("  %s = %s\n", manifest.TerraformAttributeName(obj.Name, field.Name), sampleValue(field.Type)))
 		}
 	}
 	builder.WriteString("}\n")
@@ -478,7 +478,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 		if description == "" {
 			description = "Managed field from AWX OpenAPI schema."
 		}
-		builder.WriteString(fmt.Sprintf("- `%s` (%s%s) %s\n", field.Name, required, sensitive, description))
+		builder.WriteString(fmt.Sprintf("- `%s` (%s%s) %s\n", manifest.TerraformAttributeName(obj.Name, field.Name), required, sensitive, formatListItemDescription(description)))
 	}
 	builder.WriteString("\n## Attributes Reference\n\n")
 	if obj.CollectionCreate {
@@ -532,7 +532,7 @@ func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject) error 
 		if field.Sensitive {
 			sensitive = ", Sensitive"
 		}
-		builder.WriteString(fmt.Sprintf("- `%s` (%s%s)\n", field.Name, field.Type, sensitive))
+		builder.WriteString(fmt.Sprintf("- `%s` (%s%s)\n", manifest.TerraformAttributeName(obj.Name, field.Name), field.Type, sensitive))
 	}
 
 	return os.WriteFile(filepath.Join(dataSourceDir, fmt.Sprintf("%s.md", obj.DataSourceName)), []byte(builder.String()), 0o644)
@@ -616,6 +616,57 @@ func hasField(fields []manifest.FieldSpec, name string) bool {
 		}
 	}
 	return false
+}
+
+func formatListItemDescription(description string) string {
+	trimmed := strings.TrimSpace(description)
+	if trimmed == "" {
+		return ""
+	}
+
+	lines := strings.Split(trimmed, "\n")
+	first := ""
+	remaining := make([]string, 0, len(lines))
+	for _, line := range lines {
+		clean := strings.TrimSpace(line)
+		if clean == "" {
+			if len(remaining) > 0 && remaining[len(remaining)-1] != "" {
+				remaining = append(remaining, "")
+			}
+			continue
+		}
+		if first == "" {
+			first = clean
+			continue
+		}
+		remaining = append(remaining, clean)
+	}
+
+	if first == "" || len(remaining) == 0 {
+		return first
+	}
+
+	builder := strings.Builder{}
+	builder.WriteString(first)
+	for _, line := range remaining {
+		if line == "" {
+			builder.WriteString("\n")
+			continue
+		}
+		if strings.HasPrefix(line, "* ") {
+			builder.WriteString("\n  - ")
+			builder.WriteString(strings.TrimSpace(strings.TrimPrefix(line, "* ")))
+			continue
+		}
+		if strings.HasPrefix(line, "- ") {
+			builder.WriteString("\n  - ")
+			builder.WriteString(strings.TrimSpace(strings.TrimPrefix(line, "- ")))
+			continue
+		}
+		builder.WriteString("\n  ")
+		builder.WriteString(line)
+	}
+	return builder.String()
 }
 
 func readManagedObjects(path string) ([]manifest.ManagedObject, error) {

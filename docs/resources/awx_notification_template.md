@@ -24,15 +24,15 @@ Argument qualifiers used below:
 - `name` (Required) Managed field from AWX OpenAPI schema.
 - `notification_configuration` (Optional, Computed, Sensitive) Notification transport configuration may include secrets and is handled as sensitive JSON.
 - `notification_type` (Required) * `awssns` - AWS SNS
-* `email` - Email
-* `grafana` - Grafana
-* `irc` - IRC
-* `mattermost` - Mattermost
-* `pagerduty` - Pagerduty
-* `rocketchat` - Rocket.Chat
-* `slack` - Slack
-* `twilio` - Twilio
-* `webhook` - Webhook
+  - `email` - Email
+  - `grafana` - Grafana
+  - `irc` - IRC
+  - `mattermost` - Mattermost
+  - `pagerduty` - Pagerduty
+  - `rocketchat` - Rocket.Chat
+  - `slack` - Slack
+  - `twilio` - Twilio
+  - `webhook` - Webhook
 - `organization` (Required) Managed field from AWX OpenAPI schema.
 
 ## Attributes Reference
