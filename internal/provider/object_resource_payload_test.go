@@ -132,6 +132,60 @@ func TestPayloadFromConfigEncodesExtraVarsObjectForTransport(t *testing.T) {
 	}
 }
 
+func TestPayloadFromConfigEncodesExtraDataObjectForTransport(t *testing.T) {
+	t.Parallel()
+
+	tests := []string{"schedules", "workflow_job_template_nodes", "workflow_job_nodes"}
+	for _, objectName := range tests {
+		objectName := objectName
+		t.Run(objectName, func(t *testing.T) {
+			t.Parallel()
+
+			resource := &objectResource{
+				object: manifest.ManagedObject{
+					Name: objectName,
+					Fields: []manifest.FieldSpec{
+						{Name: "name", Type: manifest.FieldTypeString, Required: true},
+						{Name: "extra_data", Type: manifest.FieldTypeObject},
+					},
+				},
+			}
+
+			source := &mockConfigSource{
+				values: map[string]any{
+					"name": types.StringValue("demo"),
+					"extra_data": types.DynamicValue(types.ObjectValueMust(
+						map[string]attr.Type{
+							"enabled": types.BoolType,
+						},
+						map[string]attr.Value{
+							"enabled": types.BoolValue(true),
+						},
+					)),
+				},
+			}
+
+			payload, _, diags := resource.payloadFromConfig(context.Background(), source)
+			if diags.HasError() {
+				t.Fatalf("unexpected diagnostics: %v", diags)
+			}
+
+			raw, ok := payload["extra_data"].(string)
+			if !ok {
+				t.Fatalf("expected %s.extra_data payload to be string transport, got %T", objectName, payload["extra_data"])
+			}
+
+			var decoded map[string]any
+			if err := json.Unmarshal([]byte(raw), &decoded); err != nil {
+				t.Fatalf("expected valid JSON transport string, got error: %v", err)
+			}
+			if got, ok := decoded["enabled"].(bool); !ok || !got {
+				t.Fatalf("unexpected decoded extra_data.enabled value: %#v", decoded["enabled"])
+			}
+		})
+	}
+}
+
 func TestPayloadFromConfigInvalidObjectReturnsDiagnostic(t *testing.T) {
 	t.Parallel()
 

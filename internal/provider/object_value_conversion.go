@@ -15,17 +15,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func fieldUsesStringObjectTransport(objectName string, fieldName string) bool {
-	if fieldName != "extra_vars" {
-		return false
-	}
-
-	switch objectName {
-	case "job_templates", "workflow_job_templates":
-		return true
-	default:
-		return false
-	}
+func fieldUsesStringObjectTransport(_ string, fieldName string) bool {
+	return fieldName == "extra_vars" || fieldName == "extra_data"
 }
 
 func terraformDynamicObjectToMap(value types.Dynamic) (map[string]any, error) {

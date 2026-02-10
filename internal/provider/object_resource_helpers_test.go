@@ -118,6 +118,20 @@ func TestToTerraformValueConvertsObjectToDynamic(t *testing.T) {
 	}
 }
 
+func TestFieldUsesStringObjectTransport(t *testing.T) {
+	t.Parallel()
+
+	if !fieldUsesStringObjectTransport("job_templates", "extra_vars") {
+		t.Fatalf("expected extra_vars string transport for job_templates")
+	}
+	if !fieldUsesStringObjectTransport("schedules", "extra_data") {
+		t.Fatalf("expected extra_data string transport for schedules")
+	}
+	if fieldUsesStringObjectTransport("schedules", "settings") {
+		t.Fatalf("expected non-extra_vars fields to skip string transport")
+	}
+}
+
 func TestToTerraformValueParsesExtraVarsJSON(t *testing.T) {
 	t.Parallel()
 
@@ -212,6 +226,113 @@ func TestToTerraformValueRejectsNonObjectExtraVarsRoot(t *testing.T) {
 			)
 			if !diags.HasError() {
 				t.Fatalf("expected diagnostics for non-object extra_vars root")
+			}
+
+			dynamicValue, ok := value.(types.Dynamic)
+			if !ok {
+				t.Fatalf("expected types.Dynamic for failed object conversion, got %T", value)
+			}
+			if !dynamicValue.IsNull() {
+				t.Fatalf("expected null dynamic value when conversion fails")
+			}
+		})
+	}
+}
+
+func TestToTerraformValueParsesExtraDataJSON(t *testing.T) {
+	t.Parallel()
+
+	tests := []string{"schedules", "workflow_job_template_nodes", "workflow_job_nodes"}
+	for _, objectName := range tests {
+		objectName := objectName
+		t.Run(objectName, func(t *testing.T) {
+			t.Parallel()
+
+			value, diags := toTerraformValue(
+				objectName,
+				manifest.FieldSpec{Name: "extra_data", Type: manifest.FieldTypeObject},
+				`{"foo":"bar","nested":{"enabled":true}}`,
+			)
+			if diags.HasError() {
+				t.Fatalf("unexpected diagnostics: %v", diags)
+			}
+
+			dynamicValue, ok := value.(types.Dynamic)
+			if !ok {
+				t.Fatalf("expected types.Dynamic for extra_data, got %T", value)
+			}
+			underlying := dynamicValue.UnderlyingValue()
+			objectValue, ok := underlying.(types.Object)
+			if !ok {
+				t.Fatalf("expected underlying object value, got %T", underlying)
+			}
+
+			fooValue, ok := objectValue.Attributes()["foo"].(types.String)
+			if !ok {
+				t.Fatalf("expected foo attribute as types.String")
+			}
+			if got := fooValue.ValueString(); got != "bar" {
+				t.Fatalf("unexpected foo value: got=%q want=%q", got, "bar")
+			}
+		})
+	}
+}
+
+func TestToTerraformValueParsesExtraDataWithYAMLFallback(t *testing.T) {
+	t.Parallel()
+
+	tests := []string{"schedules", "workflow_job_template_nodes", "workflow_job_nodes"}
+	for _, objectName := range tests {
+		objectName := objectName
+		t.Run(objectName, func(t *testing.T) {
+			t.Parallel()
+
+			value, diags := toTerraformValue(
+				objectName,
+				manifest.FieldSpec{Name: "extra_data", Type: manifest.FieldTypeObject},
+				"foo: bar\nnested:\n  enabled: true\n",
+			)
+			if diags.HasError() {
+				t.Fatalf("unexpected diagnostics: %v", diags)
+			}
+
+			dynamicValue, ok := value.(types.Dynamic)
+			if !ok {
+				t.Fatalf("expected types.Dynamic for extra_data, got %T", value)
+			}
+			underlying := dynamicValue.UnderlyingValue()
+			objectValue, ok := underlying.(types.Object)
+			if !ok {
+				t.Fatalf("expected underlying object value, got %T", underlying)
+			}
+
+			fooValue, ok := objectValue.Attributes()["foo"].(types.String)
+			if !ok {
+				t.Fatalf("expected foo attribute as types.String")
+			}
+			if got := fooValue.ValueString(); got != "bar" {
+				t.Fatalf("unexpected foo value: got=%q want=%q", got, "bar")
+			}
+		})
+	}
+}
+
+func TestToTerraformValueRejectsNonObjectExtraDataRoot(t *testing.T) {
+	t.Parallel()
+
+	tests := []string{"schedules", "workflow_job_template_nodes", "workflow_job_nodes"}
+	for _, objectName := range tests {
+		objectName := objectName
+		t.Run(objectName, func(t *testing.T) {
+			t.Parallel()
+
+			value, diags := toTerraformValue(
+				objectName,
+				manifest.FieldSpec{Name: "extra_data", Type: manifest.FieldTypeObject},
+				"- one\n- two\n",
+			)
+			if !diags.HasError() {
+				t.Fatalf("expected diagnostics for non-object extra_data root")
 			}
 
 			dynamicValue, ok := value.(types.Dynamic)

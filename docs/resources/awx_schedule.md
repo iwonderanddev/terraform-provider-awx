@@ -9,6 +9,7 @@ resource "awx_schedule" "example" {
   name = "example"
   rrule = "example"
   unified_job_template = 1
+  extra_data = { key = "value" }
 }
 ```
 
@@ -23,7 +24,7 @@ Argument qualifiers used below:
 - `diff_mode` (Optional) Managed field from AWX OpenAPI schema.
 - `enabled` (Optional, Computed) Enables processing of this schedule.
 - `execution_environment` (Optional) The container image to be used for execution.
-- `extra_data` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `extra_data` (Optional, Computed) Structured extra data as a Terraform object.
 - `forks` (Optional) Managed field from AWX OpenAPI schema.
 - `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
 - `job_slice_count` (Optional) Managed field from AWX OpenAPI schema.

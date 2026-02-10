@@ -22,7 +22,7 @@ data "awx_schedule" "example" {
 - `diff_mode` (boolean)
 - `enabled` (boolean)
 - `execution_environment` (integer)
-- `extra_data` (string)
+- `extra_data` (object)
 - `forks` (integer)
 - `inventory` (integer)
 - `job_slice_count` (integer)

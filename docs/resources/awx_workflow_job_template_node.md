@@ -7,6 +7,7 @@ Manages AWX `workflow_job_template_nodes` objects.
 ```hcl
 resource "awx_workflow_job_template_node" "example" {
   workflow_job_template = 1
+  extra_data = { key = "value" }
 }
 ```
 
@@ -20,7 +21,7 @@ Argument qualifiers used below:
 - `all_parents_must_converge` (Optional, Computed) If enabled then the node will only run if all of the parent nodes have met the criteria to reach this node
 - `diff_mode` (Optional) Managed field from AWX OpenAPI schema.
 - `execution_environment` (Optional) The container image to be used for execution.
-- `extra_data` (Optional, Computed) Managed field from AWX OpenAPI schema.
+- `extra_data` (Optional, Computed) Structured extra data as a Terraform object.
 - `forks` (Optional) Managed field from AWX OpenAPI schema.
 - `identifier` (Optional) An identifier for this node that is unique within its workflow. It is copied to workflow job nodes corresponding to this node.
 - `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -139,9 +139,9 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 			refreshed = map[string]any{}
 		}
 
-			resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values)...)
-			return
-		}
+		resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values)...)
+		return
+	}
 
 	created, err := r.data.client.CreateObject(ctx, r.object.CollectionPath, payload)
 	if err != nil {
@@ -555,6 +555,10 @@ func (r *objectResource) setState(
 			diags.Append(state.SetAttribute(ctx, path.Root(tfName), normalized)...)
 			continue
 		}
+		if preserved, ok := preserveKnownNormalizedStringField(r.object.Name, field, value, priorStringValues); ok {
+			diags.Append(state.SetAttribute(ctx, path.Root(tfName), preserved)...)
+			continue
+		}
 
 		if field.Type == manifest.FieldTypeObject {
 			if priorObject, ok := priorObjectValues[field.Name]; ok && !priorObject.IsUnknown() {
@@ -597,6 +601,49 @@ func normalizeOptionalEmptyStringToNull(field manifest.FieldSpec, value any, pri
 	}
 
 	return types.StringNull(), true
+}
+
+func preserveKnownNormalizedStringField(objectName string, field manifest.FieldSpec, value any, priorStringValues map[string]types.String) (types.String, bool) {
+	if field.Type != manifest.FieldTypeString || !fieldHasTrailingNewlineNormalization(objectName, field.Name) {
+		return types.String{}, false
+	}
+
+	apiString, ok := value.(string)
+	if !ok {
+		return types.String{}, false
+	}
+
+	prior, hasPrior := priorStringValues[field.Name]
+	if !hasPrior || prior.IsNull() || prior.IsUnknown() {
+		return types.String{}, false
+	}
+
+	priorString := prior.ValueString()
+	if priorString == apiString {
+		return prior, true
+	}
+	if stripSingleTrailingLineEnding(priorString) == stripSingleTrailingLineEnding(apiString) {
+		return prior, true
+	}
+
+	return types.String{}, false
+}
+
+func fieldHasTrailingNewlineNormalization(objectName string, fieldName string) bool {
+	return objectName == "instance_groups" && fieldName == "pod_spec_override"
+}
+
+func stripSingleTrailingLineEnding(value string) string {
+	if strings.HasSuffix(value, "\r\n") {
+		return strings.TrimSuffix(value, "\r\n")
+	}
+	if strings.HasSuffix(value, "\n") {
+		return strings.TrimSuffix(value, "\n")
+	}
+	if strings.HasSuffix(value, "\r") {
+		return strings.TrimSuffix(value, "\r")
+	}
+	return value
 }
 
 func shouldPreserveObjectValue(objectName string, fieldName string, apiValue any, prior types.Dynamic) (bool, error) {

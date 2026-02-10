@@ -190,6 +190,72 @@ func TestWorkflowJobTemplateExtraVarsIsObjectField(t *testing.T) {
 	t.Fatalf("expected extra_vars field on workflow_job_templates object")
 }
 
+func TestScheduleExtraDataIsObjectField(t *testing.T) {
+	t.Parallel()
+
+	catalog := MustLoad()
+	object, ok := catalog.ObjectByName("schedules")
+	if !ok {
+		t.Fatalf("expected schedules object in catalog")
+	}
+
+	for _, field := range object.Fields {
+		if field.Name != "extra_data" {
+			continue
+		}
+		if field.Type != FieldTypeObject {
+			t.Fatalf("expected schedules.extra_data type=%q, got=%q", FieldTypeObject, field.Type)
+		}
+		return
+	}
+
+	t.Fatalf("expected extra_data field on schedules object")
+}
+
+func TestWorkflowJobTemplateNodeExtraDataIsObjectField(t *testing.T) {
+	t.Parallel()
+
+	catalog := MustLoad()
+	object, ok := catalog.ObjectByName("workflow_job_template_nodes")
+	if !ok {
+		t.Fatalf("expected workflow_job_template_nodes object in catalog")
+	}
+
+	for _, field := range object.Fields {
+		if field.Name != "extra_data" {
+			continue
+		}
+		if field.Type != FieldTypeObject {
+			t.Fatalf("expected workflow_job_template_nodes.extra_data type=%q, got=%q", FieldTypeObject, field.Type)
+		}
+		return
+	}
+
+	t.Fatalf("expected extra_data field on workflow_job_template_nodes object")
+}
+
+func TestWorkflowJobNodeExtraDataIsObjectField(t *testing.T) {
+	t.Parallel()
+
+	catalog := MustLoad()
+	object, ok := catalog.ObjectByName("workflow_job_nodes")
+	if !ok {
+		t.Fatalf("expected workflow_job_nodes object in catalog")
+	}
+
+	for _, field := range object.Fields {
+		if field.Name != "extra_data" {
+			continue
+		}
+		if field.Type != FieldTypeObject {
+			t.Fatalf("expected workflow_job_nodes.extra_data type=%q, got=%q", FieldTypeObject, field.Type)
+		}
+		return
+	}
+
+	t.Fatalf("expected extra_data field on workflow_job_nodes object")
+}
+
 func TestSettingsHostMetricTimestampsAreComputed(t *testing.T) {
 	t.Parallel()
 

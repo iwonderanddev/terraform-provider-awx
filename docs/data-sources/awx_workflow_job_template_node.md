@@ -20,7 +20,7 @@ data "awx_workflow_job_template_node" "example" {
 - `all_parents_must_converge` (boolean)
 - `diff_mode` (boolean)
 - `execution_environment` (integer)
-- `extra_data` (string)
+- `extra_data` (object)
 - `forks` (integer)
 - `identifier` (string)
 - `inventory` (integer)

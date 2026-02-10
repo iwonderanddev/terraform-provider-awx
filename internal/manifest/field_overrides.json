@@ -47,6 +47,24 @@
       "description": "Structured extra variables as a Terraform object."
     },
     {
+      "object": "schedules",
+      "field": "extra_data",
+      "type": "object",
+      "description": "Structured extra data as a Terraform object."
+    },
+    {
+      "object": "workflow_job_template_nodes",
+      "field": "extra_data",
+      "type": "object",
+      "description": "Structured extra data as a Terraform object."
+    },
+    {
+      "object": "workflow_job_nodes",
+      "field": "extra_data",
+      "type": "object",
+      "description": "Structured extra data as a Terraform object."
+    },
+    {
       "object": "organizations",
       "field": "max_hosts",
       "computed": true

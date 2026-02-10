@@ -3663,11 +3663,12 @@
       },
       {
         "name": "extra_data",
-        "type": "string",
+        "type": "object",
         "required": false,
         "computed": true,
         "sensitive": false,
-        "writeOnly": false
+        "writeOnly": false,
+        "description": "Structured extra data as a Terraform object."
       },
       {
         "name": "forks",
@@ -7175,11 +7176,12 @@
       },
       {
         "name": "extra_data",
-        "type": "string",
+        "type": "object",
         "required": false,
         "computed": true,
         "sensitive": false,
-        "writeOnly": false
+        "writeOnly": false,
+        "description": "Structured extra data as a Terraform object."
       },
       {
         "name": "failure_nodes",
@@ -7382,11 +7384,12 @@
       },
       {
         "name": "extra_data",
-        "type": "string",
+        "type": "object",
         "required": false,
         "computed": true,
         "sensitive": false,
-        "writeOnly": false
+        "writeOnly": false,
+        "description": "Structured extra data as a Terraform object."
       },
       {
         "name": "forks",
