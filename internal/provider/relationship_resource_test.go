@@ -51,3 +51,35 @@ func TestRelationshipResourceSchemaAssociation(t *testing.T) {
 		t.Fatalf("did not expect association schema to include spec")
 	}
 }
+
+func TestParseCompositeRelationshipImportID(t *testing.T) {
+	t.Parallel()
+
+	parentID, childID, err := parseCompositeRelationshipImportID("12:34")
+	if err != nil {
+		t.Fatalf("expected valid composite import ID, got error: %v", err)
+	}
+	if parentID != 12 || childID != 34 {
+		t.Fatalf("unexpected parsed IDs: got=%d:%d want=12:34", parentID, childID)
+	}
+
+	if _, _, err := parseCompositeRelationshipImportID("12"); err == nil {
+		t.Fatalf("expected malformed composite import ID to fail")
+	}
+}
+
+func TestParseSurveySpecImportID(t *testing.T) {
+	t.Parallel()
+
+	parentID, err := parseSurveySpecImportID("12")
+	if err != nil {
+		t.Fatalf("expected valid survey-spec import ID, got error: %v", err)
+	}
+	if parentID != 12 {
+		t.Fatalf("unexpected parent ID: got=%d want=%d", parentID, 12)
+	}
+
+	if _, err := parseSurveySpecImportID("12:34"); err == nil {
+		t.Fatalf("expected malformed survey-spec import ID to fail")
+	}
+}

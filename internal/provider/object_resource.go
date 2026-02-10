@@ -264,17 +264,24 @@ func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest,
 }
 
 func (r *objectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	id := strings.TrimSpace(req.ID)
-	if id == "" {
-		resp.Diagnostics.AddError("Invalid import ID", "Object resources require a non-empty import identifier.")
-		return
-	}
-	if r.object.CollectionCreate && !numericIDPattern.MatchString(id) {
-		resp.Diagnostics.AddError("Invalid import ID", "Object resources use numeric AWX IDs. Example: 42")
+	id, err := validateObjectImportID(req.ID, r.object.CollectionCreate)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid import ID", err.Error())
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+}
+
+func validateObjectImportID(rawID string, collectionCreate bool) (string, error) {
+	id := strings.TrimSpace(rawID)
+	if id == "" {
+		return "", fmt.Errorf("Object resources require a non-empty import identifier.")
+	}
+	if collectionCreate && !numericIDPattern.MatchString(id) {
+		return "", fmt.Errorf("Object resources use numeric AWX IDs. Example: 42")
+	}
+	return id, nil
 }
 
 func (r *objectResource) payloadFromConfig(ctx context.Context, config attributeSource) (map[string]any, map[string]any, diag.Diagnostics) {

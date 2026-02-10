@@ -224,6 +224,28 @@ func TestShouldRemoveFromStateOnReadError(t *testing.T) {
 	}
 }
 
+func TestObjectResourceSchemaHasNoNestedLifecycleBlocks(t *testing.T) {
+	t.Parallel()
+
+	resourceInstance := NewObjectResource(manifest.ManagedObject{
+		Name:             "settings",
+		ResourceName:     "awx_setting",
+		CollectionCreate: false,
+		UpdateSupported:  true,
+		Fields: []manifest.FieldSpec{
+			{Name: "tower_url_base", Type: manifest.FieldTypeString},
+			{Name: "ansible_callbacks_enabled", Type: manifest.FieldTypeBool},
+		},
+	})
+
+	resp := resource.SchemaResponse{}
+	resourceInstance.Schema(context.Background(), resource.SchemaRequest{}, &resp)
+
+	if len(resp.Schema.Blocks) != 0 {
+		t.Fatalf("expected object resources to expose only attributes, found %d nested block(s)", len(resp.Schema.Blocks))
+	}
+}
+
 type mockAttributeTarget struct {
 	values map[string]any
 }

@@ -292,25 +292,41 @@ func (r *relationshipResource) Delete(ctx context.Context, req resource.DeleteRe
 
 func (r *relationshipResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	if r.isSurveySpecRelationship() {
-		identifier := strings.TrimSpace(req.ID)
-		parentID, err := strconv.ParseInt(identifier, 10, 64)
+		parentID, err := parseSurveySpecImportID(req.ID)
 		if err != nil {
-			resp.Diagnostics.AddError("Invalid survey specification import ID", "Use <parent_id>, for example 12.")
+			resp.Diagnostics.AddError("Invalid survey specification import ID", err.Error())
 			return
 		}
 		setSurveySpecState(ctx, parentID, types.StringNull(), &resp.State, &resp.Diagnostics)
 		return
 	}
 
-	matches := compositeIDPattern.FindStringSubmatch(strings.TrimSpace(req.ID))
-	if len(matches) != 3 {
-		resp.Diagnostics.AddError("Invalid relationship import ID", "Use <parent_id>:<child_id>, for example 12:34.")
+	parentID, childID, err := parseCompositeRelationshipImportID(req.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid relationship import ID", err.Error())
 		return
+	}
+	setRelationshipState(ctx, parentID, childID, &resp.State, &resp.Diagnostics)
+}
+
+func parseSurveySpecImportID(rawID string) (int64, error) {
+	identifier := strings.TrimSpace(rawID)
+	parentID, err := strconv.ParseInt(identifier, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("Use <parent_id>, for example 12.")
+	}
+	return parentID, nil
+}
+
+func parseCompositeRelationshipImportID(rawID string) (int64, int64, error) {
+	matches := compositeIDPattern.FindStringSubmatch(strings.TrimSpace(rawID))
+	if len(matches) != 3 {
+		return 0, 0, fmt.Errorf("Use <parent_id>:<child_id>, for example 12:34.")
 	}
 
 	parentID, _ := strconv.ParseInt(matches[1], 10, 64)
 	childID, _ := strconv.ParseInt(matches[2], 10, 64)
-	setRelationshipState(ctx, parentID, childID, &resp.State, &resp.Diagnostics)
+	return parentID, childID, nil
 }
 
 func relationshipIDsFromConfig(ctx context.Context, source attributeSource) (int64, int64, diag.Diagnostics) {

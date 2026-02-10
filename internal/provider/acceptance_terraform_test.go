@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -21,6 +22,8 @@ const (
 	envPassword        = "AWX_PASSWORD"
 	envOrganizationID  = "AWX_TEST_ORGANIZATION_ID"
 	envRelationshipUID = "AWX_TEST_USER_ID"
+	envJobTemplateID   = "AWX_TEST_JOB_TEMPLATE_ID"
+	envSettingID       = "AWX_TEST_SETTING_ID"
 )
 
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
@@ -230,6 +233,67 @@ func TestAcceptanceTerraform_TeamUserRelationshipResource(t *testing.T) {
 	})
 }
 
+func TestAcceptanceTerraform_SettingResourceDetailKeyImport(t *testing.T) {
+	t.Parallel()
+
+	_ = testAccPreCheck(t, envOrganizationID)
+	settingID := testAccSettingImportID()
+	resourceName := "awx_setting.test"
+	t.Logf("starting terraform acceptance: setting import using detail-key id=%s", settingID)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig:         testAccPreStep(t, "step 1/1: import setting resource using detail-key id"),
+				Config:            testAccSettingImportConfig(settingID),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     settingID,
+				ImportStateVerify: false,
+			},
+		},
+	})
+}
+
+func TestAcceptanceTerraform_JobTemplateSurveySpecImportByParentID(t *testing.T) {
+	t.Parallel()
+
+	_ = testAccPreCheck(t, envOrganizationID)
+	jobTemplateIDRaw := os.Getenv(envJobTemplateID)
+	if jobTemplateIDRaw == "" {
+		t.Skipf("Missing %s for survey specification acceptance scenario", envJobTemplateID)
+	}
+	jobTemplateID, err := strconv.ParseInt(jobTemplateIDRaw, 10, 64)
+	if err != nil {
+		t.Fatalf("invalid %s: %v", envJobTemplateID, err)
+	}
+
+	resourceName := "awx_job_template_survey_spec.test"
+	t.Logf("starting terraform acceptance: survey-spec import by parent id job_template=%d", jobTemplateID)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: testAccPreStep(t, "step 1/2: apply survey specification resource for job_template=%d", jobTemplateID),
+				Config:    testAccJobTemplateSurveySpecConfig(jobTemplateID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckLog(t, "step 1/2 complete: survey specification applied"),
+					resource.TestCheckResourceAttr(resourceName, "parent_id", strconv.FormatInt(jobTemplateID, 10)),
+				),
+			},
+			{
+				PreConfig:         testAccPreStep(t, "step 2/2: import survey specification resource by parent id"),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     strconv.FormatInt(jobTemplateID, 10),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccPreStep(t *testing.T, format string, args ...any) func() {
 	t.Helper()
 	return func() {
@@ -356,7 +420,38 @@ resource "awx_team_user_association" "membership" {
   parent_id = tonumber(awx_team.parent.id)
   child_id  = %d
 }
-`, testAccProviderConfig(), name, organizationID, userID)
+	`, testAccProviderConfig(), name, organizationID, userID)
+}
+
+func testAccSettingImportConfig(settingID string) string {
+	return fmt.Sprintf(`
+%s
+resource "awx_setting" "test" {
+  id = %q
+}
+`, testAccProviderConfig(), settingID)
+}
+
+func testAccSettingImportID() string {
+	settingID := strings.TrimSpace(os.Getenv(envSettingID))
+	if settingID == "" {
+		return "all"
+	}
+	return settingID
+}
+
+func testAccJobTemplateSurveySpecConfig(jobTemplateID int64) string {
+	return fmt.Sprintf(`
+%s
+resource "awx_job_template_survey_spec" "test" {
+  parent_id = %d
+  spec = jsonencode({
+    name        = "Terraform Acceptance Survey"
+    description = "managed by terraform-plugin-testing"
+    spec        = []
+  })
+}
+`, testAccProviderConfig(), jobTemplateID)
 }
 
 func testCheckCompositeRelationshipID(relationshipResourceName string, teamResourceName string, userID int64) resource.TestCheckFunc {
