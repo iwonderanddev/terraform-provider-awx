@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/damien/terraform-awx-provider/internal/manifest"
@@ -29,7 +30,8 @@ type objectLookupClient interface {
 }
 
 type dataSourceLookupInput struct {
-	ID           types.String
+	NumericID    types.Int64
+	Identifier   types.String
 	Name         types.String
 	HasNameField bool
 }
@@ -44,12 +46,19 @@ func (d *objectDataSource) Metadata(_ context.Context, _ datasource.MetadataRequ
 }
 
 func (d *objectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	attributes := map[string]datasourceschema.Attribute{
-		"id": datasourceschema.StringAttribute{
+	attributes := map[string]datasourceschema.Attribute{}
+	if d.object.CollectionCreate {
+		attributes["id"] = datasourceschema.Int64Attribute{
+			Description: "Numeric AWX object identifier for deterministic lookup.",
+			Optional:    true,
+			Computed:    true,
+		}
+	} else {
+		attributes["id"] = datasourceschema.StringAttribute{
 			Description: "AWX object identifier for deterministic lookup.",
 			Optional:    true,
 			Computed:    true,
-		},
+		}
 	}
 	if hasManifestField(d.object.Fields, "name") {
 		attributes["name"] = datasourceschema.StringAttribute{
@@ -91,8 +100,15 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	var idValue types.String
-	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("id"), &idValue)...)
+	lookup := dataSourceLookupInput{
+		Identifier: types.StringNull(),
+		NumericID:  types.Int64Null(),
+	}
+	if d.object.CollectionCreate {
+		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("id"), &lookup.NumericID)...)
+	} else {
+		resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("id"), &lookup.Identifier)...)
+	}
 
 	var nameValue types.String
 	hasNameField := hasManifestField(d.object.Fields, "name")
@@ -103,11 +119,9 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	target, lookupDiags := resolveObjectDataSourceTarget(ctx, d.data.client, d.object, dataSourceLookupInput{
-		ID:           idValue,
-		Name:         nameValue,
-		HasNameField: hasNameField,
-	})
+	lookup.Name = nameValue
+	lookup.HasNameField = hasNameField
+	target, lookupDiags := resolveObjectDataSourceTarget(ctx, d.data.client, d.object, lookup)
 	resp.Diagnostics.Append(lookupDiags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -118,7 +132,16 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 func (d *objectDataSource) setState(ctx context.Context, state attributeTarget, target objectLookupResult) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	diags.Append(state.SetAttribute(ctx, path.Root("id"), target.ID)...)
+	if d.object.CollectionCreate {
+		id, err := parseNumericID(target.ID)
+		if err != nil {
+			diags.AddError("Failed to set AWX object ID", err.Error())
+			return diags
+		}
+		diags.Append(state.SetAttribute(ctx, path.Root("id"), id)...)
+	} else {
+		diags.Append(state.SetAttribute(ctx, path.Root("id"), target.ID)...)
+	}
 
 	for _, field := range d.object.Fields {
 		tfName := manifest.TerraformAttributeName(d.object.Name, field.Name)
@@ -195,14 +218,19 @@ type objectLookupResult struct {
 func resolveObjectDataSourceTarget(ctx context.Context, api objectLookupClient, object manifest.ManagedObject, lookup dataSourceLookupInput) (objectLookupResult, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	if !lookup.ID.IsNull() && !lookup.ID.IsUnknown() {
-		id := strings.TrimSpace(lookup.ID.ValueString())
-		if id == "" {
-			diags.AddAttributeError(path.Root("id"), "Invalid AWX object ID", "id cannot be empty.")
+	if object.CollectionCreate && !lookup.NumericID.IsNull() && !lookup.NumericID.IsUnknown() {
+		id := strconv.FormatInt(lookup.NumericID.ValueInt64(), 10)
+		obj, err := api.GetObject(ctx, object.DetailPath, id)
+		if err != nil {
+			diags.AddError("Failed to query AWX object", err.Error())
 			return objectLookupResult{}, diags
 		}
-		if object.CollectionCreate && !numericIDPattern.MatchString(id) {
-			diags.AddAttributeError(path.Root("id"), "Invalid AWX object ID", "id must be numeric for this object type.")
+		return objectLookupResult{Object: obj, ID: id}, diags
+	}
+	if !object.CollectionCreate && !lookup.Identifier.IsNull() && !lookup.Identifier.IsUnknown() {
+		id := strings.TrimSpace(lookup.Identifier.ValueString())
+		if id == "" {
+			diags.AddAttributeError(path.Root("id"), "Invalid AWX object ID", "id cannot be empty.")
 			return objectLookupResult{}, diags
 		}
 
@@ -233,6 +261,15 @@ func resolveObjectDataSourceTarget(ctx context.Context, api objectLookupClient, 
 				fmt.Sprintf("Lookup for `%s` matched %d objects. Refine the query or provide id.", object.Name, len(matches)),
 			)
 			return objectLookupResult{}, diags
+		}
+
+		if object.CollectionCreate {
+			id, err := parseNumericID(matches[0]["id"])
+			if err != nil {
+				diags.AddError("Failed to parse AWX object ID", err.Error())
+				return objectLookupResult{}, diags
+			}
+			return objectLookupResult{Object: matches[0], ID: strconv.FormatInt(id, 10)}, diags
 		}
 
 		id, err := parseAPIObjectID(matches[0]["id"])

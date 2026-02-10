@@ -12,12 +12,12 @@ data "awx_job_template" "example" {
 
 ## Argument Reference
 
-- `id` (String, Optional) Numeric AWX object ID.
+- `id` (Number, Optional) Numeric AWX object ID.
 - `name` (String, Optional) Deterministic exact-name lookup if `id` is omitted.
 
 ## Attributes Reference
 
-- `id` (String) Numeric AWX object ID.
+- `id` (Number) Numeric AWX object ID.
 - `allow_simultaneous` (boolean)
 - `ask_credential_on_launch` (boolean)
 - `ask_diff_mode_on_launch` (boolean)

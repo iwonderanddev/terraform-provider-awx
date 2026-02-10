@@ -24,7 +24,7 @@ Argument qualifiers used below:
 
 ## Attributes Reference
 
-- `id` (String) Numeric AWX object identifier.
+- `id` (Number) Numeric AWX object identifier.
 
 ## Import
 

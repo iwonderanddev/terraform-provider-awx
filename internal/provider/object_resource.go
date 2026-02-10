@@ -54,17 +54,13 @@ func (r *objectResource) Metadata(_ context.Context, req resource.MetadataReques
 }
 
 func (r *objectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	attributes := map[string]resourceschema.Attribute{
-		"id": resourceschema.StringAttribute{
-			Description: "AWX identifier for this object.",
-		},
-	}
+	attributes := map[string]resourceschema.Attribute{}
 	if r.object.CollectionCreate {
-		attributes["id"] = resourceschema.StringAttribute{
+		attributes["id"] = resourceschema.Int64Attribute{
 			Computed:    true,
 			Description: "Numeric AWX ID for this object.",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.UseStateForUnknown(),
 			},
 		}
 	} else {
@@ -146,11 +142,12 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	id, err := parseAPIObjectID(created["id"])
+	parsedID, err := parseNumericID(created["id"])
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse created object ID", err.Error())
 		return
 	}
+	id := strconv.FormatInt(parsedID, 10)
 
 	refreshed, refreshErr := r.data.client.GetObject(ctx, r.object.DetailPath, id)
 	if refreshErr != nil {
@@ -267,6 +264,16 @@ func (r *objectResource) ImportState(ctx context.Context, req resource.ImportSta
 	id, err := validateObjectImportID(req.ID, r.object.CollectionCreate)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid import ID", err.Error())
+		return
+	}
+
+	if r.object.CollectionCreate {
+		parsedID, parseErr := parseNumericID(id)
+		if parseErr != nil {
+			resp.Diagnostics.AddError("Invalid import ID", parseErr.Error())
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parsedID)...)
 		return
 	}
 
@@ -420,7 +427,16 @@ func (r *objectResource) setState(
 	priorStringValues map[string]types.String,
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	diags.Append(state.SetAttribute(ctx, path.Root("id"), id)...)
+	if r.object.CollectionCreate {
+		parsedID, err := parseNumericID(id)
+		if err != nil {
+			diags.AddError("Failed to set resource ID in state", err.Error())
+			return diags
+		}
+		diags.Append(state.SetAttribute(ctx, path.Root("id"), parsedID)...)
+	} else {
+		diags.Append(state.SetAttribute(ctx, path.Root("id"), id)...)
+	}
 
 	for _, field := range r.object.Fields {
 		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
@@ -594,6 +610,16 @@ func toTerraformValue(field manifest.FieldSpec, value any) (any, diag.Diagnostic
 
 func getResourceID(ctx context.Context, state attributeSource, collectionCreate bool) (string, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
+	if collectionCreate {
+		var id types.Int64
+		diags.Append(state.GetAttribute(ctx, path.Root("id"), &id)...)
+		if id.IsUnknown() || id.IsNull() {
+			diags.AddError("Missing resource ID", "Expected state to contain a numeric AWX identifier.")
+			return "", diags
+		}
+		return strconv.FormatInt(id.ValueInt64(), 10), diags
+	}
+
 	var id types.String
 	diags.Append(state.GetAttribute(ctx, path.Root("id"), &id)...)
 	if id.IsUnknown() || id.IsNull() {

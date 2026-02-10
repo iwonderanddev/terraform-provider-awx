@@ -15,9 +15,10 @@ func TestResolveObjectDataSourceTargetByID(t *testing.T) {
 	t.Parallel()
 
 	object := manifest.ManagedObject{
-		Name:           "projects",
-		CollectionPath: "/api/v2/projects/",
-		DetailPath:     "/api/v2/projects/{id}/",
+		Name:             "projects",
+		CollectionPath:   "/api/v2/projects/",
+		DetailPath:       "/api/v2/projects/{id}/",
+		CollectionCreate: true,
 	}
 
 	var called bool
@@ -33,7 +34,7 @@ func TestResolveObjectDataSourceTargetByID(t *testing.T) {
 			return map[string]any{"id": 42, "name": "demo"}, nil
 		},
 	}, object, dataSourceLookupInput{
-		ID:           types.StringValue("42"),
+		NumericID:    types.Int64Value(42),
 		HasNameField: true,
 	})
 	if diags.HasError() {
@@ -72,7 +73,7 @@ func TestResolveObjectDataSourceTargetByStringIDForDetailOnlyObject(t *testing.T
 			return map[string]any{"tower_url_base": "https://awx.example.com"}, nil
 		},
 	}, object, dataSourceLookupInput{
-		ID: types.StringValue("system"),
+		Identifier: types.StringValue("system"),
 	})
 	if diags.HasError() {
 		t.Fatalf("expected no diagnostics errors, got: %v", diags)
@@ -89,9 +90,10 @@ func TestResolveObjectDataSourceTargetByIDPrefersIDWhenNameAlsoSet(t *testing.T)
 	t.Parallel()
 
 	object := manifest.ManagedObject{
-		Name:           "projects",
-		CollectionPath: "/api/v2/projects/",
-		DetailPath:     "/api/v2/projects/{id}/",
+		Name:             "projects",
+		CollectionPath:   "/api/v2/projects/",
+		DetailPath:       "/api/v2/projects/{id}/",
+		CollectionCreate: true,
 	}
 
 	var getCalled bool
@@ -111,7 +113,7 @@ func TestResolveObjectDataSourceTargetByIDPrefersIDWhenNameAlsoSet(t *testing.T)
 			return nil, nil
 		},
 	}, object, dataSourceLookupInput{
-		ID:           types.StringValue("9"),
+		NumericID:    types.Int64Value(9),
 		Name:         types.StringValue("from-name"),
 		HasNameField: true,
 	})
@@ -232,12 +234,12 @@ func TestResolveObjectDataSourceTargetMissingLookupInput(t *testing.T) {
 	}
 }
 
-func TestResolveObjectDataSourceTargetInvalidID(t *testing.T) {
+func TestResolveObjectDataSourceTargetInvalidDetailID(t *testing.T) {
 	t.Parallel()
 
-	object := manifest.ManagedObject{Name: "projects", DetailPath: "/api/v2/projects/{id}/", CollectionCreate: true}
+	object := manifest.ManagedObject{Name: "settings", DetailPath: "/api/v2/settings/{category_slug}/", CollectionCreate: false}
 	_, diags := resolveObjectDataSourceTarget(context.Background(), &fakeObjectLookupClient{}, object, dataSourceLookupInput{
-		ID: types.StringValue("not-a-number"),
+		Identifier: types.StringValue("   "),
 	})
 
 	if !diags.HasError() {
@@ -278,7 +280,7 @@ func TestResolveObjectDataSourceTargetGetObjectError(t *testing.T) {
 			return nil, errors.New("boom")
 		},
 	}, object, dataSourceLookupInput{
-		ID: types.StringValue("12"),
+		Identifier: types.StringValue("12"),
 	})
 
 	if !diags.HasError() {

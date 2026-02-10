@@ -12,11 +12,11 @@ data "awx_user" "example" {
 
 ## Argument Reference
 
-- `id` (String, Optional) Numeric AWX object ID.
+- `id` (Number, Optional) Numeric AWX object ID.
 
 ## Attributes Reference
 
-- `id` (String) Numeric AWX object ID.
+- `id` (Number) Numeric AWX object ID.
 - `email` (string)
 - `first_name` (string)
 - `is_superuser` (boolean)

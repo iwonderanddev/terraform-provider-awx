@@ -12,11 +12,11 @@ data "awx_workflow_job_template_node" "example" {
 
 ## Argument Reference
 
-- `id` (String, Optional) Numeric AWX object ID.
+- `id` (Number, Optional) Numeric AWX object ID.
 
 ## Attributes Reference
 
-- `id` (String) Numeric AWX object ID.
+- `id` (Number) Numeric AWX object ID.
 - `all_parents_must_converge` (boolean)
 - `diff_mode` (boolean)
 - `execution_environment` (integer)

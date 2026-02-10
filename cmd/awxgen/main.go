@@ -482,7 +482,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 	}
 	builder.WriteString("\n## Attributes Reference\n\n")
 	if obj.CollectionCreate {
-		builder.WriteString("- `id` (String) Numeric AWX object identifier.\n")
+		builder.WriteString("- `id` (Number) Numeric AWX object identifier.\n")
 	} else {
 		builder.WriteString("- `id` (String) AWX detail-path identifier for this object.\n")
 	}
@@ -514,7 +514,7 @@ func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject) error 
 	builder.WriteString("```\n\n")
 	builder.WriteString("## Argument Reference\n\n")
 	if obj.CollectionCreate {
-		builder.WriteString("- `id` (String, Optional) Numeric AWX object ID.\n")
+		builder.WriteString("- `id` (Number, Optional) Numeric AWX object ID.\n")
 	} else {
 		builder.WriteString("- `id` (String, Optional) AWX object identifier used in the detail endpoint path.\n")
 	}
@@ -523,7 +523,7 @@ func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject) error 
 	}
 	builder.WriteString("\n## Attributes Reference\n\n")
 	if obj.CollectionCreate {
-		builder.WriteString("- `id` (String) Numeric AWX object ID.\n")
+		builder.WriteString("- `id` (Number) Numeric AWX object ID.\n")
 	} else {
 		builder.WriteString("- `id` (String) AWX detail-path identifier for this object.\n")
 	}
