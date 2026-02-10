@@ -306,6 +306,53 @@ func TestResolveObjectDataSourceTargetNameIgnoredWhenFieldUnavailable(t *testing
 	}
 }
 
+func TestObjectDataSourceSetStateWriteOnlyIntegerDefaultsToTypedNull(t *testing.T) {
+	t.Parallel()
+
+	dataSource := &objectDataSource{
+		object: manifest.ManagedObject{
+			Name: "credentials",
+			Fields: []manifest.FieldSpec{
+				{Name: "name", Type: manifest.FieldTypeString},
+				{Name: "team", Type: manifest.FieldTypeInt, WriteOnly: true},
+			},
+		},
+	}
+
+	state := &mockAttributeTarget{values: map[string]any{}}
+	diags := dataSource.setState(context.Background(), state, objectLookupResult{
+		ID:     "2",
+		Object: map[string]any{"name": "galaxy-default"},
+	})
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+
+	teamValue, ok := findStateAttributeValue(state.values, "team")
+	if !ok {
+		t.Fatalf("expected team attribute to be written")
+	}
+	intValue, ok := teamValue.(types.Int64)
+	if !ok {
+		t.Fatalf("expected types.Int64 for write-only team, got %T", teamValue)
+	}
+	if !intValue.IsNull() {
+		t.Fatalf("expected null write-only team when no value is available")
+	}
+
+	nameValue, ok := findStateAttributeValue(state.values, "name")
+	if !ok {
+		t.Fatalf("expected name attribute to be written")
+	}
+	stringValue, ok := nameValue.(types.String)
+	if !ok {
+		t.Fatalf("expected types.String for name, got %T", nameValue)
+	}
+	if got := stringValue.ValueString(); got != "galaxy-default" {
+		t.Fatalf("unexpected name value: got=%q want=%q", got, "galaxy-default")
+	}
+}
+
 type fakeObjectLookupClient struct {
 	getObjectFn   func(context.Context, string, string) (map[string]any, error)
 	findByFieldFn func(context.Context, string, string, string) ([]map[string]any, error)

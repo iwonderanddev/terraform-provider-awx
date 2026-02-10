@@ -98,6 +98,48 @@ func TestClientListAllPaginationWithQueryOnlyNext(t *testing.T) {
 	}
 }
 
+func TestClientListAllPaginationWithRelativePathNext(t *testing.T) {
+	t.Parallel()
+
+	client := newTestClient(t)
+	client.httpClient = &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			if req.URL.Path != "/api/v2/role_definitions/" {
+				return jsonResponse(http.StatusNotFound, map[string]any{"detail": "not found"}), nil
+			}
+			if req.URL.Query().Get("page") == "2" {
+				return jsonResponse(http.StatusOK, map[string]any{
+					"count":    2,
+					"next":     nil,
+					"previous": "/api/v2/role_definitions/?page=1",
+					"results": []map[string]any{{
+						"id":   2,
+						"name": "role-2",
+					}},
+				}), nil
+			}
+			return jsonResponse(http.StatusOK, map[string]any{
+				"count":    2,
+				"next":     "/api/v2/role_definitions/?page=2",
+				"previous": nil,
+				"results": []map[string]any{{
+					"id":   1,
+					"name": "role-1",
+				}},
+			}), nil
+		}),
+		Timeout: 5 * time.Second,
+	}
+
+	results, err := client.ListAll(context.Background(), "/api/v2/role_definitions/", nil)
+	if err != nil {
+		t.Fatalf("ListAll returned error: %v", err)
+	}
+	if len(results) != 2 {
+		t.Fatalf("expected 2 results, got %d", len(results))
+	}
+}
+
 func TestClientRetriesRetryableFailures(t *testing.T) {
 	t.Parallel()
 

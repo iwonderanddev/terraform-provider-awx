@@ -113,25 +113,34 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), target.ID)...)
+	resp.Diagnostics.Append(d.setState(ctx, &resp.State, target)...)
+}
+
+func (d *objectDataSource) setState(ctx context.Context, state attributeTarget, target objectLookupResult) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+	diags.Append(state.SetAttribute(ctx, path.Root("id"), target.ID)...)
+
 	for _, field := range d.object.Fields {
 		tfName := manifest.TerraformAttributeName(d.object.Name, field.Name)
 		if field.WriteOnly {
-			nullValue, diags := toTerraformValue(field, nil)
-			resp.Diagnostics.Append(diags...)
-			if diags.HasError() {
+			nullValue, nullDiags := toTerraformValue(field, nil)
+			diags.Append(nullDiags...)
+			if nullDiags.HasError() {
 				continue
 			}
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(tfName), nullValue)...)
+			diags.Append(state.SetAttribute(ctx, path.Root(tfName), nullValue)...)
 			continue
 		}
-		value, diags := toTerraformValue(field, target.Object[field.Name])
-		resp.Diagnostics.Append(diags...)
-		if diags.HasError() {
+
+		value, valueDiags := toTerraformValue(field, target.Object[field.Name])
+		diags.Append(valueDiags...)
+		if valueDiags.HasError() {
 			continue
 		}
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(tfName), value)...)
+		diags.Append(state.SetAttribute(ctx, path.Root(tfName), value)...)
 	}
+
+	return diags
 }
 
 func newDataSourceFieldAttribute(field manifest.FieldSpec) datasourceschema.Attribute {
