@@ -181,6 +181,48 @@ func TestSetStateOptionalStringKeepsExplicitEmptyString(t *testing.T) {
 	}
 }
 
+func TestSetStateWriteOnlyIntegerDefaultsToTypedNull(t *testing.T) {
+	t.Parallel()
+
+	resource := &objectResource{
+		object: manifest.ManagedObject{
+			Fields: []manifest.FieldSpec{
+				{
+					Name:      "team",
+					Type:      manifest.FieldTypeInt,
+					WriteOnly: true,
+				},
+			},
+		},
+	}
+
+	target := &mockAttributeTarget{values: map[string]any{}}
+	diags := resource.setState(
+		context.Background(),
+		target,
+		"42",
+		map[string]any{},
+		nil,
+		nil,
+	)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+
+	value, ok := findStateAttributeValue(target.values, "team")
+	if !ok {
+		t.Fatalf("team attribute was not written")
+	}
+
+	intValue, ok := value.(types.Int64)
+	if !ok {
+		t.Fatalf("expected types.Int64 for write-only team, got %T", value)
+	}
+	if !intValue.IsNull() {
+		t.Fatalf("expected null team when no write-only value is available")
+	}
+}
+
 func findStateAttributeValue(values map[string]any, attr string) (any, bool) {
 	for key, value := range values {
 		if strings.Contains(key, attr) {

@@ -176,7 +176,7 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	currentValues := r.valuesFromConfig(ctx, req.State)
+	currentValues := r.writeOnlyValuesFromSource(ctx, req.State)
 	if currentValues.HasError() {
 		resp.Diagnostics.Append(currentValues.Diagnostics...)
 		return
@@ -277,9 +277,9 @@ func (r *objectResource) ImportState(ctx context.Context, req resource.ImportSta
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func (r *objectResource) payloadFromConfig(ctx context.Context, config attributeSource) (map[string]any, map[string]types.String, diag.Diagnostics) {
+func (r *objectResource) payloadFromConfig(ctx context.Context, config attributeSource) (map[string]any, map[string]any, diag.Diagnostics) {
 	payload := make(map[string]any)
-	plannedValues := make(map[string]types.String)
+	plannedValues := make(map[string]any)
 	diags := diag.Diagnostics{}
 
 	for _, field := range r.object.Fields {
@@ -291,6 +291,9 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 			if value.IsNull() || value.IsUnknown() {
 				continue
 			}
+			if field.WriteOnly {
+				plannedValues[field.Name] = value
+			}
 			payload[field.Name] = value.ValueInt64()
 		case manifest.FieldTypeBool:
 			var value types.Bool
@@ -298,12 +301,18 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 			if value.IsNull() || value.IsUnknown() {
 				continue
 			}
+			if field.WriteOnly {
+				plannedValues[field.Name] = value
+			}
 			payload[field.Name] = value.ValueBool()
 		case manifest.FieldTypeFloat:
 			var value types.Float64
 			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
 			if value.IsNull() || value.IsUnknown() {
 				continue
+			}
+			if field.WriteOnly {
+				plannedValues[field.Name] = value
 			}
 			payload[field.Name] = value.ValueFloat64()
 		default:
@@ -333,8 +342,8 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 	return payload, plannedValues, diags
 }
 
-func (r *objectResource) valuesFromConfig(ctx context.Context, config attributeSource) valueSnapshot {
-	values := make(map[string]types.String)
+func (r *objectResource) writeOnlyValuesFromSource(ctx context.Context, source attributeSource) writeOnlyValueSnapshot {
+	values := make(map[string]any)
 	diags := diag.Diagnostics{}
 
 	for _, field := range r.object.Fields {
@@ -342,14 +351,36 @@ func (r *objectResource) valuesFromConfig(ctx context.Context, config attributeS
 			continue
 		}
 		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
-		var value types.String
-		diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
-		if !value.IsNull() && !value.IsUnknown() {
-			values[field.Name] = value
+
+		switch field.Type {
+		case manifest.FieldTypeInt:
+			var value types.Int64
+			diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
+			if !value.IsNull() && !value.IsUnknown() {
+				values[field.Name] = value
+			}
+		case manifest.FieldTypeBool:
+			var value types.Bool
+			diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
+			if !value.IsNull() && !value.IsUnknown() {
+				values[field.Name] = value
+			}
+		case manifest.FieldTypeFloat:
+			var value types.Float64
+			diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
+			if !value.IsNull() && !value.IsUnknown() {
+				values[field.Name] = value
+			}
+		default:
+			var value types.String
+			diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
+			if !value.IsNull() && !value.IsUnknown() {
+				values[field.Name] = value
+			}
 		}
 	}
 
-	return valueSnapshot{Values: values, Diagnostics: diags}
+	return writeOnlyValueSnapshot{Values: values, Diagnostics: diags}
 }
 
 func (r *objectResource) stringValuesFromSource(ctx context.Context, source attributeSource) valueSnapshot {
@@ -378,7 +409,7 @@ func (r *objectResource) setState(
 	state attributeTarget,
 	id string,
 	apiObject map[string]any,
-	writeOnlyValues map[string]types.String,
+	writeOnlyValues map[string]any,
 	priorStringValues map[string]types.String,
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
@@ -391,7 +422,11 @@ func (r *objectResource) setState(
 			if ok {
 				diags.Append(state.SetAttribute(ctx, path.Root(tfName), preserved)...)
 			} else {
-				diags.Append(state.SetAttribute(ctx, path.Root(tfName), types.StringNull())...)
+				nullValue, nullDiags := toTerraformValue(field, nil)
+				diags.Append(nullDiags...)
+				if !nullDiags.HasError() {
+					diags.Append(state.SetAttribute(ctx, path.Root(tfName), nullValue)...)
+				}
 			}
 			continue
 		}
@@ -640,5 +675,14 @@ type valueSnapshot struct {
 }
 
 func (s valueSnapshot) HasError() bool {
+	return s.Diagnostics.HasError()
+}
+
+type writeOnlyValueSnapshot struct {
+	Values      map[string]any
+	Diagnostics diag.Diagnostics
+}
+
+func (s writeOnlyValueSnapshot) HasError() bool {
 	return s.Diagnostics.HasError()
 }

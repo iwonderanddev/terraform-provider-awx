@@ -117,7 +117,12 @@ func (d *objectDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	for _, field := range d.object.Fields {
 		tfName := manifest.TerraformAttributeName(d.object.Name, field.Name)
 		if field.WriteOnly {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(tfName), types.StringNull())...)
+			nullValue, diags := toTerraformValue(field, nil)
+			resp.Diagnostics.Append(diags...)
+			if diags.HasError() {
+				continue
+			}
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(tfName), nullValue)...)
 			continue
 		}
 		value, diags := toTerraformValue(field, target.Object[field.Name])

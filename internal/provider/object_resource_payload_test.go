@@ -69,7 +69,8 @@ func TestPayloadFromConfigDecodesJSONAndTracksWriteOnly(t *testing.T) {
 	if got, ok := payload["token"].(string); !ok || got != "secret-value" {
 		t.Fatalf("unexpected token payload value: %#v", payload["token"])
 	}
-	if got, ok := writeOnlyValues["token"]; !ok || got.ValueString() != "secret-value" {
+	tokenValue, ok := writeOnlyValues["token"].(types.String)
+	if !ok || tokenValue.ValueString() != "secret-value" {
 		t.Fatalf("expected token write-only value to be preserved")
 	}
 }
@@ -97,7 +98,7 @@ func TestPayloadFromConfigInvalidJSONReturnsDiagnostic(t *testing.T) {
 	}
 }
 
-func TestValuesFromConfigPreservesOnlyKnownWriteOnlyValues(t *testing.T) {
+func TestWriteOnlyValuesFromSourcePreservesOnlyKnownWriteOnlyValues(t *testing.T) {
 	t.Parallel()
 
 	resource := &objectResource{
@@ -106,6 +107,7 @@ func TestValuesFromConfigPreservesOnlyKnownWriteOnlyValues(t *testing.T) {
 				{Name: "name", Type: manifest.FieldTypeString},
 				{Name: "token", Type: manifest.FieldTypeString, WriteOnly: true},
 				{Name: "password", Type: manifest.FieldTypeString, WriteOnly: true},
+				{Name: "team", Type: manifest.FieldTypeInt, WriteOnly: true},
 			},
 		},
 	}
@@ -115,18 +117,30 @@ func TestValuesFromConfigPreservesOnlyKnownWriteOnlyValues(t *testing.T) {
 			"name":     types.StringValue("demo"),
 			"token":    types.StringValue("token-value"),
 			"password": types.StringUnknown(),
+			"team":     types.Int64Value(22),
 		},
 	}
 
-	snapshot := resource.valuesFromConfig(context.Background(), source)
+	snapshot := resource.writeOnlyValuesFromSource(context.Background(), source)
 	if snapshot.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", snapshot.Diagnostics)
 	}
-	if len(snapshot.Values) != 1 {
-		t.Fatalf("unexpected write-only snapshot count: got=%d want=1", len(snapshot.Values))
+	if len(snapshot.Values) != 2 {
+		t.Fatalf("unexpected write-only snapshot count: got=%d want=2", len(snapshot.Values))
 	}
-	if got := snapshot.Values["token"].ValueString(); got != "token-value" {
+	tokenValue, ok := snapshot.Values["token"].(types.String)
+	if !ok {
+		t.Fatalf("expected token write-only value to be types.String, got %T", snapshot.Values["token"])
+	}
+	if got := tokenValue.ValueString(); got != "token-value" {
 		t.Fatalf("unexpected write-only snapshot token value: got=%q want=%q", got, "token-value")
+	}
+	teamValue, ok := snapshot.Values["team"].(types.Int64)
+	if !ok {
+		t.Fatalf("expected team write-only value to be types.Int64, got %T", snapshot.Values["team"])
+	}
+	if got := teamValue.ValueInt64(); got != 22 {
+		t.Fatalf("unexpected write-only snapshot team value: got=%d want=%d", got, 22)
 	}
 	if _, exists := snapshot.Values["password"]; exists {
 		t.Fatalf("expected unknown write-only value to be skipped")

@@ -203,22 +203,34 @@ func (c *Client) ListAll(ctx context.Context, endpointPath string, query url.Val
 			continue
 		}
 
-		nextURL, err := url.Parse(nextRaw)
+		resolvedPath, resolvedQuery, err := resolvePaginationNext(nextPath, currentQuery, nextRaw)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse pagination next URL %q: %w", nextRaw, err)
+			return nil, err
 		}
-
-		if nextURL.IsAbs() {
-			nextPath = nextURL.Path
-			currentQuery = nextURL.Query()
-			continue
-		}
-
-		nextPath = nextRaw
-		currentQuery = nil
+		nextPath = resolvedPath
+		currentQuery = resolvedQuery
 	}
 
 	return results, nil
+}
+
+func resolvePaginationNext(currentPath string, currentQuery url.Values, nextRaw string) (string, url.Values, error) {
+	nextURL, err := url.Parse(nextRaw)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to parse pagination next URL %q: %w", nextRaw, err)
+	}
+
+	baseURL := &url.URL{
+		Path:     currentPath,
+		RawQuery: cloneValues(currentQuery).Encode(),
+	}
+	resolvedURL := baseURL.ResolveReference(nextURL)
+
+	nextPath := resolvedURL.Path
+	if strings.TrimSpace(nextPath) == "" {
+		nextPath = currentPath
+	}
+	return nextPath, resolvedURL.Query(), nil
 }
 
 // FindByField returns deterministic single-result lookup results by exact field value.
