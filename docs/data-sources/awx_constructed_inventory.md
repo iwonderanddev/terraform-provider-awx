@@ -22,7 +22,7 @@ data "awx_constructed_inventory" "example" {
 - `limit` (string)
 - `name` (string)
 - `opa_query_path` (string)
-- `organization` (integer)
+- `organization_id` (integer)
 - `prevent_instance_group_fallback` (boolean)
 - `source_vars` (string)
 - `update_cache_timeout` (integer)

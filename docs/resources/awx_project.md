@@ -18,12 +18,12 @@ Argument qualifiers used below:
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
 - `allow_override` (Optional, Computed) Allow changing the SCM branch or revision in a job template that uses this project.
-- `credential` (Optional) Managed field from AWX OpenAPI schema.
+- `credential_id` (Optional) Managed field from AWX OpenAPI schema.
 - `default_environment` (Optional) The default execution environment for jobs run using this project.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `local_path` (Optional) Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project.
 - `name` (Required) Managed field from AWX OpenAPI schema.
-- `organization` (Optional) The organization used to determine access to this template.
+- `organization_id` (Optional) The organization used to determine access to this template.
 - `scm_branch` (Optional) Specific branch, tag or commit to checkout.
 - `scm_clean` (Optional, Computed) Discard any local changes before syncing the project.
 - `scm_delete_on_update` (Optional, Computed) Delete the project before syncing.

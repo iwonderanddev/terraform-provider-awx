@@ -18,9 +18,9 @@ data "awx_execution_environment" "example" {
 ## Attributes Reference
 
 - `id` (Number) Numeric AWX object ID.
-- `credential` (integer)
+- `credential_id` (integer)
 - `description` (string)
 - `image` (string)
 - `name` (string)
-- `organization` (integer)
+- `organization_id` (integer)
 - `pull` (string)

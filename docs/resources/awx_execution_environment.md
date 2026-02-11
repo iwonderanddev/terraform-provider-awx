@@ -18,11 +18,11 @@ Argument qualifiers used below:
 - `Optional`: May be omitted.
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
-- `credential` (Optional) Managed field from AWX OpenAPI schema.
+- `credential_id` (Optional) Managed field from AWX OpenAPI schema.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `image` (Required) The full image location, including the container registry, image name, and version tag.
 - `name` (Required) Managed field from AWX OpenAPI schema.
-- `organization` (Optional) The organization used to determine access to this execution environment.
+- `organization_id` (Optional) The organization used to determine access to this execution environment.
 - `pull` (Optional) Pull image before running?
   - `always` - Always pull container before running.
   - `missing` - Only pull the image if not present before running.

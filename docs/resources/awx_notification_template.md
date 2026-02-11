@@ -8,7 +8,7 @@ Manages AWX `notification_templates` objects.
 resource "awx_notification_template" "example" {
   name = "example"
   notification_type = "example"
-  organization = 1
+  organization_id = awx_organization.example.id
   messages = { key = "value" }
 }
 ```
@@ -34,7 +34,7 @@ Argument qualifiers used below:
   - `slack` - Slack
   - `twilio` - Twilio
   - `webhook` - Webhook
-- `organization` (Required) Managed field from AWX OpenAPI schema.
+- `organization_id` (Required) Managed field from AWX OpenAPI schema.
 
 ## Attributes Reference
 

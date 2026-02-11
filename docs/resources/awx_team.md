@@ -7,7 +7,7 @@ Manages AWX `teams` objects.
 ```hcl
 resource "awx_team" "example" {
   name = "example"
-  organization = 1
+  organization_id = awx_organization.example.id
 }
 ```
 
@@ -20,7 +20,7 @@ Argument qualifiers used below:
 
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `name` (Required) Managed field from AWX OpenAPI schema.
-- `organization` (Required) Managed field from AWX OpenAPI schema.
+- `organization_id` (Required) Managed field from AWX OpenAPI schema.
 
 ## Attributes Reference
 

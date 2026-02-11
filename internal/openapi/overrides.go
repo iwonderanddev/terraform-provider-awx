@@ -17,6 +17,7 @@ type FieldOverride struct {
 	Field       string             `json:"field"`
 	Type        manifest.FieldType `json:"type,omitempty"`
 	Required    *bool              `json:"required,omitempty"`
+	Reference   *bool              `json:"reference,omitempty"`
 	Computed    *bool              `json:"computed,omitempty"`
 	Sensitive   *bool              `json:"sensitive,omitempty"`
 	WriteOnly   *bool              `json:"writeOnly,omitempty"`
@@ -83,6 +84,9 @@ func ApplyFieldOverrides(objects []manifest.ManagedObject, overrides map[string]
 			if override.Computed != nil {
 				field.Computed = *override.Computed
 			}
+			if override.Reference != nil {
+				field.Reference = *override.Reference
+			}
 			if override.Sensitive != nil {
 				field.Sensitive = *override.Sensitive
 			}
@@ -146,6 +150,10 @@ func fieldFromOverride(override FieldOverride) manifest.FieldSpec {
 	if override.Computed != nil {
 		computed = *override.Computed
 	}
+	reference := false
+	if override.Reference != nil {
+		reference = *override.Reference
+	}
 
 	sensitive := false
 	if override.Sensitive != nil {
@@ -161,6 +169,7 @@ func fieldFromOverride(override FieldOverride) manifest.FieldSpec {
 		Name:        override.Field,
 		Type:        fieldType,
 		Required:    required,
+		Reference:   reference,
 		Computed:    computed,
 		Sensitive:   sensitive,
 		WriteOnly:   writeOnly,

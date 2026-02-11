@@ -159,6 +159,139 @@ func TestDeriveManagedObjectsSupportsCreateDeleteOnlyResources(t *testing.T) {
 	}
 }
 
+func TestDeriveManagedObjectsMarksReferenceFields(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/organizations/": {
+				Get:  &Operation{},
+				Post: &Operation{RequestBody: &RequestBody{Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/OrganizationRequest"}}}}},
+			},
+			"/api/v2/organizations/{id}/": {
+				Get:    &Operation{Responses: map[string]Response{"200": {Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/Organization"}}}}}},
+				Patch:  &Operation{},
+				Delete: &Operation{},
+			},
+			"/api/v2/teams/": {
+				Get:  &Operation{},
+				Post: &Operation{RequestBody: &RequestBody{Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/TeamRequest"}}}}},
+			},
+			"/api/v2/teams/{id}/": {
+				Get:    &Operation{Responses: map[string]Response{"200": {Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/Team"}}}}}},
+				Patch:  &Operation{},
+				Delete: &Operation{},
+			},
+		},
+		Components: Components{Schemas: map[string]*Schema{
+			"OrganizationRequest": {
+				Type: "object",
+				Properties: map[string]*Schema{
+					"name": {Type: "string"},
+				},
+				Required: []string{"name"},
+			},
+			"Organization": {
+				Type: "object",
+				Properties: map[string]*Schema{
+					"id":   {Type: "integer"},
+					"name": {Type: "string"},
+				},
+			},
+			"TeamRequest": {
+				Type: "object",
+				Properties: map[string]*Schema{
+					"name":         {Type: "string"},
+					"organization": {Type: "integer"},
+					"max_hosts":    {Type: "integer"},
+				},
+				Required: []string{"name", "organization"},
+			},
+			"Team": {
+				Type: "object",
+				Properties: map[string]*Schema{
+					"id":           {Type: "integer"},
+					"name":         {Type: "string"},
+					"organization": {Type: "integer"},
+					"max_hosts":    {Type: "integer"},
+				},
+			},
+		}},
+	}
+
+	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{}, map[string]string{})
+	if len(objects) != 2 {
+		t.Fatalf("expected 2 objects, got %d", len(objects))
+	}
+
+	var team manifest.ManagedObject
+	for _, object := range objects {
+		if object.Name == "teams" {
+			team = object
+			break
+		}
+	}
+	if team.Name == "" {
+		t.Fatalf("expected teams object to be derived")
+	}
+
+	orgField := findField(team.Fields, "organization")
+	if !orgField.Reference {
+		t.Fatalf("expected teams.organization to be marked as reference")
+	}
+
+	maxHostsField := findField(team.Fields, "max_hosts")
+	if maxHostsField.Reference {
+		t.Fatalf("expected teams.max_hosts to remain non-reference")
+	}
+}
+
+func TestDeriveManagedObjectsDoesNotInferReferenceFromIDSuffixAlone(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/teams/": {
+				Get:  &Operation{},
+				Post: &Operation{RequestBody: &RequestBody{Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/TeamRequest"}}}}},
+			},
+			"/api/v2/teams/{id}/": {
+				Get:    &Operation{Responses: map[string]Response{"200": {Content: map[string]MediaType{"application/json": {Schema: &Schema{Ref: "#/components/schemas/Team"}}}}}},
+				Patch:  &Operation{},
+				Delete: &Operation{},
+			},
+		},
+		Components: Components{Schemas: map[string]*Schema{
+			"TeamRequest": {
+				Type: "object",
+				Properties: map[string]*Schema{
+					"name":      {Type: "string"},
+					"legacy_id": {Type: "integer"},
+				},
+				Required: []string{"name"},
+			},
+			"Team": {
+				Type: "object",
+				Properties: map[string]*Schema{
+					"id":        {Type: "integer"},
+					"name":      {Type: "string"},
+					"legacy_id": {Type: "integer"},
+				},
+			},
+		}},
+	}
+
+	objects := DeriveManagedObjects(doc, map[string]manifest.RuntimeExclusion{}, map[string]string{})
+	if len(objects) != 1 {
+		t.Fatalf("expected 1 object, got %d", len(objects))
+	}
+
+	legacyField := findField(objects[0].Fields, "legacy_id")
+	if legacyField.Reference {
+		t.Fatalf("expected teams.legacy_id to remain non-reference without metadata classification")
+	}
+}
+
 func TestDeriveManagedObjectsExcludesDeprecatedObjects(t *testing.T) {
 	t.Parallel()
 

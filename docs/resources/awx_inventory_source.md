@@ -6,7 +6,7 @@ Manages AWX `inventory_sources` objects.
 
 ```hcl
 resource "awx_inventory_source" "example" {
-  inventory = 1
+  inventory_id = awx_inventory.example.id
   name = "example"
   source = "example"
 }
@@ -19,13 +19,13 @@ Argument qualifiers used below:
 - `Optional`: May be omitted.
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
-- `credential` (Optional) Cloud credential to use for inventory updates.
+- `credential_id` (Optional) Cloud credential to use for inventory updates.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `enabled_value` (Optional) Only used when enabled_var is set. Value when the host is considered enabled. For example if enabled_var="status.power_state"and enabled_value="powered_on" with host variables:{   "status": {     "power_state": "powered_on",     "created": "2020-08-04T18:13:04+00:00",     "healthy": true    },    "name": "foobar",    "ip_address": "192.168.2.1"}The host would be marked enabled. If power_state where any value other than powered_on then the host would be disabled when imported. If the key is not found then the host will be enabled
 - `enabled_var` (Optional) Retrieve the enabled state from the given dict of host variables. The enabled variable may be specified as "foo.bar", in which case the lookup will traverse into nested dicts, equivalent to: from_dict.get("foo", {}).get("bar", default)
-- `execution_environment` (Optional) The container image to be used for execution.
+- `execution_environment_id` (Optional) The container image to be used for execution.
 - `host_filter` (Optional) This field is deprecated and will be removed in a future release. Regex where only matching hosts will be imported.
-- `inventory` (Required) Managed field from AWX OpenAPI schema.
+- `inventory_id` (Required) Managed field from AWX OpenAPI schema.
 - `limit` (Optional) Enter host, group or pattern match
 - `name` (Required) Managed field from AWX OpenAPI schema.
 - `overwrite` (Optional, Computed) Overwrite local groups and hosts from remote inventory source.

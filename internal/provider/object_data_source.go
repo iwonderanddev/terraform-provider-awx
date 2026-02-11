@@ -68,7 +68,7 @@ func (d *objectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 	}
 
 	for _, field := range d.object.Fields {
-		tfName := manifest.TerraformAttributeName(d.object.Name, field.Name)
+		tfName := manifest.TerraformAttributeNameForField(d.object.Name, field)
 		if _, exists := attributes[tfName]; exists {
 			// Preserve explicit lookup arguments such as id and name.
 			continue
@@ -144,7 +144,7 @@ func (d *objectDataSource) setState(ctx context.Context, state attributeTarget, 
 	}
 
 	for _, field := range d.object.Fields {
-		tfName := manifest.TerraformAttributeName(d.object.Name, field.Name)
+		tfName := manifest.TerraformAttributeNameForField(d.object.Name, field)
 		if field.WriteOnly {
 			nullValue, nullDiags := toTerraformValue(d.object.Name, field, nil)
 			diags.Append(nullDiags...)

@@ -6,7 +6,7 @@ Manages AWX `groups` objects.
 
 ```hcl
 resource "awx_group" "example" {
-  inventory = 1
+  inventory_id = awx_inventory.example.id
   name = "example"
 }
 ```
@@ -19,7 +19,7 @@ Argument qualifiers used below:
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
 - `description` (Optional) Managed field from AWX OpenAPI schema.
-- `inventory` (Required) Managed field from AWX OpenAPI schema.
+- `inventory_id` (Required) Managed field from AWX OpenAPI schema.
 - `name` (Required) Managed field from AWX OpenAPI schema.
 - `variables` (Optional) Group variables in JSON or YAML format.
 

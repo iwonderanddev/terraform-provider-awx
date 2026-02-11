@@ -23,6 +23,6 @@ data "awx_inventory" "example" {
 - `kind` (string)
 - `name` (string)
 - `opa_query_path` (string)
-- `organization` (integer)
+- `organization_id` (integer)
 - `prevent_instance_group_fallback` (boolean)
 - `variables` (string)

@@ -18,10 +18,10 @@ data "awx_credential" "example" {
 ## Attributes Reference
 
 - `id` (Number) Numeric AWX object ID.
-- `credential_type` (integer)
+- `credential_type_id` (integer)
 - `description` (string)
 - `inputs` (object, Sensitive)
 - `name` (string)
-- `organization` (integer)
-- `team` (integer, Sensitive)
-- `user` (integer, Sensitive)
+- `organization_id` (integer)
+- `team_id` (integer, Sensitive)
+- `user_id` (integer, Sensitive)

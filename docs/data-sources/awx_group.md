@@ -19,6 +19,6 @@ data "awx_group" "example" {
 
 - `id` (Number) Numeric AWX object ID.
 - `description` (string)
-- `inventory` (integer)
+- `inventory_id` (integer)
 - `name` (string)
 - `variables` (string)

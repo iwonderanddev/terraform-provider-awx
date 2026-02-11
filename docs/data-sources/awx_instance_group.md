@@ -18,7 +18,7 @@ data "awx_instance_group" "example" {
 ## Attributes Reference
 
 - `id` (Number) Numeric AWX object ID.
-- `credential` (integer)
+- `credential_id` (integer)
 - `is_container_group` (boolean)
 - `max_concurrent_jobs` (integer)
 - `max_forks` (integer)

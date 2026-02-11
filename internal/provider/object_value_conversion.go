@@ -15,8 +15,22 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func fieldUsesStringObjectTransport(_ string, fieldName string) bool {
-	return fieldName == "extra_vars" || fieldName == "extra_data"
+type objectFieldKey struct {
+	objectName string
+	fieldName  string
+}
+
+var stringObjectTransportFields = map[objectFieldKey]struct{}{
+	{objectName: "job_templates", fieldName: "extra_vars"}:               {},
+	{objectName: "workflow_job_templates", fieldName: "extra_vars"}:      {},
+	{objectName: "schedules", fieldName: "extra_data"}:                   {},
+	{objectName: "workflow_job_template_nodes", fieldName: "extra_data"}: {},
+	{objectName: "workflow_job_nodes", fieldName: "extra_data"}:          {},
+}
+
+func fieldUsesStringObjectTransport(objectName string, fieldName string) bool {
+	_, ok := stringObjectTransportFields[objectFieldKey{objectName: objectName, fieldName: fieldName}]
+	return ok
 }
 
 func terraformDynamicObjectToMap(value types.Dynamic) (map[string]any, error) {

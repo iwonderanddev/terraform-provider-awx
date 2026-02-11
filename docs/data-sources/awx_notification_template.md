@@ -23,4 +23,4 @@ data "awx_notification_template" "example" {
 - `name` (string)
 - `notification_configuration` (object, Sensitive)
 - `notification_type` (string)
-- `organization` (integer)
+- `organization_id` (integer)

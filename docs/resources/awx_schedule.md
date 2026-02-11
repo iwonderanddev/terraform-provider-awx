@@ -8,7 +8,7 @@ Manages AWX `schedules` objects.
 resource "awx_schedule" "example" {
   name = "example"
   rrule = "example"
-  unified_job_template = 1
+  unified_job_template_id = 1
   extra_data = { key = "value" }
 }
 ```
@@ -23,10 +23,10 @@ Argument qualifiers used below:
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `diff_mode` (Optional) Managed field from AWX OpenAPI schema.
 - `enabled` (Optional, Computed) Enables processing of this schedule.
-- `execution_environment` (Optional) The container image to be used for execution.
+- `execution_environment_id` (Optional) The container image to be used for execution.
 - `extra_data` (Optional, Computed) Structured extra data as a Terraform object.
 - `forks` (Optional) Managed field from AWX OpenAPI schema.
-- `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
+- `inventory_id` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
 - `job_slice_count` (Optional) Managed field from AWX OpenAPI schema.
 - `job_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `job_type` (Optional) * `run` - Run
@@ -37,7 +37,7 @@ Argument qualifiers used below:
 - `scm_branch` (Optional) Managed field from AWX OpenAPI schema.
 - `skip_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `timeout` (Optional) Managed field from AWX OpenAPI schema.
-- `unified_job_template` (Required) Managed field from AWX OpenAPI schema.
+- `unified_job_template_id` (Required) Managed field from AWX OpenAPI schema.
 - `verbosity` (Optional) * `0` - 0 (Normal)
   - `1` - 1 (Verbose)
   - `2` - 2 (More Verbose)

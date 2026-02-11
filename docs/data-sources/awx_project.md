@@ -19,12 +19,12 @@ data "awx_project" "example" {
 
 - `id` (Number) Numeric AWX object ID.
 - `allow_override` (boolean)
-- `credential` (integer)
+- `credential_id` (integer)
 - `default_environment` (integer)
 - `description` (string)
 - `local_path` (string)
 - `name` (string)
-- `organization` (integer)
+- `organization_id` (integer)
 - `scm_branch` (string)
 - `scm_clean` (boolean)
 - `scm_delete_on_update` (boolean)

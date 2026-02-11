@@ -97,3 +97,30 @@ func TestApplyFieldOverridesAddsMissingField(t *testing.T) {
 		t.Fatalf("unexpected description: got=%q", secret.Description)
 	}
 }
+
+func TestApplyFieldOverridesSetsReference(t *testing.T) {
+	t.Parallel()
+
+	reference := true
+	objects := []manifest.ManagedObject{
+		{
+			Name: "teams",
+			Fields: []manifest.FieldSpec{
+				{Name: "organization", Type: manifest.FieldTypeInt, Reference: false},
+			},
+		},
+	}
+
+	updated := ApplyFieldOverrides(objects, map[string]FieldOverride{
+		"teams.organization": {
+			Object:    "teams",
+			Field:     "organization",
+			Reference: &reference,
+		},
+	})
+
+	org := updated[0].Fields[0]
+	if !org.Reference {
+		t.Fatalf("expected teams.organization to be marked as reference after override")
+	}
+}

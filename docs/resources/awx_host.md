@@ -6,7 +6,7 @@ Manages AWX `hosts` objects.
 
 ```hcl
 resource "awx_host" "example" {
-  inventory = 1
+  inventory_id = awx_inventory.example.id
   name = "example"
 }
 ```
@@ -21,7 +21,7 @@ Argument qualifiers used below:
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `enabled` (Optional, Computed) Is this host online and available for running jobs?
 - `instance_id` (Optional) The value used by the remote inventory source to uniquely identify the host
-- `inventory` (Required) Managed field from AWX OpenAPI schema.
+- `inventory_id` (Required) Managed field from AWX OpenAPI schema.
 - `name` (Required) Managed field from AWX OpenAPI schema.
 - `variables` (Optional) Host variables in JSON or YAML format.
 

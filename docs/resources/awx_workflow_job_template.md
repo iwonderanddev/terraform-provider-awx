@@ -28,11 +28,11 @@ Argument qualifiers used below:
 - `ask_variables_on_launch` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `extra_vars` (Optional) Structured extra variables as a Terraform object.
-- `inventory` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
+- `inventory_id` (Optional) Inventory applied as a prompt, assuming job template prompts for inventory
 - `job_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `limit` (Optional) Managed field from AWX OpenAPI schema.
 - `name` (Required) Managed field from AWX OpenAPI schema.
-- `organization` (Optional) The organization used to determine access to this template.
+- `organization_id` (Optional) The organization used to determine access to this template.
 - `scm_branch` (Optional) Managed field from AWX OpenAPI schema.
 - `skip_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `survey_enabled` (Optional, Computed) Managed field from AWX OpenAPI schema.

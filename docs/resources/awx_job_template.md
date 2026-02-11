@@ -38,12 +38,12 @@ Argument qualifiers used below:
 - `become_enabled` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `diff_mode` (Optional, Computed) If enabled, textual changes made to any templated files on the host are shown in the standard output
-- `execution_environment` (Optional) The container image to be used for execution.
+- `execution_environment_id` (Optional) The container image to be used for execution.
 - `extra_vars` (Optional) Structured extra variables as a Terraform object.
 - `force_handlers` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `forks` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `host_config_key` (Optional) Managed field from AWX OpenAPI schema.
-- `inventory` (Optional) Managed field from AWX OpenAPI schema.
+- `inventory_id` (Optional) Managed field from AWX OpenAPI schema.
 - `job_slice_count` (Optional, Computed) The number of jobs to slice into at runtime. Will cause the Job Template to launch a workflow if value is greater than 1.
 - `job_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `job_type` (Optional, Computed) * `run` - Run
@@ -53,7 +53,7 @@ Argument qualifiers used below:
 - `opa_query_path` (Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
 - `playbook` (Optional) Managed field from AWX OpenAPI schema.
 - `prevent_instance_group_fallback` (Optional, Computed) If enabled, the job template will prevent adding any inventory or organization instance groups to the list of preferred instances groups to run on.If this setting is enabled and you provided an empty list, the global instance groups will be applied.
-- `project` (Optional) Managed field from AWX OpenAPI schema.
+- `project_id` (Optional) Managed field from AWX OpenAPI schema.
 - `scm_branch` (Optional) Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true.
 - `skip_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `start_at_task` (Optional) Managed field from AWX OpenAPI schema.

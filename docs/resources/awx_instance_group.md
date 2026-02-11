@@ -17,7 +17,7 @@ Argument qualifiers used below:
 - `Optional`: May be omitted.
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
-- `credential` (Optional) Managed field from AWX OpenAPI schema.
+- `credential_id` (Optional) Managed field from AWX OpenAPI schema.
 - `is_container_group` (Optional) Indicates whether instances in this group are containerized.Containerized groups have a designated Openshift or Kubernetes cluster.
 - `max_concurrent_jobs` (Optional, Computed) Maximum number of concurrent jobs to run on a group. When set to zero, no maximum is enforced.
 - `max_forks` (Optional, Computed) Maximum number of forks to execute concurrently on a group. When set to zero, no maximum is enforced.

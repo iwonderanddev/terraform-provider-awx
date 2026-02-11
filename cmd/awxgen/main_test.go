@@ -62,7 +62,7 @@ func TestWriteResourceDocIncludesComputedArgumentMarker(t *testing.T) {
 		},
 	}
 
-	if err := writeResourceDoc(resourceDir, object); err != nil {
+	if err := writeResourceDoc(resourceDir, object, map[string]struct{}{}); err != nil {
 		t.Fatalf("writeResourceDoc returned error: %v", err)
 	}
 
@@ -113,5 +113,45 @@ func TestFormatListItemDescriptionConvertsNestedBullets(t *testing.T) {
 	}
 	if !strings.Contains(formatted, "\n  - `never` - Never") {
 		t.Fatalf("expected nested bullet conversion for second value, got=%q", formatted)
+	}
+}
+
+func TestValidateTerraformFieldNameCollisionsDetectsSuffixConflicts(t *testing.T) {
+	t.Parallel()
+
+	err := validateTerraformFieldNameCollisions([]manifest.ManagedObject{
+		{
+			Name:             "teams",
+			ResourceEligible: true,
+			Fields: []manifest.FieldSpec{
+				{Name: "organization", Type: manifest.FieldTypeInt, Reference: true},
+				{Name: "organization_id", Type: manifest.FieldTypeInt, Reference: true},
+			},
+		},
+	})
+	if err == nil {
+		t.Fatalf("expected collision error for duplicate Terraform attribute names")
+	}
+}
+
+func TestSampleDocValueUsesReferenceWiringWhenTargetResourceExists(t *testing.T) {
+	t.Parallel()
+
+	field := manifest.FieldSpec{
+		Name:      "organization",
+		Type:      manifest.FieldTypeInt,
+		Reference: true,
+	}
+
+	got := sampleDocValue(field, "organization_id", map[string]struct{}{
+		"organization": {},
+	})
+	if got != "awx_organization.example.id" {
+		t.Fatalf("unexpected reference wiring example: got=%q", got)
+	}
+
+	fallback := sampleDocValue(field, "organization_id", map[string]struct{}{})
+	if fallback != "1" {
+		t.Fatalf("expected numeric fallback example when target resource is unavailable, got=%q", fallback)
 	}
 }

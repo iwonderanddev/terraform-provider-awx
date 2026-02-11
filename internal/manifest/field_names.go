@@ -9,3 +9,16 @@ func TerraformAttributeName(objectName string, fieldName string) string {
 	}
 	return fieldName
 }
+
+// TerraformAttributeNameForField returns the Terraform-facing attribute name
+// for a manifest field, including reference-link suffixing rules.
+func TerraformAttributeNameForField(objectName string, field FieldSpec) string {
+	name := TerraformAttributeName(objectName, field.Name)
+	if !field.Reference {
+		return name
+	}
+	if strings.EqualFold(name, "id") || strings.HasSuffix(name, "_id") {
+		return name
+	}
+	return name + "_id"
+}

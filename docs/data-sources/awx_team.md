@@ -20,4 +20,4 @@ data "awx_team" "example" {
 - `id` (Number) Numeric AWX object ID.
 - `description` (string)
 - `name` (string)
-- `organization` (integer)
+- `organization_id` (integer)

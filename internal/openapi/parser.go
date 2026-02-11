@@ -159,6 +159,7 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 	}
 
 	paths := sortedPathKeys(doc.Paths)
+	referenceCandidates := referenceFieldCandidates(doc.Paths)
 	detailEndpoints := buildDetailPathIndex(doc)
 	objects := make([]manifest.ManagedObject, 0)
 
@@ -190,6 +191,7 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 		if len(fields) == 0 {
 			fields = fieldsFromSchema(doc, responseSchema)
 		}
+		fields = annotateReferenceFields(fields, referenceCandidates)
 
 		exclusion, runtimeExcluded := exclusions[collectionName]
 		_, deprecated := deprecatedObjects[collectionName]
@@ -240,6 +242,49 @@ func DeriveManagedObjects(doc *Document, exclusions map[string]manifest.RuntimeE
 		return objects[i].Name < objects[j].Name
 	})
 	return objects
+}
+
+func referenceFieldCandidates(paths map[string]PathItem) map[string]struct{} {
+	candidates := make(map[string]struct{})
+	for endpointPath := range paths {
+		matches := collectionPathPattern.FindStringSubmatch(endpointPath)
+		if len(matches) != 2 {
+			continue
+		}
+		singular := singularize(matches[1])
+		if strings.TrimSpace(singular) == "" {
+			continue
+		}
+		candidates[strings.ToLower(singular)] = struct{}{}
+	}
+	return candidates
+}
+
+func annotateReferenceFields(fields []manifest.FieldSpec, referenceCandidates map[string]struct{}) []manifest.FieldSpec {
+	if len(fields) == 0 {
+		return fields
+	}
+
+	updated := make([]manifest.FieldSpec, 0, len(fields))
+	for _, field := range fields {
+		field.Reference = isReferenceField(field, referenceCandidates)
+		updated = append(updated, field)
+	}
+	return updated
+}
+
+func isReferenceField(field manifest.FieldSpec, referenceCandidates map[string]struct{}) bool {
+	if field.Type != manifest.FieldTypeInt {
+		return false
+	}
+
+	name := strings.ToLower(strings.TrimSpace(field.Name))
+	if name == "" || name == "id" {
+		return false
+	}
+
+	_, ok := referenceCandidates[name]
+	return ok
 }
 
 // DeriveRelationships derives relationship resource candidates.

@@ -19,6 +19,6 @@ data "awx_role_team_assignment" "example" {
 - `id` (Number) Numeric AWX object ID.
 - `object_ansible_id` (string)
 - `object_id` (string)
-- `role_definition` (integer)
-- `team` (integer)
+- `role_definition_id` (integer)
+- `team_id` (integer)
 - `team_ansible_id` (string)

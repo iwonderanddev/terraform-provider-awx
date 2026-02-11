@@ -18,13 +18,13 @@ data "awx_inventory_source" "example" {
 ## Attributes Reference
 
 - `id` (Number) Numeric AWX object ID.
-- `credential` (integer)
+- `credential_id` (integer)
 - `description` (string)
 - `enabled_value` (string)
 - `enabled_var` (string)
-- `execution_environment` (integer)
+- `execution_environment_id` (integer)
 - `host_filter` (string)
-- `inventory` (integer)
+- `inventory_id` (integer)
 - `limit` (string)
 - `name` (string)
 - `overwrite` (boolean)

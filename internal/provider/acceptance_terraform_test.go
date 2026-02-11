@@ -51,7 +51,7 @@ func TestAcceptanceTerraform_TeamResourceCRUDAndImport(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckLog(t, "step 1/4 complete: team created without description"),
 					resource.TestCheckResourceAttr(resourceName, "name", teamName),
-					resource.TestCheckResourceAttr(resourceName, "organization", strconv.FormatInt(organizationID, 10)),
+					resource.TestCheckResourceAttr(resourceName, "organization_id", strconv.FormatInt(organizationID, 10)),
 					resource.TestCheckNoResourceAttr(resourceName, "description"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 				),
@@ -62,7 +62,7 @@ func TestAcceptanceTerraform_TeamResourceCRUDAndImport(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckLog(t, "step 2/4 complete: description set"),
 					resource.TestCheckResourceAttr(resourceName, "name", teamName),
-					resource.TestCheckResourceAttr(resourceName, "organization", strconv.FormatInt(organizationID, 10)),
+					resource.TestCheckResourceAttr(resourceName, "organization_id", strconv.FormatInt(organizationID, 10)),
 					resource.TestCheckResourceAttr(resourceName, "description", "created by terraform-plugin-testing"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 				),
@@ -349,8 +349,8 @@ func testAccTeamResourceConfigWithoutDescription(name string, organizationID int
 	return fmt.Sprintf(`
 %s
 resource "awx_team" "test" {
-  name         = %q
-  organization = %d
+  name            = %q
+  organization_id = %d
 }
 `, testAccProviderConfig(), name, organizationID)
 }
@@ -359,9 +359,9 @@ func testAccTeamResourceConfig(name string, organizationID int64, description st
 	return fmt.Sprintf(`
 %s
 resource "awx_team" "test" {
-  name         = %q
-  organization = %d
-  description  = %q
+  name            = %q
+  organization_id = %d
+  description     = %q
 }
 `, testAccProviderConfig(), name, organizationID, description)
 }
@@ -370,9 +370,9 @@ func testAccTeamDataSourceConfig(name string, organizationID int64) string {
 	return fmt.Sprintf(`
 %s
 resource "awx_team" "test" {
-  name         = %q
-  organization = %d
-  description  = "created for data source lookup"
+  name            = %q
+  organization_id = %d
+  description     = "created for data source lookup"
 }
 
 data "awx_team" "by_name" {
@@ -400,9 +400,9 @@ resource "awx_organization" "test" {
 }
 
 resource "awx_inventory" "test" {
-  name         = %q
-  organization = tonumber(awx_organization.test.id)
-  description  = "created for inventory default field stability checks"
+  name            = %q
+  organization_id = awx_organization.test.id
+  description     = "created for inventory default field stability checks"
 }
 `, testAccProviderConfig(), organizationName, inventoryName)
 }
@@ -411,9 +411,9 @@ func testAccRelationshipConfig(name string, organizationID int64, userID int64) 
 	return fmt.Sprintf(`
 %s
 resource "awx_team" "parent" {
-  name         = %q
-  organization = %d
-  description  = "created for relationship acceptance"
+  name            = %q
+  organization_id = %d
+  description     = "created for relationship acceptance"
 }
 
 resource "awx_team_user_association" "membership" {

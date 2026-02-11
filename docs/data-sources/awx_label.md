@@ -19,4 +19,4 @@ data "awx_label" "example" {
 
 - `id` (Number) Numeric AWX object ID.
 - `name` (string)
-- `organization` (integer)
+- `organization_id` (integer)

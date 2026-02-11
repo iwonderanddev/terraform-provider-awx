@@ -36,6 +36,11 @@ Generated resource docs under `docs/resources/*` use these qualifiers:
 - `Optional`: May be omitted.
 - `Optional, Computed`: May be omitted; AWX may apply a server-side default and Terraform records the resulting value in state after apply.
 
+## Breaking Changes
+
+Reference fields that link one AWX object to another use an explicit `_id` suffix in Terraform.
+If upgrading from older provider releases, rename unsuffixed link fields (for example, `organization` -> `organization_id`) in resources and data sources.
+
 ## Compatibility
 
 This provider targets AWX 24.6.1 API v2 only. Runtime-only objects are excluded from managed resources.

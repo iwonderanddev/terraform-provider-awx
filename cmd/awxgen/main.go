@@ -277,6 +277,9 @@ func generate(schemaPath string, exclusionsPath string, deprecatedPath string, p
 
 	objects := openapi.DeriveManagedObjects(doc, runtimeExclusions, deprecatedObjects)
 	objects = openapi.ApplyFieldOverrides(objects, fieldOverrides)
+	if err := validateTerraformFieldNameCollisions(objects); err != nil {
+		return runtimeExclusions, priorities, objects, nil, buildReport(schemaPath, objects, nil, runtimeExclusions), len(fieldOverrides), err
+	}
 	if err := openapi.ValidateCoverage(objects, runtimeExclusions); err != nil {
 		return runtimeExclusions, priorities, objects, nil, buildReport(schemaPath, objects, nil, runtimeExclusions), len(fieldOverrides), err
 	}
@@ -284,6 +287,27 @@ func generate(schemaPath string, exclusionsPath string, deprecatedPath string, p
 	relationships := openapi.DeriveRelationships(doc, objects, priorities, deprecatedRelationships)
 	report := buildReport(schemaPath, objects, relationships, runtimeExclusions)
 	return runtimeExclusions, priorities, objects, relationships, report, len(fieldOverrides), nil
+}
+
+func validateTerraformFieldNameCollisions(objects []manifest.ManagedObject) error {
+	for _, object := range objects {
+		if object.RuntimeExcluded || (!object.ResourceEligible && !object.DataSourceElig) {
+			continue
+		}
+
+		seen := make(map[string]string, len(object.Fields))
+		for _, field := range object.Fields {
+			tfName := manifest.TerraformAttributeNameForField(object.Name, field)
+			if existing, ok := seen[tfName]; ok && existing != field.Name {
+				return fmt.Errorf(
+					"field naming collision: %s.%s and %s.%s map to Terraform attribute %q",
+					object.Name, existing, object.Name, field.Name, tfName,
+				)
+			}
+			seen[tfName] = field.Name
+		}
+	}
+	return nil
 }
 
 func buildReport(schemaPath string, objects []manifest.ManagedObject, relationships []manifest.Relationship, exclusions map[string]manifest.RuntimeExclusion) CoverageReport {
@@ -366,9 +390,17 @@ func generateDocs(outputDir string, objects []manifest.ManagedObject, relationsh
 		return err
 	}
 
+	managedResourceBySingular := make(map[string]struct{})
+	for _, obj := range objects {
+		if !obj.ResourceEligible || obj.RuntimeExcluded {
+			continue
+		}
+		managedResourceBySingular[obj.SingularName] = struct{}{}
+	}
+
 	for _, obj := range objects {
 		if obj.ResourceEligible && !obj.RuntimeExcluded {
-			if err := writeResourceDoc(resourceDir, obj); err != nil {
+			if err := writeResourceDoc(resourceDir, obj, managedResourceBySingular); err != nil {
 				return err
 			}
 		}
@@ -425,6 +457,11 @@ Generated resource docs under ` + "`docs/resources/*`" + ` use these qualifiers:
 - ` + "`Optional`" + `: May be omitted.
 - ` + "`Optional, Computed`" + `: May be omitted; AWX may apply a server-side default and Terraform records the resulting value in state after apply.
 
+## Breaking Changes
+
+Reference fields that link one AWX object to another use an explicit ` + "`_id`" + ` suffix in Terraform.
+If upgrading from older provider releases, rename unsuffixed link fields (for example, ` + "`organization`" + ` -> ` + "`organization_id`" + `) in resources and data sources.
+
 ## Compatibility
 
 This provider targets AWX 24.6.1 API v2 only. Runtime-only objects are excluded from managed resources.
@@ -433,7 +470,7 @@ This provider targets AWX 24.6.1 API v2 only. Runtime-only objects are excluded 
 	return os.WriteFile(filepath.Join(outputDir, "index.md"), []byte(contents), 0o644)
 }
 
-func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
+func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, managedResourceBySingular map[string]struct{}) error {
 	builder := strings.Builder{}
 	builder.WriteString(fmt.Sprintf("# Resource: %s\n\n", obj.ResourceName))
 	builder.WriteString(fmt.Sprintf("Manages AWX `%s` objects.\n\n", obj.Name))
@@ -450,7 +487,8 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 	exampleFields := map[string]struct{}{}
 	for _, field := range obj.Fields {
 		if field.Required {
-			builder.WriteString(fmt.Sprintf("  %s = %s\n", manifest.TerraformAttributeName(obj.Name, field.Name), sampleValue(field.Type)))
+			tfName := manifest.TerraformAttributeNameForField(obj.Name, field)
+			builder.WriteString(fmt.Sprintf("  %s = %s\n", tfName, sampleDocValue(field, tfName, managedResourceBySingular)))
 			exampleFields[field.Name] = struct{}{}
 		}
 	}
@@ -461,7 +499,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 		if _, alreadyIncluded := exampleFields[field.Name]; alreadyIncluded {
 			continue
 		}
-		builder.WriteString(fmt.Sprintf("  %s = %s\n", manifest.TerraformAttributeName(obj.Name, field.Name), sampleValue(field.Type)))
+		builder.WriteString(fmt.Sprintf("  %s = %s\n", manifest.TerraformAttributeNameForField(obj.Name, field), sampleValue(field.Type)))
 		break
 	}
 	builder.WriteString("}\n")
@@ -487,7 +525,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject) error {
 			sensitive = ", Sensitive"
 		}
 		description := resourceFieldDescription(field)
-		builder.WriteString(fmt.Sprintf("- `%s` (%s%s) %s\n", manifest.TerraformAttributeName(obj.Name, field.Name), required, sensitive, formatListItemDescription(description)))
+		builder.WriteString(fmt.Sprintf("- `%s` (%s%s) %s\n", manifest.TerraformAttributeNameForField(obj.Name, field), required, sensitive, formatListItemDescription(description)))
 	}
 	builder.WriteString("\n## Attributes Reference\n\n")
 	if obj.CollectionCreate {
@@ -552,7 +590,7 @@ func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject) error 
 		if field.Sensitive {
 			sensitive = ", Sensitive"
 		}
-		builder.WriteString(fmt.Sprintf("- `%s` (%s%s)\n", manifest.TerraformAttributeName(obj.Name, field.Name), field.Type, sensitive))
+		builder.WriteString(fmt.Sprintf("- `%s` (%s%s)\n", manifest.TerraformAttributeNameForField(obj.Name, field), field.Type, sensitive))
 	}
 
 	return os.WriteFile(filepath.Join(dataSourceDir, fmt.Sprintf("%s.md", obj.DataSourceName)), []byte(builder.String()), 0o644)
@@ -627,6 +665,23 @@ func sampleValue(fieldType manifest.FieldType) string {
 	default:
 		return "\"example\""
 	}
+}
+
+func sampleDocValue(field manifest.FieldSpec, terraformName string, managedResourceBySingular map[string]struct{}) string {
+	if !field.Reference || field.Type != manifest.FieldTypeInt {
+		return sampleValue(field.Type)
+	}
+	if !strings.HasSuffix(terraformName, "_id") {
+		return sampleValue(field.Type)
+	}
+	target := strings.TrimSuffix(terraformName, "_id")
+	if strings.TrimSpace(target) == "" {
+		return sampleValue(field.Type)
+	}
+	if _, ok := managedResourceBySingular[target]; !ok {
+		return sampleValue(field.Type)
+	}
+	return fmt.Sprintf("awx_%s.example.id", target)
 }
 
 func hasField(fields []manifest.FieldSpec, name string) bool {

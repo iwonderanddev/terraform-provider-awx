@@ -1,7 +1,12 @@
+resource "awx_organization" "platform" {
+  name        = "platform"
+  description = "Managed by Terraform"
+}
+
 resource "awx_team" "platform" {
-  name         = "platform"
-  organization = 1
-  description  = "Managed by Terraform"
+  name            = "platform"
+  organization_id = awx_organization.platform.id
+  description     = "Managed by Terraform"
 }
 
 # Object resource imports use numeric AWX IDs.

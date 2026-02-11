@@ -121,14 +121,30 @@ func TestToTerraformValueConvertsObjectToDynamic(t *testing.T) {
 func TestFieldUsesStringObjectTransport(t *testing.T) {
 	t.Parallel()
 
-	if !fieldUsesStringObjectTransport("job_templates", "extra_vars") {
-		t.Fatalf("expected extra_vars string transport for job_templates")
+	tests := []struct {
+		name       string
+		objectName string
+		fieldName  string
+		want       bool
+	}{
+		{name: "job template extra vars", objectName: "job_templates", fieldName: "extra_vars", want: true},
+		{name: "workflow job template extra vars", objectName: "workflow_job_templates", fieldName: "extra_vars", want: true},
+		{name: "schedules extra data", objectName: "schedules", fieldName: "extra_data", want: true},
+		{name: "workflow job template nodes extra data", objectName: "workflow_job_template_nodes", fieldName: "extra_data", want: true},
+		{name: "workflow job nodes extra data", objectName: "workflow_job_nodes", fieldName: "extra_data", want: true},
+		{name: "unknown object extra vars", objectName: "inventories", fieldName: "extra_vars", want: false},
+		{name: "known object unrelated field", objectName: "schedules", fieldName: "settings", want: false},
 	}
-	if !fieldUsesStringObjectTransport("schedules", "extra_data") {
-		t.Fatalf("expected extra_data string transport for schedules")
-	}
-	if fieldUsesStringObjectTransport("schedules", "settings") {
-		t.Fatalf("expected non-extra_vars fields to skip string transport")
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := fieldUsesStringObjectTransport(tc.objectName, tc.fieldName)
+			if got != tc.want {
+				t.Fatalf("unexpected transport behavior for %s.%s: got=%v want=%v", tc.objectName, tc.fieldName, got, tc.want)
+			}
+		})
 	}
 }
 

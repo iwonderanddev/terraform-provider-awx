@@ -296,4 +296,16 @@ func TestTerraformAttributeName(t *testing.T) {
 	if got := TerraformAttributeName("inventories", "name"); got != "name" {
 		t.Fatalf("unexpected non-settings field mapping: got=%q want=%q", got, "name")
 	}
+
+	if got := TerraformAttributeNameForField("teams", FieldSpec{Name: "organization", Type: FieldTypeInt, Reference: true}); got != "organization_id" {
+		t.Fatalf("unexpected reference field mapping: got=%q want=%q", got, "organization_id")
+	}
+
+	if got := TerraformAttributeNameForField("inventories", FieldSpec{Name: "organization_id", Type: FieldTypeInt, Reference: true}); got != "organization_id" {
+		t.Fatalf("unexpected pre-suffixed reference field mapping: got=%q want=%q", got, "organization_id")
+	}
+
+	if got := TerraformAttributeNameForField("settings", FieldSpec{Name: "AUTH_LDAP_4_SERVER_URI", Type: FieldTypeString}); got != "auth_ldap_4_server_uri" {
+		t.Fatalf("unexpected settings field mapping with field helper: got=%q want=%q", got, "auth_ldap_4_server_uri")
+	}
 }

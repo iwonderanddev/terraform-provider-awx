@@ -73,7 +73,7 @@ func (r *objectResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	}
 
 	for _, field := range r.object.Fields {
-		attributes[manifest.TerraformAttributeName(r.object.Name, field.Name)] = newResourceFieldAttribute(field, r.object.UpdateSupported)
+		attributes[manifest.TerraformAttributeNameForField(r.object.Name, field)] = newResourceFieldAttribute(field, r.object.UpdateSupported)
 	}
 
 	resp.Schema = resourceschema.Schema{
@@ -233,6 +233,10 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	resp.Diagnostics.Append(r.pruneUnchangedFieldsFromPayload(ctx, payload, req.Plan, req.State)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	plannedStrings := r.stringValuesFromSource(ctx, req.Plan)
 	resp.Diagnostics.Append(plannedStrings.Diagnostics...)
 	if resp.Diagnostics.HasError() {
@@ -244,10 +248,12 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	_, err := r.data.client.UpdateObject(ctx, r.object.DetailPath, id, payload)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to update AWX object", err.Error())
-		return
+	if len(payload) > 0 {
+		_, err := r.data.client.UpdateObject(ctx, r.object.DetailPath, id, payload)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to update AWX object", err.Error())
+			return
+		}
 	}
 
 	refreshed, refreshErr := r.data.client.GetObject(ctx, r.object.DetailPath, id)
@@ -314,7 +320,7 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 	diags := diag.Diagnostics{}
 
 	for _, field := range r.object.Fields {
-		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
+		tfName := manifest.TerraformAttributeNameForField(r.object.Name, field)
 		switch field.Type {
 		case manifest.FieldTypeInt:
 			var value types.Int64
@@ -403,6 +409,118 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 	return payload, plannedValues, diags
 }
 
+func (r *objectResource) pruneUnchangedFieldsFromPayload(
+	ctx context.Context,
+	payload map[string]any,
+	plan attributeSource,
+	state attributeSource,
+) diag.Diagnostics {
+	diags := diag.Diagnostics{}
+
+	for _, field := range r.object.Fields {
+		if _, exists := payload[field.Name]; !exists {
+			continue
+		}
+
+		tfName := manifest.TerraformAttributeNameForField(r.object.Name, field)
+		attributePath := path.Root(tfName)
+
+		switch field.Type {
+		case manifest.FieldTypeInt:
+			var planned types.Int64
+			var prior types.Int64
+			diags.Append(plan.GetAttribute(ctx, attributePath, &planned)...)
+			diags.Append(state.GetAttribute(ctx, attributePath, &prior)...)
+			if planned.IsNull() || planned.IsUnknown() || prior.IsNull() || prior.IsUnknown() {
+				continue
+			}
+			if planned.ValueInt64() == prior.ValueInt64() {
+				delete(payload, field.Name)
+			}
+		case manifest.FieldTypeBool:
+			var planned types.Bool
+			var prior types.Bool
+			diags.Append(plan.GetAttribute(ctx, attributePath, &planned)...)
+			diags.Append(state.GetAttribute(ctx, attributePath, &prior)...)
+			if planned.IsNull() || planned.IsUnknown() || prior.IsNull() || prior.IsUnknown() {
+				continue
+			}
+			if planned.ValueBool() == prior.ValueBool() {
+				delete(payload, field.Name)
+			}
+		case manifest.FieldTypeFloat:
+			var planned types.Float64
+			var prior types.Float64
+			diags.Append(plan.GetAttribute(ctx, attributePath, &planned)...)
+			diags.Append(state.GetAttribute(ctx, attributePath, &prior)...)
+			if planned.IsNull() || planned.IsUnknown() || prior.IsNull() || prior.IsUnknown() {
+				continue
+			}
+			if planned.ValueFloat64() == prior.ValueFloat64() {
+				delete(payload, field.Name)
+			}
+		case manifest.FieldTypeObject:
+			var planned types.Dynamic
+			var prior types.Dynamic
+			diags.Append(plan.GetAttribute(ctx, attributePath, &planned)...)
+			diags.Append(state.GetAttribute(ctx, attributePath, &prior)...)
+			if planned.IsUnknown() || prior.IsUnknown() {
+				continue
+			}
+			if planned.IsNull() && prior.IsNull() {
+				delete(payload, field.Name)
+				continue
+			}
+			if planned.IsNull() || prior.IsNull() {
+				continue
+			}
+			plannedObject, plannedErr := terraformDynamicObjectToMap(planned)
+			if plannedErr != nil {
+				continue
+			}
+			priorObject, priorErr := terraformDynamicObjectToMap(prior)
+			if priorErr != nil {
+				continue
+			}
+			if reflect.DeepEqual(plannedObject, priorObject) {
+				delete(payload, field.Name)
+			}
+		default:
+			var planned types.String
+			var prior types.String
+			diags.Append(plan.GetAttribute(ctx, attributePath, &planned)...)
+			diags.Append(state.GetAttribute(ctx, attributePath, &prior)...)
+			if planned.IsNull() || planned.IsUnknown() || prior.IsNull() || prior.IsUnknown() {
+				continue
+			}
+
+			plannedString := planned.ValueString()
+			priorString := prior.ValueString()
+
+			if field.Type == manifest.FieldTypeArray {
+				plannedArray, plannedErr := decodeJSONString(plannedString)
+				priorArray, priorErr := decodeJSONString(priorString)
+				if plannedErr == nil && priorErr == nil && reflect.DeepEqual(plannedArray, priorArray) {
+					delete(payload, field.Name)
+					continue
+				}
+			}
+
+			if fieldHasTrailingNewlineNormalization(r.object.Name, field.Name) &&
+				stripSingleTrailingLineEnding(plannedString) == stripSingleTrailingLineEnding(priorString) {
+				delete(payload, field.Name)
+				continue
+			}
+
+			if plannedString == priorString {
+				delete(payload, field.Name)
+			}
+		}
+	}
+
+	return diags
+}
+
 func (r *objectResource) writeOnlyValuesFromSource(ctx context.Context, source attributeSource) writeOnlyValueSnapshot {
 	values := make(map[string]any)
 	diags := diag.Diagnostics{}
@@ -411,7 +529,7 @@ func (r *objectResource) writeOnlyValuesFromSource(ctx context.Context, source a
 		if !field.WriteOnly {
 			continue
 		}
-		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
+		tfName := manifest.TerraformAttributeNameForField(r.object.Name, field)
 
 		switch field.Type {
 		case manifest.FieldTypeInt:
@@ -459,7 +577,7 @@ func (r *objectResource) stringValuesFromSource(ctx context.Context, source attr
 			continue
 		}
 
-		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
+		tfName := manifest.TerraformAttributeNameForField(r.object.Name, field)
 		var value types.String
 		diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
 		if value.IsUnknown() {
@@ -480,7 +598,7 @@ func (r *objectResource) objectValuesFromSource(ctx context.Context, source attr
 			continue
 		}
 
-		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
+		tfName := manifest.TerraformAttributeNameForField(r.object.Name, field)
 		var value types.Dynamic
 		diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
 		if value.IsUnknown() {
@@ -514,7 +632,7 @@ func (r *objectResource) setState(
 	}
 
 	for _, field := range r.object.Fields {
-		tfName := manifest.TerraformAttributeName(r.object.Name, field.Name)
+		tfName := manifest.TerraformAttributeNameForField(r.object.Name, field)
 		if field.WriteOnly {
 			preserved, ok := writeOnlyValues[field.Name]
 			if ok {

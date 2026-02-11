@@ -21,6 +21,6 @@ data "awx_host" "example" {
 - `description` (string)
 - `enabled` (boolean)
 - `instance_id` (string)
-- `inventory` (integer)
+- `inventory_id` (integer)
 - `name` (string)
 - `variables` (string)

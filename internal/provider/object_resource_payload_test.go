@@ -340,6 +340,92 @@ func TestStringValuesFromSourceSkipsUnknownValues(t *testing.T) {
 	}
 }
 
+func TestPruneUnchangedFieldsFromPayloadRemovesUnchangedStateValues(t *testing.T) {
+	t.Parallel()
+
+	resource := &objectResource{
+		object: manifest.ManagedObject{
+			Name: "instance_groups",
+			Fields: []manifest.FieldSpec{
+				{Name: "name", Type: manifest.FieldTypeString, Required: true},
+				{Name: "pod_spec_override", Type: manifest.FieldTypeString},
+				{Name: "policy_instance_percentage", Type: manifest.FieldTypeInt, Computed: true},
+			},
+		},
+	}
+
+	planSource := &mockConfigSource{
+		values: map[string]any{
+			"name":                       types.StringValue("default"),
+			"pod_spec_override":          types.StringValue("new-spec"),
+			"policy_instance_percentage": types.Int64Value(100),
+		},
+	}
+	stateSource := &mockConfigSource{
+		values: map[string]any{
+			"name":                       types.StringValue("default"),
+			"pod_spec_override":          types.StringValue("old-spec"),
+			"policy_instance_percentage": types.Int64Value(100),
+		},
+	}
+
+	payload, _, diags := resource.payloadFromConfig(context.Background(), planSource)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics building payload: %v", diags)
+	}
+
+	diags = resource.pruneUnchangedFieldsFromPayload(context.Background(), payload, planSource, stateSource)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics pruning payload: %v", diags)
+	}
+
+	if got, ok := payload["pod_spec_override"]; !ok || got != "new-spec" {
+		t.Fatalf("expected pod_spec_override to be retained in payload, got %#v", payload["pod_spec_override"])
+	}
+	if _, exists := payload["name"]; exists {
+		t.Fatalf("expected unchanged name to be pruned from payload")
+	}
+	if _, exists := payload["policy_instance_percentage"]; exists {
+		t.Fatalf("expected unchanged computed field to be pruned from payload")
+	}
+}
+
+func TestPruneUnchangedFieldsFromPayloadTreatsEquivalentArraysAsUnchanged(t *testing.T) {
+	t.Parallel()
+
+	resource := &objectResource{
+		object: manifest.ManagedObject{
+			Fields: []manifest.FieldSpec{
+				{Name: "policy_instance_list", Type: manifest.FieldTypeArray},
+			},
+		},
+	}
+
+	planSource := &mockConfigSource{
+		values: map[string]any{
+			"policy_instance_list": types.StringValue(`[1,2,3]`),
+		},
+	}
+	stateSource := &mockConfigSource{
+		values: map[string]any{
+			"policy_instance_list": types.StringValue(`[1, 2, 3]`),
+		},
+	}
+
+	payload, _, diags := resource.payloadFromConfig(context.Background(), planSource)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics building payload: %v", diags)
+	}
+
+	diags = resource.pruneUnchangedFieldsFromPayload(context.Background(), payload, planSource, stateSource)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics pruning payload: %v", diags)
+	}
+	if _, exists := payload["policy_instance_list"]; exists {
+		t.Fatalf("expected equivalent JSON arrays to be pruned from payload")
+	}
+}
+
 type mockConfigSource struct {
 	values map[string]any
 }

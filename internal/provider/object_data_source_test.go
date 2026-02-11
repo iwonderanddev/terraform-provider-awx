@@ -355,6 +355,135 @@ func TestObjectDataSourceSetStateWriteOnlyIntegerDefaultsToTypedNull(t *testing.
 	}
 }
 
+func TestObjectDataSourceSetStateConvertsObjectFieldToDynamic(t *testing.T) {
+	t.Parallel()
+
+	dataSource := &objectDataSource{
+		object: manifest.ManagedObject{
+			Name:             "inventories",
+			CollectionCreate: true,
+			Fields: []manifest.FieldSpec{
+				{Name: "name", Type: manifest.FieldTypeString},
+				{Name: "config", Type: manifest.FieldTypeObject},
+			},
+		},
+	}
+
+	state := &mockAttributeTarget{values: map[string]any{}}
+	diags := dataSource.setState(context.Background(), state, objectLookupResult{
+		ID: "2",
+		Object: map[string]any{
+			"name":   "demo",
+			"config": map[string]any{"enabled": true},
+		},
+	})
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+
+	configValue, ok := findStateAttributeValue(state.values, "config")
+	if !ok {
+		t.Fatalf("expected config attribute to be written")
+	}
+	dynamicValue, ok := configValue.(types.Dynamic)
+	if !ok {
+		t.Fatalf("expected types.Dynamic for config, got %T", configValue)
+	}
+	underlying := dynamicValue.UnderlyingValue()
+	objectValue, ok := underlying.(types.Object)
+	if !ok {
+		t.Fatalf("expected underlying object value, got %T", underlying)
+	}
+	enabledValue, ok := objectValue.Attributes()["enabled"].(types.Bool)
+	if !ok {
+		t.Fatalf("expected enabled attribute as types.Bool")
+	}
+	if !enabledValue.ValueBool() {
+		t.Fatalf("expected enabled to be true")
+	}
+}
+
+func TestObjectDataSourceSetStateNormalizesExtraVarsStringTransport(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		objectName string
+		raw        string
+	}{
+		{
+			name:       "job_templates JSON",
+			objectName: "job_templates",
+			raw:        `{"foo":"bar","nested":{"enabled":true}}`,
+		},
+		{
+			name:       "job_templates YAML",
+			objectName: "job_templates",
+			raw:        "foo: bar\nnested:\n  enabled: true\n",
+		},
+		{
+			name:       "workflow_job_templates JSON",
+			objectName: "workflow_job_templates",
+			raw:        `{"foo":"bar","nested":{"enabled":true}}`,
+		},
+		{
+			name:       "workflow_job_templates YAML",
+			objectName: "workflow_job_templates",
+			raw:        "foo: bar\nnested:\n  enabled: true\n",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			dataSource := &objectDataSource{
+				object: manifest.ManagedObject{
+					Name:             tc.objectName,
+					CollectionCreate: true,
+					Fields: []manifest.FieldSpec{
+						{Name: "extra_vars", Type: manifest.FieldTypeObject},
+					},
+				},
+			}
+
+			state := &mockAttributeTarget{values: map[string]any{}}
+			diags := dataSource.setState(context.Background(), state, objectLookupResult{
+				ID: "2",
+				Object: map[string]any{
+					"extra_vars": tc.raw,
+				},
+			})
+			if diags.HasError() {
+				t.Fatalf("unexpected diagnostics: %v", diags)
+			}
+
+			extraVarsValue, ok := findStateAttributeValue(state.values, "extra_vars")
+			if !ok {
+				t.Fatalf("expected extra_vars attribute to be written")
+			}
+			dynamicValue, ok := extraVarsValue.(types.Dynamic)
+			if !ok {
+				t.Fatalf("expected types.Dynamic for extra_vars, got %T", extraVarsValue)
+			}
+			underlying := dynamicValue.UnderlyingValue()
+			objectValue, ok := underlying.(types.Object)
+			if !ok {
+				t.Fatalf("expected underlying object value, got %T", underlying)
+			}
+
+			fooValue, ok := objectValue.Attributes()["foo"].(types.String)
+			if !ok {
+				t.Fatalf("expected foo attribute as types.String")
+			}
+			if got := fooValue.ValueString(); got != "bar" {
+				t.Fatalf("unexpected foo value: got=%q want=%q", got, "bar")
+			}
+		})
+	}
+}
+
 type fakeObjectLookupClient struct {
 	getObjectFn   func(context.Context, string, string) (map[string]any, error)
 	findByFieldFn func(context.Context, string, string, string) ([]map[string]any, error)

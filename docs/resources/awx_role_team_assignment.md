@@ -8,7 +8,7 @@ This endpoint does not support in-place updates; Terraform replaces the resource
 
 ```hcl
 resource "awx_role_team_assignment" "example" {
-  role_definition = 1
+  role_definition_id = awx_role_definition.example.id
 }
 ```
 
@@ -21,8 +21,8 @@ Argument qualifiers used below:
 
 - `object_ansible_id` (Optional) The resource id of the object this role applies to. An alternative to the object_id field.
 - `object_id` (Optional) The primary key of the object this assignment applies to; null value indicates system-wide assignment.
-- `role_definition` (Required) The role definition which defines permissions conveyed by this assignment.
-- `team` (Optional) Managed field from AWX OpenAPI schema.
+- `role_definition_id` (Required) The role definition which defines permissions conveyed by this assignment.
+- `team_id` (Optional) Managed field from AWX OpenAPI schema.
 - `team_ansible_id` (Optional) The resource ID of the team who will receive permissions from this assignment. An alternative to team field.
 
 ## Attributes Reference
