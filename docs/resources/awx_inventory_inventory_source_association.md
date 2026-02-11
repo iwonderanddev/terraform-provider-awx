@@ -2,23 +2,27 @@
 
 Manages `inventory_inventory_source_association` relationships between `inventories` and `inventory_sources` objects.
 
+Breaking change: use `inventory_id` and `inventory_source_id` instead of legacy `parent_id` and `child_id`.
+
 ## Example Usage
 
 ```hcl
 resource "awx_inventory_inventory_source_association" "example" {
-  parent_id = 12
-  child_id  = 34
+  inventory_id = 12
+  inventory_source_id  = 34
 }
 ```
 
 ## Argument Reference
 
-- `parent_id` (Number, Required) Parent object numeric ID.
-- `child_id` (Number, Required) Child object numeric ID.
+- `inventory_id` (Number, Required) Parent object numeric ID.
+- `inventory_source_id` (Number, Required) Child object numeric ID.
 
 ## Attributes Reference
 
 - `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `inventory_id` (Number) Parent object numeric ID.
+- `inventory_source_id` (Number) Child object numeric ID.
 
 ## Import
 

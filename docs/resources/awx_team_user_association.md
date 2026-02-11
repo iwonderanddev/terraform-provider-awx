@@ -2,23 +2,27 @@
 
 Manages `team_user_association` relationships between `teams` and `users` objects.
 
+Breaking change: use `team_id` and `user_id` instead of legacy `parent_id` and `child_id`.
+
 ## Example Usage
 
 ```hcl
 resource "awx_team_user_association" "example" {
-  parent_id = 12
-  child_id  = 34
+  team_id = 12
+  user_id  = 34
 }
 ```
 
 ## Argument Reference
 
-- `parent_id` (Number, Required) Parent object numeric ID.
-- `child_id` (Number, Required) Child object numeric ID.
+- `team_id` (Number, Required) Parent object numeric ID.
+- `user_id` (Number, Required) Child object numeric ID.
 
 ## Attributes Reference
 
 - `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `team_id` (Number) Parent object numeric ID.
+- `user_id` (Number) Child object numeric ID.
 
 ## Import
 

@@ -462,6 +462,12 @@ func TestDeriveRelationships(t *testing.T) {
 	if relationships[0].Priority != 10 {
 		t.Fatalf("expected priority 10, got %d", relationships[0].Priority)
 	}
+	if relationships[0].ParentIDAttribute != "team_id" {
+		t.Fatalf("unexpected parent attribute: got=%q want=%q", relationships[0].ParentIDAttribute, "team_id")
+	}
+	if relationships[0].ChildIDAttribute != "user_id" {
+		t.Fatalf("unexpected child attribute: got=%q want=%q", relationships[0].ChildIDAttribute, "user_id")
+	}
 }
 
 func TestDeriveRelationshipsDetectsNotificationTemplateVariantAndSurveySpec(t *testing.T) {
@@ -502,9 +508,22 @@ func TestDeriveRelationshipsDetectsNotificationTemplateVariantAndSurveySpec(t *t
 	if errorRel.ChildObject != "notification_templates" {
 		t.Fatalf("unexpected child object mapping: got=%q want=%q", errorRel.ChildObject, "notification_templates")
 	}
+	if errorRel.ParentIDAttribute != "job_template_id" {
+		t.Fatalf("unexpected notification relationship parent attribute: got=%q want=%q", errorRel.ParentIDAttribute, "job_template_id")
+	}
+	if errorRel.ChildIDAttribute != "notification_template_id" {
+		t.Fatalf("unexpected notification relationship child attribute: got=%q want=%q", errorRel.ChildIDAttribute, "notification_template_id")
+	}
 
-	if _, ok := seen["job_template_survey_spec"]; !ok {
+	surveyRel, ok := seen["job_template_survey_spec"]
+	if !ok {
 		t.Fatalf("missing survey spec relationship")
+	}
+	if surveyRel.ParentIDAttribute != "job_template_id" {
+		t.Fatalf("unexpected survey-spec parent attribute: got=%q want=%q", surveyRel.ParentIDAttribute, "job_template_id")
+	}
+	if surveyRel.ChildIDAttribute != "" {
+		t.Fatalf("expected survey-spec child attribute to be empty, got=%q", surveyRel.ChildIDAttribute)
 	}
 }
 
@@ -554,9 +573,10 @@ func TestFieldsFromSchemaMergesAllOfAndMarksSensitive(t *testing.T) {
 						Type:     "object",
 						Required: []string{"enabled"},
 						Properties: map[string]*Schema{
-							"enabled": {Type: "boolean"},
-							"tags":    {Items: &Schema{Type: "string"}, Default: []any{}},
-							"options": {Properties: map[string]*Schema{"a": {Type: "string"}}},
+							"enabled":         {Type: "boolean"},
+							"tags":            {Items: &Schema{Type: "string"}, Default: []any{}},
+							"options":         {Properties: map[string]*Schema{"a": {Type: "string"}}},
+							"computed_server": {Type: "string", ReadOnly: true},
 						},
 					},
 				},
@@ -565,8 +585,8 @@ func TestFieldsFromSchemaMergesAllOfAndMarksSensitive(t *testing.T) {
 	}
 
 	fields := fieldsFromSchema(doc, "ProjectRequest")
-	if len(fields) != 7 {
-		t.Fatalf("expected 7 fields, got %d", len(fields))
+	if len(fields) != 8 {
+		t.Fatalf("expected 8 fields, got %d", len(fields))
 	}
 
 	nameField := findField(fields, "name")
@@ -615,6 +635,11 @@ func TestFieldsFromSchemaMergesAllOfAndMarksSensitive(t *testing.T) {
 	if optionsField.Type != manifest.FieldTypeObject {
 		t.Fatalf("expected options to resolve as object, got %s", optionsField.Type)
 	}
+
+	computedServerField := findField(fields, "computed_server")
+	if !computedServerField.Computed {
+		t.Fatalf("expected readOnly field to be computed")
+	}
 }
 
 func findField(fields []manifest.FieldSpec, name string) manifest.FieldSpec {
@@ -649,6 +674,16 @@ func TestShouldInferComputedFromDefault(t *testing.T) {
 		{
 			name:     "write only field",
 			property: &Schema{Default: false, WriteOnly: true},
+			want:     false,
+		},
+		{
+			name:     "read only field",
+			property: &Schema{ReadOnly: true},
+			want:     true,
+		},
+		{
+			name:     "read only write only field",
+			property: &Schema{ReadOnly: true, WriteOnly: true},
 			want:     false,
 		},
 		{

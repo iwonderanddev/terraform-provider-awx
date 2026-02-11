@@ -42,18 +42,21 @@ func (r *relationshipResource) Metadata(_ context.Context, _ resource.MetadataRe
 }
 
 func (r *relationshipResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	parentIDAttribute := r.parentIDAttributeName()
+	childIDAttribute := r.childIDAttributeName()
+
 	if r.isSurveySpecRelationship() {
 		resp.Schema = resourceschema.Schema{
 			Description: fmt.Sprintf("Manages AWX `%s` survey specification.", r.relationship.Name),
 			Attributes: map[string]resourceschema.Attribute{
 				"id": resourceschema.StringAttribute{
-					Description: "Survey spec resource identifier (same as parent_id).",
+					Description: fmt.Sprintf("Survey spec resource identifier (same as `%s`).", parentIDAttribute),
 					Computed:    true,
 					PlanModifiers: []planmodifier.String{
 						stringplanmodifier.UseStateForUnknown(),
 					},
 				},
-				"parent_id": resourceschema.Int64Attribute{
+				parentIDAttribute: resourceschema.Int64Attribute{
 					Description: fmt.Sprintf("Numeric ID for parent `%s` object.", r.relationship.ParentObject),
 					Required:    true,
 				},
@@ -77,11 +80,11 @@ func (r *relationshipResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"parent_id": resourceschema.Int64Attribute{
+			parentIDAttribute: resourceschema.Int64Attribute{
 				Description: fmt.Sprintf("Numeric ID for parent `%s` object.", r.relationship.ParentObject),
 				Required:    true,
 			},
-			"child_id": resourceschema.Int64Attribute{
+			childIDAttribute: resourceschema.Int64Attribute{
 				Description: fmt.Sprintf("Numeric ID for child `%s` object.", r.relationship.ChildObject),
 				Required:    true,
 			},
@@ -107,7 +110,8 @@ func (r *relationshipResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 	if r.isSurveySpecRelationship() {
-		parentID, payload, spec, diags := surveySpecConfig(ctx, req.Plan)
+		parentIDAttribute := r.parentIDAttributeName()
+		parentID, payload, spec, diags := surveySpecConfig(ctx, req.Plan, parentIDAttribute)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -126,11 +130,13 @@ func (r *relationshipResource) Create(ctx context.Context, req resource.CreateRe
 			}
 		}
 
-		setSurveySpecState(ctx, parentID, stateSpec, &resp.State, &resp.Diagnostics)
+		setSurveySpecState(ctx, parentID, parentIDAttribute, stateSpec, &resp.State, &resp.Diagnostics)
 		return
 	}
 
-	parentID, childID, diags := relationshipIDsFromConfig(ctx, req.Plan)
+	parentIDAttribute := r.parentIDAttributeName()
+	childIDAttribute := r.childIDAttributeName()
+	parentID, childID, diags := relationshipIDsFromConfig(ctx, req.Plan, parentIDAttribute, childIDAttribute)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -141,7 +147,7 @@ func (r *relationshipResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	setRelationshipState(ctx, parentID, childID, &resp.State, &resp.Diagnostics)
+	setRelationshipState(ctx, parentID, childID, parentIDAttribute, childIDAttribute, &resp.State, &resp.Diagnostics)
 }
 
 func (r *relationshipResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -150,7 +156,8 @@ func (r *relationshipResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 	if r.isSurveySpecRelationship() {
-		parentID, diags := surveySpecParentID(ctx, req.State)
+		parentIDAttribute := r.parentIDAttributeName()
+		parentID, diags := surveySpecParentID(ctx, req.State, parentIDAttribute)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -184,11 +191,13 @@ func (r *relationshipResource) Read(ctx context.Context, req resource.ReadReques
 			stateSpec = types.StringNull()
 		}
 
-		setSurveySpecState(ctx, parentID, stateSpec, &resp.State, &resp.Diagnostics)
+		setSurveySpecState(ctx, parentID, parentIDAttribute, stateSpec, &resp.State, &resp.Diagnostics)
 		return
 	}
 
-	parentID, childID, diags := relationshipIDsFromConfig(ctx, req.State)
+	parentIDAttribute := r.parentIDAttributeName()
+	childIDAttribute := r.childIDAttributeName()
+	parentID, childID, diags := relationshipIDsFromConfig(ctx, req.State, parentIDAttribute, childIDAttribute)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -204,7 +213,7 @@ func (r *relationshipResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	setRelationshipState(ctx, parentID, childID, &resp.State, &resp.Diagnostics)
+	setRelationshipState(ctx, parentID, childID, parentIDAttribute, childIDAttribute, &resp.State, &resp.Diagnostics)
 }
 
 func (r *relationshipResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -213,7 +222,8 @@ func (r *relationshipResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 	if r.isSurveySpecRelationship() {
-		parentID, payload, spec, diags := surveySpecConfig(ctx, req.Plan)
+		parentIDAttribute := r.parentIDAttributeName()
+		parentID, payload, spec, diags := surveySpecConfig(ctx, req.Plan, parentIDAttribute)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -225,17 +235,19 @@ func (r *relationshipResource) Update(ctx context.Context, req resource.UpdateRe
 			return
 		}
 
-		setSurveySpecState(ctx, parentID, spec, &resp.State, &resp.Diagnostics)
+		setSurveySpecState(ctx, parentID, parentIDAttribute, spec, &resp.State, &resp.Diagnostics)
 		return
 	}
 
-	oldParentID, oldChildID, diags := relationshipIDsFromConfig(ctx, req.State)
+	parentIDAttribute := r.parentIDAttributeName()
+	childIDAttribute := r.childIDAttributeName()
+	oldParentID, oldChildID, diags := relationshipIDsFromConfig(ctx, req.State, parentIDAttribute, childIDAttribute)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	newParentID, newChildID, planDiags := relationshipIDsFromConfig(ctx, req.Plan)
+	newParentID, newChildID, planDiags := relationshipIDsFromConfig(ctx, req.Plan, parentIDAttribute, childIDAttribute)
 	resp.Diagnostics.Append(planDiags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -252,7 +264,7 @@ func (r *relationshipResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 	}
 
-	setRelationshipState(ctx, newParentID, newChildID, &resp.State, &resp.Diagnostics)
+	setRelationshipState(ctx, newParentID, newChildID, parentIDAttribute, childIDAttribute, &resp.State, &resp.Diagnostics)
 }
 
 func (r *relationshipResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -261,7 +273,8 @@ func (r *relationshipResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 	if r.isSurveySpecRelationship() {
-		parentID, diags := surveySpecParentID(ctx, req.State)
+		parentIDAttribute := r.parentIDAttributeName()
+		parentID, diags := surveySpecParentID(ctx, req.State, parentIDAttribute)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -278,7 +291,7 @@ func (r *relationshipResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	parentID, childID, diags := relationshipIDsFromConfig(ctx, req.State)
+	parentID, childID, diags := relationshipIDsFromConfig(ctx, req.State, r.parentIDAttributeName(), r.childIDAttributeName())
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -297,7 +310,7 @@ func (r *relationshipResource) ImportState(ctx context.Context, req resource.Imp
 			resp.Diagnostics.AddError("Invalid survey specification import ID", err.Error())
 			return
 		}
-		setSurveySpecState(ctx, parentID, types.StringNull(), &resp.State, &resp.Diagnostics)
+		setSurveySpecState(ctx, parentID, r.parentIDAttributeName(), types.StringNull(), &resp.State, &resp.Diagnostics)
 		return
 	}
 
@@ -306,7 +319,7 @@ func (r *relationshipResource) ImportState(ctx context.Context, req resource.Imp
 		resp.Diagnostics.AddError("Invalid relationship import ID", err.Error())
 		return
 	}
-	setRelationshipState(ctx, parentID, childID, &resp.State, &resp.Diagnostics)
+	setRelationshipState(ctx, parentID, childID, r.parentIDAttributeName(), r.childIDAttributeName(), &resp.State, &resp.Diagnostics)
 }
 
 func parseSurveySpecImportID(rawID string) (int64, error) {
@@ -329,19 +342,19 @@ func parseCompositeRelationshipImportID(rawID string) (int64, int64, error) {
 	return parentID, childID, nil
 }
 
-func relationshipIDsFromConfig(ctx context.Context, source attributeSource) (int64, int64, diag.Diagnostics) {
+func relationshipIDsFromConfig(ctx context.Context, source attributeSource, parentAttribute string, childAttribute string) (int64, int64, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
 	var parentID types.Int64
-	diags.Append(source.GetAttribute(ctx, path.Root("parent_id"), &parentID)...)
+	diags.Append(source.GetAttribute(ctx, path.Root(parentAttribute), &parentID)...)
 	var childID types.Int64
-	diags.Append(source.GetAttribute(ctx, path.Root("child_id"), &childID)...)
+	diags.Append(source.GetAttribute(ctx, path.Root(childAttribute), &childID)...)
 
 	if parentID.IsNull() || parentID.IsUnknown() {
-		diags.AddAttributeError(path.Root("parent_id"), "Missing parent ID", "parent_id is required.")
+		diags.AddAttributeError(path.Root(parentAttribute), "Missing required parent ID", fmt.Sprintf("%s is required.", parentAttribute))
 	}
 	if childID.IsNull() || childID.IsUnknown() {
-		diags.AddAttributeError(path.Root("child_id"), "Missing child ID", "child_id is required.")
+		diags.AddAttributeError(path.Root(childAttribute), "Missing required child ID", fmt.Sprintf("%s is required.", childAttribute))
 	}
 	if diags.HasError() {
 		return 0, 0, diags
@@ -350,19 +363,20 @@ func relationshipIDsFromConfig(ctx context.Context, source attributeSource) (int
 	return parentID.ValueInt64(), childID.ValueInt64(), diags
 }
 
-func surveySpecParentID(ctx context.Context, source attributeSource) (int64, diag.Diagnostics) {
+func surveySpecParentID(ctx context.Context, source attributeSource, parentAttribute string) (int64, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 	var parentID types.Int64
-	diags.Append(source.GetAttribute(ctx, path.Root("parent_id"), &parentID)...)
+	diags.Append(source.GetAttribute(ctx, path.Root(parentAttribute), &parentID)...)
+
 	if parentID.IsNull() || parentID.IsUnknown() {
-		diags.AddAttributeError(path.Root("parent_id"), "Missing parent ID", "parent_id is required.")
+		diags.AddAttributeError(path.Root(parentAttribute), "Missing required parent ID", fmt.Sprintf("%s is required.", parentAttribute))
 		return 0, diags
 	}
 	return parentID.ValueInt64(), diags
 }
 
-func surveySpecConfig(ctx context.Context, source attributeSource) (int64, any, types.String, diag.Diagnostics) {
-	parentID, diags := surveySpecParentID(ctx, source)
+func surveySpecConfig(ctx context.Context, source attributeSource, parentAttribute string) (int64, any, types.String, diag.Diagnostics) {
+	parentID, diags := surveySpecParentID(ctx, source, parentAttribute)
 	if diags.HasError() {
 		return 0, nil, types.StringNull(), diags
 	}
@@ -389,19 +403,27 @@ func surveySpecConfig(ctx context.Context, source attributeSource) (int64, any, 
 	return parentID, decoded, types.StringValue(string(encoded)), diags
 }
 
-func setRelationshipState(ctx context.Context, parentID, childID int64, target attributeTarget, diags *diag.Diagnostics) {
+func setRelationshipState(ctx context.Context, parentID, childID int64, parentAttribute string, childAttribute string, target attributeTarget, diags *diag.Diagnostics) {
 	compositeID := fmt.Sprintf("%d:%d", parentID, childID)
 	diags.Append(target.SetAttribute(ctx, path.Root("id"), compositeID)...)
-	diags.Append(target.SetAttribute(ctx, path.Root("parent_id"), types.Int64Value(parentID))...)
-	diags.Append(target.SetAttribute(ctx, path.Root("child_id"), types.Int64Value(childID))...)
+	diags.Append(target.SetAttribute(ctx, path.Root(parentAttribute), types.Int64Value(parentID))...)
+	diags.Append(target.SetAttribute(ctx, path.Root(childAttribute), types.Int64Value(childID))...)
 }
 
-func setSurveySpecState(ctx context.Context, parentID int64, spec types.String, target attributeTarget, diags *diag.Diagnostics) {
+func setSurveySpecState(ctx context.Context, parentID int64, parentAttribute string, spec types.String, target attributeTarget, diags *diag.Diagnostics) {
 	diags.Append(target.SetAttribute(ctx, path.Root("id"), fmt.Sprintf("%d", parentID))...)
-	diags.Append(target.SetAttribute(ctx, path.Root("parent_id"), types.Int64Value(parentID))...)
+	diags.Append(target.SetAttribute(ctx, path.Root(parentAttribute), types.Int64Value(parentID))...)
 	diags.Append(target.SetAttribute(ctx, path.Root("spec"), spec)...)
 }
 
 func (r *relationshipResource) isSurveySpecRelationship() bool {
 	return strings.HasSuffix(r.relationship.Path, "/survey_spec/")
+}
+
+func (r *relationshipResource) parentIDAttributeName() string {
+	return manifest.RelationshipParentIDAttribute(r.relationship)
+}
+
+func (r *relationshipResource) childIDAttributeName() string {
+	return manifest.RelationshipChildIDAttribute(r.relationship)
 }

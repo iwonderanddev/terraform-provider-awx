@@ -55,12 +55,14 @@ type ManagedObject struct {
 
 // Relationship describes a parent-child association resource candidate.
 type Relationship struct {
-	Name         string `json:"name"`
-	ResourceName string `json:"resourceName"`
-	ParentObject string `json:"parentObject"`
-	ChildObject  string `json:"childObject"`
-	Path         string `json:"path"`
-	Priority     int    `json:"priority"`
+	Name              string `json:"name"`
+	ResourceName      string `json:"resourceName"`
+	ParentObject      string `json:"parentObject"`
+	ChildObject       string `json:"childObject"`
+	ParentIDAttribute string `json:"parentIDAttribute,omitempty"`
+	ChildIDAttribute  string `json:"childIDAttribute,omitempty"`
+	Path              string `json:"path"`
+	Priority          int    `json:"priority"`
 }
 
 // RuntimeExclusion identifies runtime-only AWX objects omitted from managed resources.

@@ -2,23 +2,27 @@
 
 Manages `organization_instance_group_association` relationships between `organizations` and `instance_groups` objects.
 
+Breaking change: use `organization_id` and `instance_group_id` instead of legacy `parent_id` and `child_id`.
+
 ## Example Usage
 
 ```hcl
 resource "awx_organization_instance_group_association" "example" {
-  parent_id = 12
-  child_id  = 34
+  organization_id = 12
+  instance_group_id  = 34
 }
 ```
 
 ## Argument Reference
 
-- `parent_id` (Number, Required) Parent object numeric ID.
-- `child_id` (Number, Required) Child object numeric ID.
+- `organization_id` (Number, Required) Parent object numeric ID.
+- `instance_group_id` (Number, Required) Child object numeric ID.
 
 ## Attributes Reference
 
 - `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `organization_id` (Number) Parent object numeric ID.
+- `instance_group_id` (Number) Child object numeric ID.
 
 ## Import
 

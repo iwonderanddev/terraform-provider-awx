@@ -212,7 +212,7 @@ func TestAcceptanceTerraform_TeamUserRelationshipResource(t *testing.T) {
 				Config:    testAccRelationshipConfig(teamName, organizationID, userID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckLog(t, "step 1/2 complete: relationship association exists"),
-					resource.TestCheckResourceAttr(resourceName, "child_id", strconv.FormatInt(userID, 10)),
+					resource.TestCheckResourceAttr(resourceName, "user_id", strconv.FormatInt(userID, 10)),
 					testCheckCompositeRelationshipID(resourceName, teamResourceName, userID),
 				),
 			},
@@ -280,7 +280,7 @@ func TestAcceptanceTerraform_JobTemplateSurveySpecImportByParentID(t *testing.T)
 				Config:    testAccJobTemplateSurveySpecConfig(jobTemplateID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckLog(t, "step 1/2 complete: survey specification applied"),
-					resource.TestCheckResourceAttr(resourceName, "parent_id", strconv.FormatInt(jobTemplateID, 10)),
+					resource.TestCheckResourceAttr(resourceName, "job_template_id", strconv.FormatInt(jobTemplateID, 10)),
 				),
 			},
 			{
@@ -417,8 +417,8 @@ resource "awx_team" "parent" {
 }
 
 resource "awx_team_user_association" "membership" {
-  parent_id = tonumber(awx_team.parent.id)
-  child_id  = %d
+  team_id = awx_team.parent.id
+  user_id = %d
 }
 	`, testAccProviderConfig(), name, organizationID, userID)
 }
@@ -444,7 +444,7 @@ func testAccJobTemplateSurveySpecConfig(jobTemplateID int64) string {
 	return fmt.Sprintf(`
 %s
 resource "awx_job_template_survey_spec" "test" {
-  parent_id = %d
+  job_template_id = %d
   spec = jsonencode({
     name        = "Terraform Acceptance Survey"
     description = "managed by terraform-plugin-testing"

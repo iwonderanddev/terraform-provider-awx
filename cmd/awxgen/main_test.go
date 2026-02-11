@@ -155,3 +155,75 @@ func TestSampleDocValueUsesReferenceWiringWhenTargetResourceExists(t *testing.T)
 		t.Fatalf("expected numeric fallback example when target resource is unavailable, got=%q", fallback)
 	}
 }
+
+func TestWriteRelationshipDocUsesCanonicalArguments(t *testing.T) {
+	t.Parallel()
+
+	resourceDir := t.TempDir()
+	rel := manifest.Relationship{
+		Name:              "team_user_association",
+		ResourceName:      "awx_team_user_association",
+		ParentObject:      "teams",
+		ChildObject:       "users",
+		ParentIDAttribute: "team_id",
+		ChildIDAttribute:  "user_id",
+		Path:              "/api/v2/teams/{id}/users/",
+	}
+
+	if err := writeRelationshipDoc(resourceDir, rel); err != nil {
+		t.Fatalf("writeRelationshipDoc returned error: %v", err)
+	}
+
+	docPath := filepath.Join(resourceDir, "awx_team_user_association.md")
+	raw, err := os.ReadFile(docPath)
+	if err != nil {
+		t.Fatalf("failed to read generated relationship doc: %v", err)
+	}
+	content := string(raw)
+	if !strings.Contains(content, "team_id = 12") {
+		t.Fatalf("expected parent canonical argument in example, got:\n%s", content)
+	}
+	if !strings.Contains(content, "user_id") {
+		t.Fatalf("expected child canonical argument in doc, got:\n%s", content)
+	}
+	if !strings.Contains(content, "legacy `parent_id` and `child_id`") {
+		t.Fatalf("expected breaking-change migration guidance, got:\n%s", content)
+	}
+	if strings.Contains(content, "- `parent_id` (Number, Required)") {
+		t.Fatalf("expected legacy parent_id argument to be removed from argument docs, got:\n%s", content)
+	}
+}
+
+func TestWriteRelationshipDocUsesCanonicalSurveySpecParentArgument(t *testing.T) {
+	t.Parallel()
+
+	resourceDir := t.TempDir()
+	rel := manifest.Relationship{
+		Name:              "job_template_survey_spec",
+		ResourceName:      "awx_job_template_survey_spec",
+		ParentObject:      "job_templates",
+		ChildObject:       "survey_spec",
+		ParentIDAttribute: "job_template_id",
+		Path:              "/api/v2/job_templates/{id}/survey_spec/",
+	}
+
+	if err := writeRelationshipDoc(resourceDir, rel); err != nil {
+		t.Fatalf("writeRelationshipDoc returned error: %v", err)
+	}
+
+	docPath := filepath.Join(resourceDir, "awx_job_template_survey_spec.md")
+	raw, err := os.ReadFile(docPath)
+	if err != nil {
+		t.Fatalf("failed to read generated survey-spec relationship doc: %v", err)
+	}
+	content := string(raw)
+	if !strings.Contains(content, "job_template_id = 12") {
+		t.Fatalf("expected canonical survey-spec parent argument in example, got:\n%s", content)
+	}
+	if !strings.Contains(content, "legacy `parent_id`") {
+		t.Fatalf("expected survey-spec migration guidance, got:\n%s", content)
+	}
+	if strings.Contains(content, "- `parent_id` (Number, Required)") {
+		t.Fatalf("expected legacy parent_id argument to be removed from argument docs, got:\n%s", content)
+	}
+}

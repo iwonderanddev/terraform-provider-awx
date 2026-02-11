@@ -129,7 +129,7 @@ func TestSetRelationshipStateCompositeID(t *testing.T) {
 	target := &mockAttributeTarget{values: map[string]any{}}
 	diags := diag.Diagnostics{}
 
-	setRelationshipState(context.Background(), 12, 34, target, &diags)
+	setRelationshipState(context.Background(), 12, 34, "team_id", "user_id", target, &diags)
 	if diags.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diags)
 	}

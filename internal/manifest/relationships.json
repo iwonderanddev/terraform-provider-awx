@@ -4,6 +4,8 @@
     "resourceName": "awx_team_user_association",
     "parentObject": "teams",
     "childObject": "users",
+    "parentIDAttribute": "team_id",
+    "childIDAttribute": "user_id",
     "path": "/api/v2/teams/{id}/users/",
     "priority": 10
   },
@@ -12,6 +14,8 @@
     "resourceName": "awx_organization_user_association",
     "parentObject": "organizations",
     "childObject": "users",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "user_id",
     "path": "/api/v2/organizations/{id}/users/",
     "priority": 11
   },
@@ -20,6 +24,8 @@
     "resourceName": "awx_organization_team_association",
     "parentObject": "organizations",
     "childObject": "teams",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "team_id",
     "path": "/api/v2/organizations/{id}/teams/",
     "priority": 12
   },
@@ -28,6 +34,8 @@
     "resourceName": "awx_inventory_host_association",
     "parentObject": "inventories",
     "childObject": "hosts",
+    "parentIDAttribute": "inventory_id",
+    "childIDAttribute": "host_id",
     "path": "/api/v2/inventories/{id}/hosts/",
     "priority": 13
   },
@@ -36,6 +44,8 @@
     "resourceName": "awx_inventory_group_association",
     "parentObject": "inventories",
     "childObject": "groups",
+    "parentIDAttribute": "inventory_id",
+    "childIDAttribute": "group_id",
     "path": "/api/v2/inventories/{id}/groups/",
     "priority": 14
   },
@@ -44,6 +54,8 @@
     "resourceName": "awx_group_host_association",
     "parentObject": "groups",
     "childObject": "hosts",
+    "parentIDAttribute": "group_id",
+    "childIDAttribute": "host_id",
     "path": "/api/v2/groups/{id}/hosts/",
     "priority": 15
   },
@@ -52,6 +64,8 @@
     "resourceName": "awx_job_template_credential_association",
     "parentObject": "job_templates",
     "childObject": "credentials",
+    "parentIDAttribute": "job_template_id",
+    "childIDAttribute": "credential_id",
     "path": "/api/v2/job_templates/{id}/credentials/",
     "priority": 17
   },
@@ -60,6 +74,8 @@
     "resourceName": "awx_workflow_job_template_label_association",
     "parentObject": "workflow_job_templates",
     "childObject": "labels",
+    "parentIDAttribute": "workflow_job_template_id",
+    "childIDAttribute": "label_id",
     "path": "/api/v2/workflow_job_templates/{id}/labels/",
     "priority": 18
   },
@@ -68,6 +84,8 @@
     "resourceName": "awx_credential_type_credential_association",
     "parentObject": "credential_types",
     "childObject": "credentials",
+    "parentIDAttribute": "credential_type_id",
+    "childIDAttribute": "credential_id",
     "path": "/api/v2/credential_types/{id}/credentials/",
     "priority": 100
   },
@@ -76,6 +94,8 @@
     "resourceName": "awx_host_group_association",
     "parentObject": "hosts",
     "childObject": "groups",
+    "parentIDAttribute": "host_id",
+    "childIDAttribute": "group_id",
     "path": "/api/v2/hosts/{id}/groups/",
     "priority": 100
   },
@@ -84,6 +104,8 @@
     "resourceName": "awx_instance_group_instance_association",
     "parentObject": "instance_groups",
     "childObject": "instances",
+    "parentIDAttribute": "instance_group_id",
+    "childIDAttribute": "instance_id",
     "path": "/api/v2/instance_groups/{id}/instances/",
     "priority": 100
   },
@@ -92,6 +114,8 @@
     "resourceName": "awx_instance_instance_group_association",
     "parentObject": "instances",
     "childObject": "instance_groups",
+    "parentIDAttribute": "instance_id",
+    "childIDAttribute": "instance_group_id",
     "path": "/api/v2/instances/{id}/instance_groups/",
     "priority": 100
   },
@@ -100,6 +124,8 @@
     "resourceName": "awx_inventory_instance_group_association",
     "parentObject": "inventories",
     "childObject": "instance_groups",
+    "parentIDAttribute": "inventory_id",
+    "childIDAttribute": "instance_group_id",
     "path": "/api/v2/inventories/{id}/instance_groups/",
     "priority": 100
   },
@@ -108,6 +134,8 @@
     "resourceName": "awx_inventory_inventory_source_association",
     "parentObject": "inventories",
     "childObject": "inventory_sources",
+    "parentIDAttribute": "inventory_id",
+    "childIDAttribute": "inventory_source_id",
     "path": "/api/v2/inventories/{id}/inventory_sources/",
     "priority": 100
   },
@@ -116,6 +144,8 @@
     "resourceName": "awx_inventory_label_association",
     "parentObject": "inventories",
     "childObject": "labels",
+    "parentIDAttribute": "inventory_id",
+    "childIDAttribute": "label_id",
     "path": "/api/v2/inventories/{id}/labels/",
     "priority": 100
   },
@@ -124,6 +154,8 @@
     "resourceName": "awx_inventory_source_credential_association",
     "parentObject": "inventory_sources",
     "childObject": "credentials",
+    "parentIDAttribute": "inventory_source_id",
+    "childIDAttribute": "credential_id",
     "path": "/api/v2/inventory_sources/{id}/credentials/",
     "priority": 100
   },
@@ -132,6 +164,8 @@
     "resourceName": "awx_inventory_source_notification_template_error",
     "parentObject": "inventory_sources",
     "childObject": "notification_templates",
+    "parentIDAttribute": "inventory_source_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/inventory_sources/{id}/notification_templates_error/",
     "priority": 100
   },
@@ -140,6 +174,8 @@
     "resourceName": "awx_inventory_source_notification_template_started",
     "parentObject": "inventory_sources",
     "childObject": "notification_templates",
+    "parentIDAttribute": "inventory_source_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/inventory_sources/{id}/notification_templates_started/",
     "priority": 100
   },
@@ -148,6 +184,8 @@
     "resourceName": "awx_inventory_source_notification_template_success",
     "parentObject": "inventory_sources",
     "childObject": "notification_templates",
+    "parentIDAttribute": "inventory_source_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/inventory_sources/{id}/notification_templates_success/",
     "priority": 100
   },
@@ -156,6 +194,8 @@
     "resourceName": "awx_inventory_source_schedule_association",
     "parentObject": "inventory_sources",
     "childObject": "schedules",
+    "parentIDAttribute": "inventory_source_id",
+    "childIDAttribute": "schedule_id",
     "path": "/api/v2/inventory_sources/{id}/schedules/",
     "priority": 100
   },
@@ -164,6 +204,8 @@
     "resourceName": "awx_job_template_instance_group_association",
     "parentObject": "job_templates",
     "childObject": "instance_groups",
+    "parentIDAttribute": "job_template_id",
+    "childIDAttribute": "instance_group_id",
     "path": "/api/v2/job_templates/{id}/instance_groups/",
     "priority": 100
   },
@@ -172,6 +214,8 @@
     "resourceName": "awx_job_template_label_association",
     "parentObject": "job_templates",
     "childObject": "labels",
+    "parentIDAttribute": "job_template_id",
+    "childIDAttribute": "label_id",
     "path": "/api/v2/job_templates/{id}/labels/",
     "priority": 100
   },
@@ -180,6 +224,8 @@
     "resourceName": "awx_job_template_notification_template_error",
     "parentObject": "job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/job_templates/{id}/notification_templates_error/",
     "priority": 100
   },
@@ -188,6 +234,8 @@
     "resourceName": "awx_job_template_notification_template_started",
     "parentObject": "job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/job_templates/{id}/notification_templates_started/",
     "priority": 100
   },
@@ -196,6 +244,8 @@
     "resourceName": "awx_job_template_notification_template_success",
     "parentObject": "job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/job_templates/{id}/notification_templates_success/",
     "priority": 100
   },
@@ -204,6 +254,8 @@
     "resourceName": "awx_job_template_schedule_association",
     "parentObject": "job_templates",
     "childObject": "schedules",
+    "parentIDAttribute": "job_template_id",
+    "childIDAttribute": "schedule_id",
     "path": "/api/v2/job_templates/{id}/schedules/",
     "priority": 100
   },
@@ -212,6 +264,7 @@
     "resourceName": "awx_job_template_survey_spec",
     "parentObject": "job_templates",
     "childObject": "survey_spec",
+    "parentIDAttribute": "job_template_id",
     "path": "/api/v2/job_templates/{id}/survey_spec/",
     "priority": 100
   },
@@ -220,6 +273,8 @@
     "resourceName": "awx_organization_credential_association",
     "parentObject": "organizations",
     "childObject": "credentials",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "credential_id",
     "path": "/api/v2/organizations/{id}/credentials/",
     "priority": 100
   },
@@ -228,6 +283,8 @@
     "resourceName": "awx_organization_execution_environment_association",
     "parentObject": "organizations",
     "childObject": "execution_environments",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "execution_environment_id",
     "path": "/api/v2/organizations/{id}/execution_environments/",
     "priority": 100
   },
@@ -236,6 +293,8 @@
     "resourceName": "awx_organization_instance_group_association",
     "parentObject": "organizations",
     "childObject": "instance_groups",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "instance_group_id",
     "path": "/api/v2/organizations/{id}/instance_groups/",
     "priority": 100
   },
@@ -244,6 +303,8 @@
     "resourceName": "awx_organization_job_template_association",
     "parentObject": "organizations",
     "childObject": "job_templates",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "job_template_id",
     "path": "/api/v2/organizations/{id}/job_templates/",
     "priority": 100
   },
@@ -252,6 +313,8 @@
     "resourceName": "awx_organization_notification_template_approval",
     "parentObject": "organizations",
     "childObject": "notification_templates",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/organizations/{id}/notification_templates_approvals/",
     "priority": 100
   },
@@ -260,6 +323,8 @@
     "resourceName": "awx_organization_notification_template_association",
     "parentObject": "organizations",
     "childObject": "notification_templates",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/organizations/{id}/notification_templates/",
     "priority": 100
   },
@@ -268,6 +333,8 @@
     "resourceName": "awx_organization_notification_template_error",
     "parentObject": "organizations",
     "childObject": "notification_templates",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/organizations/{id}/notification_templates_error/",
     "priority": 100
   },
@@ -276,6 +343,8 @@
     "resourceName": "awx_organization_notification_template_started",
     "parentObject": "organizations",
     "childObject": "notification_templates",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/organizations/{id}/notification_templates_started/",
     "priority": 100
   },
@@ -284,6 +353,8 @@
     "resourceName": "awx_organization_notification_template_success",
     "parentObject": "organizations",
     "childObject": "notification_templates",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/organizations/{id}/notification_templates_success/",
     "priority": 100
   },
@@ -292,6 +363,8 @@
     "resourceName": "awx_organization_project_association",
     "parentObject": "organizations",
     "childObject": "projects",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "project_id",
     "path": "/api/v2/organizations/{id}/projects/",
     "priority": 100
   },
@@ -300,6 +373,8 @@
     "resourceName": "awx_organization_workflow_job_template_association",
     "parentObject": "organizations",
     "childObject": "workflow_job_templates",
+    "parentIDAttribute": "organization_id",
+    "childIDAttribute": "workflow_job_template_id",
     "path": "/api/v2/organizations/{id}/workflow_job_templates/",
     "priority": 100
   },
@@ -308,6 +383,8 @@
     "resourceName": "awx_project_notification_template_error",
     "parentObject": "projects",
     "childObject": "notification_templates",
+    "parentIDAttribute": "project_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/projects/{id}/notification_templates_error/",
     "priority": 100
   },
@@ -316,6 +393,8 @@
     "resourceName": "awx_project_notification_template_started",
     "parentObject": "projects",
     "childObject": "notification_templates",
+    "parentIDAttribute": "project_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/projects/{id}/notification_templates_started/",
     "priority": 100
   },
@@ -324,6 +403,8 @@
     "resourceName": "awx_project_notification_template_success",
     "parentObject": "projects",
     "childObject": "notification_templates",
+    "parentIDAttribute": "project_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/projects/{id}/notification_templates_success/",
     "priority": 100
   },
@@ -332,6 +413,8 @@
     "resourceName": "awx_project_schedule_association",
     "parentObject": "projects",
     "childObject": "schedules",
+    "parentIDAttribute": "project_id",
+    "childIDAttribute": "schedule_id",
     "path": "/api/v2/projects/{id}/schedules/",
     "priority": 100
   },
@@ -340,6 +423,8 @@
     "resourceName": "awx_schedule_credential_association",
     "parentObject": "schedules",
     "childObject": "credentials",
+    "parentIDAttribute": "schedule_id",
+    "childIDAttribute": "credential_id",
     "path": "/api/v2/schedules/{id}/credentials/",
     "priority": 100
   },
@@ -348,6 +433,8 @@
     "resourceName": "awx_schedule_instance_group_association",
     "parentObject": "schedules",
     "childObject": "instance_groups",
+    "parentIDAttribute": "schedule_id",
+    "childIDAttribute": "instance_group_id",
     "path": "/api/v2/schedules/{id}/instance_groups/",
     "priority": 100
   },
@@ -356,6 +443,8 @@
     "resourceName": "awx_schedule_label_association",
     "parentObject": "schedules",
     "childObject": "labels",
+    "parentIDAttribute": "schedule_id",
+    "childIDAttribute": "label_id",
     "path": "/api/v2/schedules/{id}/labels/",
     "priority": 100
   },
@@ -364,6 +453,8 @@
     "resourceName": "awx_system_job_template_notification_template_error",
     "parentObject": "system_job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "system_job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/system_job_templates/{id}/notification_templates_error/",
     "priority": 100
   },
@@ -372,6 +463,8 @@
     "resourceName": "awx_system_job_template_notification_template_started",
     "parentObject": "system_job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "system_job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/system_job_templates/{id}/notification_templates_started/",
     "priority": 100
   },
@@ -380,6 +473,8 @@
     "resourceName": "awx_system_job_template_notification_template_success",
     "parentObject": "system_job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "system_job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/system_job_templates/{id}/notification_templates_success/",
     "priority": 100
   },
@@ -388,6 +483,8 @@
     "resourceName": "awx_system_job_template_schedule_association",
     "parentObject": "system_job_templates",
     "childObject": "schedules",
+    "parentIDAttribute": "system_job_template_id",
+    "childIDAttribute": "schedule_id",
     "path": "/api/v2/system_job_templates/{id}/schedules/",
     "priority": 100
   },
@@ -396,6 +493,8 @@
     "resourceName": "awx_team_credential_association",
     "parentObject": "teams",
     "childObject": "credentials",
+    "parentIDAttribute": "team_id",
+    "childIDAttribute": "credential_id",
     "path": "/api/v2/teams/{id}/credentials/",
     "priority": 100
   },
@@ -404,6 +503,8 @@
     "resourceName": "awx_user_credential_association",
     "parentObject": "users",
     "childObject": "credentials",
+    "parentIDAttribute": "user_id",
+    "childIDAttribute": "credential_id",
     "path": "/api/v2/users/{id}/credentials/",
     "priority": 100
   },
@@ -412,6 +513,8 @@
     "resourceName": "awx_workflow_job_node_instance_group_association",
     "parentObject": "workflow_job_nodes",
     "childObject": "instance_groups",
+    "parentIDAttribute": "workflow_job_node_id",
+    "childIDAttribute": "instance_group_id",
     "path": "/api/v2/workflow_job_nodes/{id}/instance_groups/",
     "priority": 100
   },
@@ -420,6 +523,8 @@
     "resourceName": "awx_workflow_job_template_node_credential_association",
     "parentObject": "workflow_job_template_nodes",
     "childObject": "credentials",
+    "parentIDAttribute": "workflow_job_template_node_id",
+    "childIDAttribute": "credential_id",
     "path": "/api/v2/workflow_job_template_nodes/{id}/credentials/",
     "priority": 100
   },
@@ -428,6 +533,8 @@
     "resourceName": "awx_workflow_job_template_node_instance_group_association",
     "parentObject": "workflow_job_template_nodes",
     "childObject": "instance_groups",
+    "parentIDAttribute": "workflow_job_template_node_id",
+    "childIDAttribute": "instance_group_id",
     "path": "/api/v2/workflow_job_template_nodes/{id}/instance_groups/",
     "priority": 100
   },
@@ -436,6 +543,8 @@
     "resourceName": "awx_workflow_job_template_node_label_association",
     "parentObject": "workflow_job_template_nodes",
     "childObject": "labels",
+    "parentIDAttribute": "workflow_job_template_node_id",
+    "childIDAttribute": "label_id",
     "path": "/api/v2/workflow_job_template_nodes/{id}/labels/",
     "priority": 100
   },
@@ -444,6 +553,8 @@
     "resourceName": "awx_workflow_job_template_notification_template_approval",
     "parentObject": "workflow_job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "workflow_job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/workflow_job_templates/{id}/notification_templates_approvals/",
     "priority": 100
   },
@@ -452,6 +563,8 @@
     "resourceName": "awx_workflow_job_template_notification_template_error",
     "parentObject": "workflow_job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "workflow_job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/workflow_job_templates/{id}/notification_templates_error/",
     "priority": 100
   },
@@ -460,6 +573,8 @@
     "resourceName": "awx_workflow_job_template_notification_template_started",
     "parentObject": "workflow_job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "workflow_job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/workflow_job_templates/{id}/notification_templates_started/",
     "priority": 100
   },
@@ -468,6 +583,8 @@
     "resourceName": "awx_workflow_job_template_notification_template_success",
     "parentObject": "workflow_job_templates",
     "childObject": "notification_templates",
+    "parentIDAttribute": "workflow_job_template_id",
+    "childIDAttribute": "notification_template_id",
     "path": "/api/v2/workflow_job_templates/{id}/notification_templates_success/",
     "priority": 100
   },
@@ -476,6 +593,8 @@
     "resourceName": "awx_workflow_job_template_schedule_association",
     "parentObject": "workflow_job_templates",
     "childObject": "schedules",
+    "parentIDAttribute": "workflow_job_template_id",
+    "childIDAttribute": "schedule_id",
     "path": "/api/v2/workflow_job_templates/{id}/schedules/",
     "priority": 100
   },
@@ -484,6 +603,7 @@
     "resourceName": "awx_workflow_job_template_survey_spec",
     "parentObject": "workflow_job_templates",
     "childObject": "survey_spec",
+    "parentIDAttribute": "workflow_job_template_id",
     "path": "/api/v2/workflow_job_templates/{id}/survey_spec/",
     "priority": 100
   }

@@ -66,6 +66,7 @@ type Schema struct {
 	Type        string             `json:"type"`
 	Format      string             `json:"format"`
 	Default     any                `json:"default"`
+	ReadOnly    bool               `json:"readOnly"`
 	WriteOnly   bool               `json:"writeOnly"`
 	Description string             `json:"description"`
 	Properties  map[string]*Schema `json:"properties"`
@@ -368,12 +369,13 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 			}
 
 			relationships = append(relationships, manifest.Relationship{
-				Name:         name,
-				ResourceName: fmt.Sprintf("awx_%s", name),
-				ParentObject: parentCollection,
-				ChildObject:  childCollection,
-				Path:         endpointPath,
-				Priority:     priority,
+				Name:              name,
+				ResourceName:      fmt.Sprintf("awx_%s", name),
+				ParentObject:      parentCollection,
+				ChildObject:       childCollection,
+				ParentIDAttribute: manifest.RelationshipObjectIDAttribute(parentCollection),
+				Path:              endpointPath,
+				Priority:          priority,
 			})
 			continue
 		}
@@ -406,12 +408,14 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 		}
 
 		relationships = append(relationships, manifest.Relationship{
-			Name:         name,
-			ResourceName: fmt.Sprintf("awx_%s", name),
-			ParentObject: parentCollection,
-			ChildObject:  resolvedChildCollection,
-			Path:         endpointPath,
-			Priority:     priority,
+			Name:              name,
+			ResourceName:      fmt.Sprintf("awx_%s", name),
+			ParentObject:      parentCollection,
+			ChildObject:       resolvedChildCollection,
+			ParentIDAttribute: manifest.RelationshipObjectIDAttribute(parentCollection),
+			ChildIDAttribute:  manifest.RelationshipObjectIDAttribute(resolvedChildCollection),
+			Path:              endpointPath,
+			Priority:          priority,
 		})
 	}
 
@@ -626,6 +630,7 @@ func resolveSchema(doc *Document, schema *Schema) *Schema {
 		Type:        schema.Type,
 		Format:      schema.Format,
 		Default:     schema.Default,
+		ReadOnly:    schema.ReadOnly,
 		WriteOnly:   schema.WriteOnly,
 		Description: schema.Description,
 		Properties:  make(map[string]*Schema),
@@ -652,6 +657,9 @@ func resolveSchema(doc *Document, schema *Schema) *Schema {
 			if out.Default == nil && resolved.Default != nil {
 				out.Default = resolved.Default
 			}
+			if resolved.ReadOnly {
+				out.ReadOnly = true
+			}
 			if resolved.WriteOnly {
 				out.WriteOnly = true
 			}
@@ -677,7 +685,15 @@ func resolveSchema(doc *Document, schema *Schema) *Schema {
 }
 
 func shouldInferComputedFromDefault(property *Schema, required bool) bool {
-	if property == nil || required || property.WriteOnly || property.Default == nil {
+	if property == nil || required || property.WriteOnly {
+		return false
+	}
+
+	if property.ReadOnly {
+		return true
+	}
+
+	if property.Default == nil {
 		return false
 	}
 
@@ -720,19 +736,7 @@ func normalizeFieldType(schema *Schema) manifest.FieldType {
 }
 
 func singularize(collectionName string) string {
-	if strings.HasSuffix(collectionName, "ies") && len(collectionName) > 3 {
-		return strings.TrimSuffix(collectionName, "ies") + "y"
-	}
-	if strings.HasSuffix(collectionName, "sses") {
-		return strings.TrimSuffix(collectionName, "es")
-	}
-	if strings.HasSuffix(collectionName, "ses") && len(collectionName) > 3 {
-		return strings.TrimSuffix(collectionName, "es")
-	}
-	if strings.HasSuffix(collectionName, "s") && !strings.HasSuffix(collectionName, "ss") && len(collectionName) > 1 {
-		return strings.TrimSuffix(collectionName, "s")
-	}
-	return collectionName
+	return manifest.SingularizeCollectionName(collectionName)
 }
 
 func isSensitiveField(fieldName string, schema *Schema) bool {

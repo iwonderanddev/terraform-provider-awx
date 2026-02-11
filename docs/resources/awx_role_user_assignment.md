@@ -20,16 +20,16 @@ Argument qualifiers used below:
 - `Optional`: May be omitted.
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
-- `content_type` (Optional) String to use for references to this type from other models in the API.
-- `created` (Optional) The date/time this resource was created.
-- `created_by_id` (Optional) The user who created this resource.
-- `id` (Optional) Managed field from AWX OpenAPI schema.
+- `content_type` (Optional, Computed) String to use for references to this type from other models in the API.
+- `created` (Optional, Computed) The date/time this resource was created.
+- `created_by_id` (Optional, Computed) The user who created this resource.
+- `id` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `object_ansible_id` (Optional) The resource id of the object this role applies to. An alternative to the object_id field.
 - `object_id` (Optional) The primary key of the object this assignment applies to; null value indicates system-wide assignment.
-- `related` (Optional) Terraform object value. Managed field from AWX OpenAPI schema.
+- `related` (Optional, Computed) Terraform object value. Managed field from AWX OpenAPI schema.
 - `role_definition_id` (Required) The role definition which defines permissions conveyed by this assignment.
-- `summary_fields` (Optional) Terraform object value. Managed field from AWX OpenAPI schema.
-- `url` (Optional) Managed field from AWX OpenAPI schema.
+- `summary_fields` (Optional, Computed) Terraform object value. Managed field from AWX OpenAPI schema.
+- `url` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `user_id` (Optional) Managed field from AWX OpenAPI schema.
 - `user_ansible_id` (Optional) The resource ID of the user who will receive permissions from this assignment. An alternative to user field.
 

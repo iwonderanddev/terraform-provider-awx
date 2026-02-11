@@ -1,6 +1,6 @@
 resource "awx_team_user_association" "membership" {
-  parent_id = 12 # team ID
-  child_id  = 34 # user ID
+  team_id = 12 # team ID
+  user_id = 34 # user ID
 }
 
 # Relationship resource imports use composite IDs.

@@ -2,23 +2,27 @@
 
 Manages `organization_user_association` relationships between `organizations` and `users` objects.
 
+Breaking change: use `organization_id` and `user_id` instead of legacy `parent_id` and `child_id`.
+
 ## Example Usage
 
 ```hcl
 resource "awx_organization_user_association" "example" {
-  parent_id = 12
-  child_id  = 34
+  organization_id = 12
+  user_id  = 34
 }
 ```
 
 ## Argument Reference
 
-- `parent_id` (Number, Required) Parent object numeric ID.
-- `child_id` (Number, Required) Child object numeric ID.
+- `organization_id` (Number, Required) Parent object numeric ID.
+- `user_id` (Number, Required) Child object numeric ID.
 
 ## Attributes Reference
 
 - `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `organization_id` (Number) Parent object numeric ID.
+- `user_id` (Number) Child object numeric ID.
 
 ## Import
 

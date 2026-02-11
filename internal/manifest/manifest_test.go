@@ -309,3 +309,75 @@ func TestTerraformAttributeName(t *testing.T) {
 		t.Fatalf("unexpected settings field mapping with field helper: got=%q want=%q", got, "auth_ldap_4_server_uri")
 	}
 }
+
+func TestRelationshipObjectIDAttribute(t *testing.T) {
+	t.Parallel()
+
+	if got := RelationshipObjectIDAttribute("job_templates"); got != "job_template_id" {
+		t.Fatalf("unexpected relationship object ID attribute: got=%q want=%q", got, "job_template_id")
+	}
+	if got := RelationshipObjectIDAttribute("users"); got != "user_id" {
+		t.Fatalf("unexpected relationship object ID attribute: got=%q want=%q", got, "user_id")
+	}
+	if got := RelationshipObjectIDAttribute("custom_id"); got != "custom_id" {
+		t.Fatalf("unexpected pre-suffixed relationship object ID attribute: got=%q want=%q", got, "custom_id")
+	}
+}
+
+func TestRelationshipIDAttributesFallbackToCollectionNames(t *testing.T) {
+	t.Parallel()
+
+	rel := Relationship{
+		ParentObject: "workflow_job_templates",
+		ChildObject:  "credentials",
+	}
+	if got := RelationshipParentIDAttribute(rel); got != "workflow_job_template_id" {
+		t.Fatalf("unexpected parent ID attribute fallback: got=%q want=%q", got, "workflow_job_template_id")
+	}
+	if got := RelationshipChildIDAttribute(rel); got != "credential_id" {
+		t.Fatalf("unexpected child ID attribute fallback: got=%q want=%q", got, "credential_id")
+	}
+}
+
+func TestRelationshipIDAttributesUseManifestOverrides(t *testing.T) {
+	t.Parallel()
+
+	rel := Relationship{
+		ParentObject:      "job_templates",
+		ChildObject:       "credentials",
+		ParentIDAttribute: "job_template_id",
+		ChildIDAttribute:  "credential_id",
+	}
+	if got := RelationshipParentIDAttribute(rel); got != "job_template_id" {
+		t.Fatalf("unexpected parent ID attribute override: got=%q want=%q", got, "job_template_id")
+	}
+	if got := RelationshipChildIDAttribute(rel); got != "credential_id" {
+		t.Fatalf("unexpected child ID attribute override: got=%q want=%q", got, "credential_id")
+	}
+}
+
+func TestSingularizeCollectionName(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		in   string
+		want string
+	}{
+		{in: "job_templates", want: "job_template"},
+		{in: "credentials", want: "credential"},
+		{in: "classes", want: "class"},
+		{in: "policies", want: "policy"},
+		{in: "settings", want: "setting"},
+		{in: "glass", want: "glass"},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.in, func(t *testing.T) {
+			t.Parallel()
+			if got := SingularizeCollectionName(tc.in); got != tc.want {
+				t.Fatalf("unexpected singularization: input=%q got=%q want=%q", tc.in, got, tc.want)
+			}
+		})
+	}
+}

@@ -2,23 +2,27 @@
 
 Manages `group_host_association` relationships between `groups` and `hosts` objects.
 
+Breaking change: use `group_id` and `host_id` instead of legacy `parent_id` and `child_id`.
+
 ## Example Usage
 
 ```hcl
 resource "awx_group_host_association" "example" {
-  parent_id = 12
-  child_id  = 34
+  group_id = 12
+  host_id  = 34
 }
 ```
 
 ## Argument Reference
 
-- `parent_id` (Number, Required) Parent object numeric ID.
-- `child_id` (Number, Required) Child object numeric ID.
+- `group_id` (Number, Required) Parent object numeric ID.
+- `host_id` (Number, Required) Child object numeric ID.
 
 ## Attributes Reference
 
 - `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `group_id` (Number) Parent object numeric ID.
+- `host_id` (Number) Child object numeric ID.
 
 ## Import
 

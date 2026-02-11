@@ -2,11 +2,13 @@
 
 Manages `job_template_survey_spec` survey specification for `job_templates` objects.
 
+Breaking change: use `job_template_id` instead of legacy `parent_id`.
+
 ## Example Usage
 
 ```hcl
 resource "awx_job_template_survey_spec" "example" {
-  parent_id = 12
+  job_template_id = 12
   spec = jsonencode({
     name        = "Example survey"
     description = "Managed by Terraform"
@@ -17,13 +19,13 @@ resource "awx_job_template_survey_spec" "example" {
 
 ## Argument Reference
 
-- `parent_id` (Number, Required) Parent object numeric ID.
+- `job_template_id` (Number, Required) Parent object numeric ID.
 - `spec` (String, Optional) JSON-encoded survey specification payload.
 
 ## Attributes Reference
 
-- `id` (String) Survey specification ID (same as `parent_id`).
-- `parent_id` (Number) Parent object numeric ID.
+- `id` (String) Survey specification ID (same as `job_template_id`).
+- `job_template_id` (Number) Parent object numeric ID.
 - `spec` (String) JSON-encoded survey specification payload.
 
 ## Import
