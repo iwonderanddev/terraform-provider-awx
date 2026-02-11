@@ -20,5 +20,5 @@ data "awx_credential_input_source" "example" {
 - `description` (string)
 - `input_field_name` (string)
 - `metadata` (string)
-- `source_credential` (integer)
-- `target_credential` (integer)
+- `source_credential_id` (integer)
+- `target_credential_id` (integer)

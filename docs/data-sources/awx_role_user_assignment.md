@@ -19,7 +19,7 @@ data "awx_role_user_assignment" "example" {
 - `id` (Number) Numeric AWX object ID.
 - `content_type` (string)
 - `created` (string)
-- `created_by` (integer)
+- `created_by_id` (integer)
 - `id` (integer)
 - `object_ansible_id` (string)
 - `object_id` (string)

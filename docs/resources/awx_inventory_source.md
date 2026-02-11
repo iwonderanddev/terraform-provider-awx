@@ -45,7 +45,7 @@ Argument qualifiers used below:
   - `scm` - Sourced from a Project
   - `constructed` - Template additional groups and hostvars at runtime
 - `source_path` (Optional) Managed field from AWX OpenAPI schema.
-- `source_project` (Optional) Project containing inventory file used as source.
+- `source_project_id` (Optional) Project containing inventory file used as source.
 - `source_vars` (Optional) Inventory source variables in YAML or JSON format.
 - `timeout` (Optional, Computed) The amount of time (in seconds) to run before the task is canceled.
 - `update_cache_timeout` (Optional, Computed) Managed field from AWX OpenAPI schema.

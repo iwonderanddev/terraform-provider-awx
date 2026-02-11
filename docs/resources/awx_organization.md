@@ -16,7 +16,7 @@ Argument qualifiers used below:
 - `Optional`: May be omitted.
 - `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
 
-- `default_environment` (Optional) The default execution environment for jobs run by this organization.
+- `default_environment_id` (Optional) The default execution environment for jobs run by this organization.
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `max_hosts` (Optional, Computed) Maximum number of hosts allowed to be managed by this organization.
 - `name` (Optional) Managed field from AWX OpenAPI schema.

@@ -7,8 +7,8 @@ Manages AWX `credential_input_sources` objects.
 ```hcl
 resource "awx_credential_input_source" "example" {
   input_field_name = "example"
-  source_credential = 1
-  target_credential = 1
+  source_credential_id = 1
+  target_credential_id = 1
 }
 ```
 
@@ -22,8 +22,8 @@ Argument qualifiers used below:
 - `description` (Optional) Managed field from AWX OpenAPI schema.
 - `input_field_name` (Required) Managed field from AWX OpenAPI schema.
 - `metadata` (Optional, Computed) Managed field from AWX OpenAPI schema.
-- `source_credential` (Required) Managed field from AWX OpenAPI schema.
-- `target_credential` (Required) Managed field from AWX OpenAPI schema.
+- `source_credential_id` (Required) Managed field from AWX OpenAPI schema.
+- `target_credential_id` (Required) Managed field from AWX OpenAPI schema.
 
 ## Attributes Reference
 

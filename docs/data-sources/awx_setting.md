@@ -148,7 +148,7 @@ data "awx_setting" "example" {
 - `custom_venv_paths` (array)
 - `default_container_run_options` (array)
 - `default_control_plane_queue_name` (string)
-- `default_execution_environment` (integer)
+- `default_execution_environment_id` (integer)
 - `default_execution_queue_name` (string)
 - `default_inventory_update_timeout` (integer)
 - `default_job_idle_timeout` (integer)

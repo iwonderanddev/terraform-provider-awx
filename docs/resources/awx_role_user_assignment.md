@@ -22,7 +22,7 @@ Argument qualifiers used below:
 
 - `content_type` (Optional) String to use for references to this type from other models in the API.
 - `created` (Optional) The date/time this resource was created.
-- `created_by` (Optional) The user who created this resource.
+- `created_by_id` (Optional) The user who created this resource.
 - `id` (Optional) Managed field from AWX OpenAPI schema.
 - `object_ansible_id` (Optional) The resource id of the object this role applies to. An alternative to the object_id field.
 - `object_id` (Optional) The primary key of the object this assignment applies to; null value indicates system-wide assignment.

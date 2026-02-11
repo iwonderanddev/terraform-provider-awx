@@ -283,8 +283,42 @@ func isReferenceField(field manifest.FieldSpec, referenceCandidates map[string]s
 		return false
 	}
 
-	_, ok := referenceCandidates[name]
-	return ok
+	if _, ok := referenceCandidates[name]; ok {
+		return true
+	}
+
+	for candidate := range referenceCandidates {
+		if strings.HasSuffix(name, "_per_"+candidate) {
+			continue
+		}
+		if strings.HasSuffix(name, "_"+candidate) {
+			return true
+		}
+		if !strings.Contains(candidate, "_") {
+			continue
+		}
+
+		lastToken := candidate[strings.LastIndex(candidate, "_")+1:]
+		if !(name == lastToken || strings.HasSuffix(name, "_"+lastToken)) {
+			continue
+		}
+
+		candidatePhrase := strings.ReplaceAll(candidate, "_", " ")
+		description := strings.ToLower(strings.TrimSpace(field.Description))
+		if strings.Contains(description, candidatePhrase) {
+			return true
+		}
+	}
+
+	// AWX audit-style fields such as created_by and modified_by are user links.
+	if strings.HasSuffix(name, "_by") {
+		description := strings.ToLower(strings.TrimSpace(field.Description))
+		if strings.Contains(description, "user") {
+			return true
+		}
+	}
+
+	return false
 }
 
 // DeriveRelationships derives relationship resource candidates.

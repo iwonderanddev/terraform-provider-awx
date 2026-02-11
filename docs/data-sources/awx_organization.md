@@ -18,7 +18,7 @@ data "awx_organization" "example" {
 ## Attributes Reference
 
 - `id` (Number) Numeric AWX object ID.
-- `default_environment` (integer)
+- `default_environment_id` (integer)
 - `description` (string)
 - `max_hosts` (integer)
 - `name` (string)

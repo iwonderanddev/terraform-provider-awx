@@ -36,7 +36,7 @@ Argument qualifiers used below:
 - `scm_branch` (Optional) Managed field from AWX OpenAPI schema.
 - `skip_tags` (Optional) Managed field from AWX OpenAPI schema.
 - `survey_enabled` (Optional, Computed) Managed field from AWX OpenAPI schema.
-- `webhook_credential` (Optional) Personal Access Token for posting back the status to the service API
+- `webhook_credential_id` (Optional) Personal Access Token for posting back the status to the service API
 - `webhook_service` (Optional) Service that webhook requests will be accepted from
   - `github` - GitHub
   - `gitlab` - GitLab

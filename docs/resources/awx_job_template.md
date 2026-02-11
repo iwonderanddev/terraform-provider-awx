@@ -66,7 +66,7 @@ Argument qualifiers used below:
   - `3` - 3 (Debug)
   - `4` - 4 (Connection Debug)
   - `5` - 5 (WinRM Debug)
-- `webhook_credential` (Optional) Personal Access Token for posting back the status to the service API
+- `webhook_credential_id` (Optional) Personal Access Token for posting back the status to the service API
 - `webhook_service` (Optional) Service that webhook requests will be accepted from
   - `github` - GitHub
   - `gitlab` - GitLab

@@ -367,6 +367,7 @@
         "name": "source_credential",
         "type": "integer",
         "required": true,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false
       },
@@ -374,6 +375,7 @@
         "name": "target_credential",
         "type": "integer",
         "required": true,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false
       }
@@ -1177,6 +1179,7 @@
         "name": "source_project",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Project containing inventory file used as source."
@@ -1546,6 +1549,7 @@
         "name": "source_project_update",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Inventory files from this Project Update were used for the inventory update."
@@ -1986,6 +1990,7 @@
         "name": "webhook_credential",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Personal Access Token for posting back the status to the service API"
@@ -2446,6 +2451,7 @@
         "name": "webhook_credential",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Personal Access Token for posting back the status to the service API"
@@ -2719,6 +2725,7 @@
         "name": "default_environment",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The default execution environment for jobs run by this organization."
@@ -3144,6 +3151,7 @@
         "name": "default_environment",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The default execution environment for jobs run using this project."
@@ -3260,6 +3268,7 @@
         "name": "signature_validation_credential",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "An optional credential used for validating files in the project against unexpected changes."
@@ -3522,6 +3531,7 @@
         "name": "created_by",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The user who created this resource."
@@ -5009,6 +5019,7 @@
         "name": "DEFAULT_EXECUTION_ENVIRONMENT",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "The Execution Environment to be used when one has not been configured for a job template."
@@ -7713,6 +7724,7 @@
         "name": "webhook_credential",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Personal Access Token for posting back the status to the service API"
@@ -7984,6 +7996,7 @@
         "name": "webhook_credential",
         "type": "integer",
         "required": false,
+        "reference": true,
         "sensitive": false,
         "writeOnly": false,
         "description": "Personal Access Token for posting back the status to the service API"

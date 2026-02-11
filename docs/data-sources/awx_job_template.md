@@ -60,5 +60,5 @@ data "awx_job_template" "example" {
 - `timeout` (integer)
 - `use_fact_cache` (boolean)
 - `verbosity` (integer)
-- `webhook_credential` (integer)
+- `webhook_credential_id` (integer)
 - `webhook_service` (string)

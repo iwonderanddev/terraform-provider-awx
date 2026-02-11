@@ -159,7 +159,7 @@ Argument qualifiers used below:
 - `custom_venv_paths` (Optional, Computed) Paths where Tower will look for custom virtual environments (in addition to /var/lib/awx/venv/). Enter one path per line.
 - `default_container_run_options` (Optional, Computed) List of options to pass to podman run example: ['--network', 'slirp4netns:enable_ipv6=true', '--log-level', 'debug']
 - `default_control_plane_queue_name` (Optional, Computed) Managed field from AWX OpenAPI schema.
-- `default_execution_environment` (Optional) The Execution Environment to be used when one has not been configured for a job template.
+- `default_execution_environment_id` (Optional) The Execution Environment to be used when one has not been configured for a job template.
 - `default_execution_queue_name` (Optional, Computed) Managed field from AWX OpenAPI schema.
 - `default_inventory_update_timeout` (Optional, Computed) Maximum time in seconds to allow inventory updates to run. Use value of 0 to indicate that no timeout should be imposed. A timeout set on an individual inventory source will override this.
 - `default_job_idle_timeout` (Optional, Computed) If no output is detected from ansible in this number of seconds the execution will be terminated. Use value of 0 to indicate that no idle timeout should be imposed.

@@ -292,6 +292,103 @@ func TestDeriveManagedObjectsDoesNotInferReferenceFromIDSuffixAlone(t *testing.T
 	}
 }
 
+func TestIsReferenceFieldSupportsCommonAWXReferenceNamePatterns(t *testing.T) {
+	t.Parallel()
+
+	candidates := map[string]struct{}{
+		"project":               {},
+		"credential":            {},
+		"execution_environment": {},
+		"user":                  {},
+	}
+
+	cases := []struct {
+		name  string
+		field manifest.FieldSpec
+		want  bool
+	}{
+		{
+			name: "exact_match",
+			field: manifest.FieldSpec{
+				Name: "project",
+				Type: manifest.FieldTypeInt,
+			},
+			want: true,
+		},
+		{
+			name: "prefixed_reference_name",
+			field: manifest.FieldSpec{
+				Name: "source_project",
+				Type: manifest.FieldTypeInt,
+			},
+			want: true,
+		},
+		{
+			name: "suffixed_reference_name",
+			field: manifest.FieldSpec{
+				Name: "webhook_credential",
+				Type: manifest.FieldTypeInt,
+			},
+			want: true,
+		},
+		{
+			name: "description_backed_alias_name",
+			field: manifest.FieldSpec{
+				Name:        "default_environment",
+				Type:        manifest.FieldTypeInt,
+				Description: "The default execution environment for jobs run by this organization.",
+			},
+			want: true,
+		},
+		{
+			name: "created_by_user_link",
+			field: manifest.FieldSpec{
+				Name:        "created_by",
+				Type:        manifest.FieldTypeInt,
+				Description: "The user who created this resource.",
+			},
+			want: true,
+		},
+		{
+			name: "counter_field_is_not_reference",
+			field: manifest.FieldSpec{
+				Name: "max_hosts",
+				Type: manifest.FieldTypeInt,
+			},
+			want: false,
+		},
+		{
+			name: "timeout_field_is_not_reference",
+			field: manifest.FieldSpec{
+				Name:        "scm_update_cache_timeout",
+				Type:        manifest.FieldTypeInt,
+				Description: "The number of seconds after the last project update ran that a new project update will be launched.",
+			},
+			want: false,
+		},
+		{
+			name: "per_user_counter_is_not_reference",
+			field: manifest.FieldSpec{
+				Name:        "sessions_per_user",
+				Type:        manifest.FieldTypeInt,
+				Description: "Maximum number of simultaneous logged in sessions a user may have.",
+			},
+			want: false,
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := isReferenceField(tc.field, candidates)
+			if got != tc.want {
+				t.Fatalf("isReferenceField(%q) mismatch: got=%t want=%t", tc.field.Name, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestDeriveManagedObjectsExcludesDeprecatedObjects(t *testing.T) {
 	t.Parallel()
 

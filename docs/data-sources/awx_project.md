@@ -20,7 +20,7 @@ data "awx_project" "example" {
 - `id` (Number) Numeric AWX object ID.
 - `allow_override` (boolean)
 - `credential_id` (integer)
-- `default_environment` (integer)
+- `default_environment_id` (integer)
 - `description` (string)
 - `local_path` (string)
 - `name` (string)
@@ -34,5 +34,5 @@ data "awx_project" "example" {
 - `scm_update_cache_timeout` (integer)
 - `scm_update_on_launch` (boolean)
 - `scm_url` (string)
-- `signature_validation_credential` (integer)
+- `signature_validation_credential_id` (integer)
 - `timeout` (integer)

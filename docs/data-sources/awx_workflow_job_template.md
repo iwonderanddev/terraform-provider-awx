@@ -36,5 +36,5 @@ data "awx_workflow_job_template" "example" {
 - `scm_branch` (string)
 - `skip_tags` (string)
 - `survey_enabled` (boolean)
-- `webhook_credential` (integer)
+- `webhook_credential_id` (integer)
 - `webhook_service` (string)

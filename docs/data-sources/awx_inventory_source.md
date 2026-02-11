@@ -32,7 +32,7 @@ data "awx_inventory_source" "example" {
 - `scm_branch` (string)
 - `source` (string)
 - `source_path` (string)
-- `source_project` (integer)
+- `source_project_id` (integer)
 - `source_vars` (string)
 - `timeout` (integer)
 - `update_cache_timeout` (integer)
