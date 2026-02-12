@@ -11,7 +11,7 @@ The provider SHALL ship Terraform Registry-compatible documentation for provider
 - **THEN** provider, resource, and data source docs are present in the expected structure
 
 ### Requirement: Operational examples and import guidance
-Each resource documentation page SHALL include at least one runnable example and SHALL define import usage with the accepted ID format. Documentation SHALL accurately describe typed numeric reference arguments and attributes, including object `id` as `Number` for collection-created objects and `String` for detail-path keyed objects. Examples SHALL avoid unnecessary type-conversion workarounds for reference wiring. Documentation for managed object fields SHALL describe object-typed values as Terraform objects, and examples for these fields SHALL use Terraform object syntax rather than JSON string encoding.
+Each resource documentation page SHALL include at least one runnable example and SHALL define import usage with the accepted ID format. Documentation SHALL accurately describe typed numeric reference arguments and attributes, including object `id` as `Number` for collection-created objects and `String` for detail-path keyed objects. Documentation for relationship resources SHALL use canonical explicit object-specific `_id` argument names (for example, `job_template_id`, `credential_id`) and SHALL include breaking-change migration guidance for prior `parent_id`/`child_id` configurations. Examples SHALL avoid unnecessary type-conversion workarounds for reference wiring.
 
 #### Scenario: Resource documentation review
 - **WHEN** a resource documentation page is generated
@@ -21,7 +21,10 @@ Each resource documentation page SHALL include at least one runnable example and
 - **WHEN** a resource exposes numeric reference fields
 - **THEN** argument and attribute sections describe matching numeric usage and examples demonstrate direct assignment without `tonumber(...)`
 
-#### Scenario: Object field documentation consistency
-- **WHEN** documentation is generated for resources or data sources with object-typed fields
-- **THEN** argument and attribute sections describe Terraform object usage and examples do not require `jsonencode(...)` for object fields
+#### Scenario: Relationship argument naming documentation consistency
+- **WHEN** documentation is generated for relationship resources
+- **THEN** argument and attribute sections use canonical object-specific `_id` names and examples avoid generic `parent_id`/`child_id` usage
 
+#### Scenario: Relationship breaking-change documentation consistency
+- **WHEN** relationship argument naming changes are released as a hard break
+- **THEN** the documentation includes explicit migration guidance from legacy `parent_id`/`child_id` names to canonical object-specific `*_id` names
