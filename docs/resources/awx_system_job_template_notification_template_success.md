@@ -1,8 +1,7 @@
 # Resource: awx_system_job_template_notification_template_success
 
-Manages `system_job_template_notification_template_success` relationships between `system_job_templates` and `notification_templates` objects.
-
-Breaking change: use `system_job_template_id` and `notification_template_id` instead of legacy `parent_id` and `child_id`.
+Manages `system_job_template_notification_template_success` relationships between `system_job_templates`
+and `notification_templates` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_system_job_template_notification_template_success" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `system_job_template_id` (Number) Parent object numeric ID.
 - `notification_template_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_system_job_template_notification_template_success.example 12:34
+terraform import awx_system_job_template_notification_template_success.example \
+  12:34
 ```

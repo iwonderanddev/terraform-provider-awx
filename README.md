@@ -63,7 +63,7 @@ terraform plan
 - API: `/api/v2`
 - Auth at GA: HTTP Basic (`username` + `password`)
 - Object import IDs: numeric (`42`)
-- Relationship import IDs: composite (`<parent_id>:<child_id>`, for example `12:34`)
+- Relationship import IDs: composite (`<primary_id>:<related_id>`, for example `12:34`)
 
 ## Generated Docs Qualifiers
 
@@ -180,7 +180,7 @@ Terraform-driven scenarios currently cover:
 
 - `awx_team` resource CRUD + import.
 - `awx_team` data source lookup by name and id consistency checks.
-- `awx_team_user_association` relationship lifecycle + composite import id (`<parent_id>:<child_id>`).
+- `awx_team_user_association` relationship lifecycle + composite import id (`<primary_id>:<related_id>`).
 
 Run only Terraform-driven acceptance tests:
 

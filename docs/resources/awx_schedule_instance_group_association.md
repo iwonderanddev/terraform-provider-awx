@@ -1,8 +1,7 @@
 # Resource: awx_schedule_instance_group_association
 
-Manages `schedule_instance_group_association` relationships between `schedules` and `instance_groups` objects.
-
-Breaking change: use `schedule_id` and `instance_group_id` instead of legacy `parent_id` and `child_id`.
+Manages `schedule_instance_group_association` relationships between `schedules`
+and `instance_groups` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_schedule_instance_group_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `schedule_id` (Number) Parent object numeric ID.
 - `instance_group_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_schedule_instance_group_association.example 12:34
+terraform import awx_schedule_instance_group_association.example \
+  12:34
 ```

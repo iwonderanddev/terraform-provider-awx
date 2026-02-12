@@ -1,8 +1,7 @@
 # Resource: awx_organization_project_association
 
-Manages `organization_project_association` relationships between `organizations` and `projects` objects.
-
-Breaking change: use `organization_id` and `project_id` instead of legacy `parent_id` and `child_id`.
+Manages `organization_project_association` relationships between `organizations`
+and `projects` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_organization_project_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `organization_id` (Number) Parent object numeric ID.
 - `project_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_organization_project_association.example 12:34
+terraform import awx_organization_project_association.example \
+  12:34
 ```

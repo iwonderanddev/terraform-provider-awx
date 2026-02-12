@@ -1,8 +1,7 @@
 # Resource: awx_host_group_association
 
-Manages `host_group_association` relationships between `hosts` and `groups` objects.
-
-Breaking change: use `host_id` and `group_id` instead of legacy `parent_id` and `child_id`.
+Manages `host_group_association` relationships between `hosts`
+and `groups` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_host_group_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `host_id` (Number) Parent object numeric ID.
 - `group_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_host_group_association.example 12:34
+terraform import awx_host_group_association.example \
+  12:34
 ```

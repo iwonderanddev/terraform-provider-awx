@@ -1,8 +1,7 @@
 # Resource: awx_organization_workflow_job_template_association
 
-Manages `organization_workflow_job_template_association` relationships between `organizations` and `workflow_job_templates` objects.
-
-Breaking change: use `organization_id` and `workflow_job_template_id` instead of legacy `parent_id` and `child_id`.
+Manages `organization_workflow_job_template_association` relationships between `organizations`
+and `workflow_job_templates` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_organization_workflow_job_template_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `organization_id` (Number) Parent object numeric ID.
 - `workflow_job_template_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_organization_workflow_job_template_association.example 12:34
+terraform import awx_organization_workflow_job_template_association.example \
+  12:34
 ```

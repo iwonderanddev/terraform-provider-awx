@@ -7,7 +7,7 @@
 - Authentication: HTTP Basic (`username` + `password`)
 - Terraform import IDs:
   - Object resources: numeric AWX IDs (`42`) or detail-key IDs for detail-path resources (`system`)
-  - Relationship resources: composite IDs (`<parent_id>:<child_id>`) or parent-key IDs for singleton relationships (`<parent_id>`)
+  - Relationship resources: composite IDs (`<primary_id>:<related_id>`) or parent-key IDs for singleton relationships (`<resource_id>`)
 
 ## Coverage and Exclusions
 
@@ -45,9 +45,9 @@
   - `go test ./internal/provider -run TestAcceptanceTerraform -v -count=1` -> pass
   - Executed scenarios:
     - Team object CRUD, import-id validation, and remote-delete verification
-    - Team-user relationship create/read/delete with composite import-id semantics (`<parent_id>:<child_id>`)
+    - Team-user relationship create/read/delete with composite import-id semantics (`<primary_id>:<related_id>`)
     - Setting detail-key import semantics (`<detail_key>`)
-    - Job-template survey-spec parent-key import semantics (`<parent_id>`) when fixture ID is provided
+    - Job-template survey-spec parent-key import semantics (`<resource_id>`) when fixture ID is provided
 
 ## Known Limitations
 

@@ -282,7 +282,7 @@ func (c *Client) Disassociate(ctx context.Context, relationshipPath string, pare
 		return nil
 	}
 
-	// Fallback for endpoints that support direct DELETE at /<relation>/<child_id>/.
+	// Fallback for endpoints that support direct DELETE at /<relation>/<related_id>/.
 	fallbackPath := path.Join(resolvedPath, strconv.FormatInt(childID, 10)) + "/"
 	_, deleteErr := c.DoJSON(ctx, http.MethodDelete, fallbackPath, nil, nil)
 	if apiErr := asAPIError(deleteErr); apiErr != nil && apiErr.StatusCode == http.StatusNotFound {

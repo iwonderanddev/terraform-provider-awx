@@ -1,8 +1,7 @@
 # Resource: awx_schedule_credential_association
 
-Manages `schedule_credential_association` relationships between `schedules` and `credentials` objects.
-
-Breaking change: use `schedule_id` and `credential_id` instead of legacy `parent_id` and `child_id`.
+Manages `schedule_credential_association` relationships between `schedules`
+and `credentials` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_schedule_credential_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `schedule_id` (Number) Parent object numeric ID.
 - `credential_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_schedule_credential_association.example 12:34
+terraform import awx_schedule_credential_association.example \
+  12:34
 ```

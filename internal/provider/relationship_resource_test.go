@@ -28,8 +28,8 @@ func TestRelationshipResourceSchemaSurveySpec(t *testing.T) {
 	if _, ok := resp.Schema.Attributes["job_template_id"]; !ok {
 		t.Fatalf("expected survey spec schema to include job_template_id attribute")
 	}
-	if _, ok := resp.Schema.Attributes["parent_id"]; ok {
-		t.Fatalf("did not expect survey spec schema to include parent_id attribute")
+	if got := len(resp.Schema.Attributes); got != 3 {
+		t.Fatalf("expected survey spec schema to expose exactly 3 attributes, got=%d", got)
 	}
 }
 
@@ -53,14 +53,11 @@ func TestRelationshipResourceSchemaAssociation(t *testing.T) {
 	if _, ok := resp.Schema.Attributes["user_id"]; !ok {
 		t.Fatalf("expected association schema to include user_id")
 	}
-	if _, ok := resp.Schema.Attributes["parent_id"]; ok {
-		t.Fatalf("did not expect association schema to include parent_id")
-	}
-	if _, ok := resp.Schema.Attributes["child_id"]; ok {
-		t.Fatalf("did not expect association schema to include child_id")
-	}
 	if _, ok := resp.Schema.Attributes["spec"]; ok {
 		t.Fatalf("did not expect association schema to include spec")
+	}
+	if got := len(resp.Schema.Attributes); got != 3 {
+		t.Fatalf("expected association schema to expose exactly 3 attributes, got=%d", got)
 	}
 }
 

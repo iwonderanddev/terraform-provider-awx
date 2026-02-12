@@ -1,8 +1,7 @@
 # Resource: awx_organization_credential_association
 
-Manages `organization_credential_association` relationships between `organizations` and `credentials` objects.
-
-Breaking change: use `organization_id` and `credential_id` instead of legacy `parent_id` and `child_id`.
+Manages `organization_credential_association` relationships between `organizations`
+and `credentials` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_organization_credential_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `organization_id` (Number) Parent object numeric ID.
 - `credential_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_organization_credential_association.example 12:34
+terraform import awx_organization_credential_association.example \
+  12:34
 ```

@@ -74,7 +74,7 @@ func (r *relationshipResource) Schema(_ context.Context, _ resource.SchemaReques
 		Description: fmt.Sprintf("Manages AWX `%s` relationship resources.", r.relationship.Name),
 		Attributes: map[string]resourceschema.Attribute{
 			"id": resourceschema.StringAttribute{
-				Description: "Composite ID in <parent_id>:<child_id> format.",
+				Description: "Composite ID in <primary_id>:<related_id> format.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -326,7 +326,7 @@ func parseSurveySpecImportID(rawID string) (int64, error) {
 	identifier := strings.TrimSpace(rawID)
 	parentID, err := strconv.ParseInt(identifier, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("Use <parent_id>, for example 12.")
+		return 0, fmt.Errorf("Use <resource_id>, for example 12.")
 	}
 	return parentID, nil
 }
@@ -334,7 +334,7 @@ func parseSurveySpecImportID(rawID string) (int64, error) {
 func parseCompositeRelationshipImportID(rawID string) (int64, int64, error) {
 	matches := compositeIDPattern.FindStringSubmatch(strings.TrimSpace(rawID))
 	if len(matches) != 3 {
-		return 0, 0, fmt.Errorf("Use <parent_id>:<child_id>, for example 12:34.")
+		return 0, 0, fmt.Errorf("Use <primary_id>:<related_id>, for example 12:34.")
 	}
 
 	parentID, _ := strconv.ParseInt(matches[1], 10, 64)

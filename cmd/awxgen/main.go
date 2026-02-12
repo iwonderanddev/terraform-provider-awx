@@ -603,8 +603,7 @@ func writeRelationshipDoc(resourceDir string, rel manifest.Relationship) error {
 
 	builder.WriteString(fmt.Sprintf("# Resource: %s\n\n", rel.ResourceName))
 	if isSurveySpecRelationship(rel) {
-		builder.WriteString(fmt.Sprintf("Manages `%s` survey specification for `%s` objects.\n\n", rel.Name, rel.ParentObject))
-		builder.WriteString(fmt.Sprintf("Breaking change: use `%s` instead of legacy `parent_id`.\n\n", parentIDAttribute))
+		builder.WriteString(fmt.Sprintf("Manages `%s` survey specification for\n`%s` objects.\n\n", rel.Name, rel.ParentObject))
 		builder.WriteString("## Example Usage\n\n")
 		builder.WriteString("```hcl\n")
 		builder.WriteString(fmt.Sprintf("resource \"%s\" \"example\" {\n", rel.ResourceName))
@@ -625,11 +624,11 @@ func writeRelationshipDoc(resourceDir string, rel manifest.Relationship) error {
 		builder.WriteString("- `spec` (String) JSON-encoded survey specification payload.\n\n")
 		builder.WriteString("## Import\n\n")
 		builder.WriteString("```bash\n")
-		builder.WriteString(fmt.Sprintf("terraform import %s.example 12\n", rel.ResourceName))
+		builder.WriteString(fmt.Sprintf("terraform import %s.example \\\n", rel.ResourceName))
+		builder.WriteString("  12\n")
 		builder.WriteString("```\n")
 	} else {
-		builder.WriteString(fmt.Sprintf("Manages `%s` relationships between `%s` and `%s` objects.\n\n", rel.Name, rel.ParentObject, rel.ChildObject))
-		builder.WriteString(fmt.Sprintf("Breaking change: use `%s` and `%s` instead of legacy `parent_id` and `child_id`.\n\n", parentIDAttribute, childIDAttribute))
+		builder.WriteString(fmt.Sprintf("Manages `%s` relationships between `%s`\nand `%s` objects.\n\n", rel.Name, rel.ParentObject, rel.ChildObject))
 		builder.WriteString("## Example Usage\n\n")
 		builder.WriteString("```hcl\n")
 		builder.WriteString(fmt.Sprintf("resource \"%s\" \"example\" {\n", rel.ResourceName))
@@ -641,12 +640,13 @@ func writeRelationshipDoc(resourceDir string, rel manifest.Relationship) error {
 		builder.WriteString(fmt.Sprintf("- `%s` (Number, Required) Parent object numeric ID.\n", parentIDAttribute))
 		builder.WriteString(fmt.Sprintf("- `%s` (Number, Required) Child object numeric ID.\n\n", childIDAttribute))
 		builder.WriteString("## Attributes Reference\n\n")
-		builder.WriteString("- `id` (String) Composite ID in `<parent_id>:<child_id>` format.\n")
+		builder.WriteString("- `id` (String) Composite ID in `<primary_id>:<related_id>` format.\n")
 		builder.WriteString(fmt.Sprintf("- `%s` (Number) Parent object numeric ID.\n", parentIDAttribute))
 		builder.WriteString(fmt.Sprintf("- `%s` (Number) Child object numeric ID.\n\n", childIDAttribute))
 		builder.WriteString("## Import\n\n")
 		builder.WriteString("```bash\n")
-		builder.WriteString(fmt.Sprintf("terraform import %s.example 12:34\n", rel.ResourceName))
+		builder.WriteString(fmt.Sprintf("terraform import %s.example \\\n", rel.ResourceName))
+		builder.WriteString("  12:34\n")
 		builder.WriteString("```\n")
 	}
 

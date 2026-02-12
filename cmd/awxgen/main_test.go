@@ -186,11 +186,11 @@ func TestWriteRelationshipDocUsesCanonicalArguments(t *testing.T) {
 	if !strings.Contains(content, "user_id") {
 		t.Fatalf("expected child canonical argument in doc, got:\n%s", content)
 	}
-	if !strings.Contains(content, "legacy `parent_id` and `child_id`") {
-		t.Fatalf("expected breaking-change migration guidance, got:\n%s", content)
+	if strings.Contains(content, "Breaking change:") {
+		t.Fatalf("did not expect legacy breaking-change migration guidance, got:\n%s", content)
 	}
-	if strings.Contains(content, "- `parent_id` (Number, Required)") {
-		t.Fatalf("expected legacy parent_id argument to be removed from argument docs, got:\n%s", content)
+	if !strings.Contains(content, "<primary_id>:<related_id>") {
+		t.Fatalf("expected neutral composite ID placeholder in docs, got:\n%s", content)
 	}
 }
 
@@ -220,10 +220,7 @@ func TestWriteRelationshipDocUsesCanonicalSurveySpecParentArgument(t *testing.T)
 	if !strings.Contains(content, "job_template_id = 12") {
 		t.Fatalf("expected canonical survey-spec parent argument in example, got:\n%s", content)
 	}
-	if !strings.Contains(content, "legacy `parent_id`") {
-		t.Fatalf("expected survey-spec migration guidance, got:\n%s", content)
-	}
-	if strings.Contains(content, "- `parent_id` (Number, Required)") {
-		t.Fatalf("expected legacy parent_id argument to be removed from argument docs, got:\n%s", content)
+	if strings.Contains(content, "Breaking change:") {
+		t.Fatalf("did not expect legacy breaking-change migration guidance, got:\n%s", content)
 	}
 }

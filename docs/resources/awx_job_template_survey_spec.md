@@ -1,8 +1,7 @@
 # Resource: awx_job_template_survey_spec
 
-Manages `job_template_survey_spec` survey specification for `job_templates` objects.
-
-Breaking change: use `job_template_id` instead of legacy `parent_id`.
+Manages `job_template_survey_spec` survey specification for
+`job_templates` objects.
 
 ## Example Usage
 
@@ -31,5 +30,6 @@ resource "awx_job_template_survey_spec" "example" {
 ## Import
 
 ```bash
-terraform import awx_job_template_survey_spec.example 12
+terraform import awx_job_template_survey_spec.example \
+  12
 ```

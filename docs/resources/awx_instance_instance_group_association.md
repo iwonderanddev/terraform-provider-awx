@@ -1,8 +1,7 @@
 # Resource: awx_instance_instance_group_association
 
-Manages `instance_instance_group_association` relationships between `instances` and `instance_groups` objects.
-
-Breaking change: use `instance_id` and `instance_group_id` instead of legacy `parent_id` and `child_id`.
+Manages `instance_instance_group_association` relationships between `instances`
+and `instance_groups` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_instance_instance_group_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `instance_id` (Number) Parent object numeric ID.
 - `instance_group_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_instance_instance_group_association.example 12:34
+terraform import awx_instance_instance_group_association.example \
+  12:34
 ```

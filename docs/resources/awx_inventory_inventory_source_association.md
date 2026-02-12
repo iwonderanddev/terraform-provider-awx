@@ -1,8 +1,7 @@
 # Resource: awx_inventory_inventory_source_association
 
-Manages `inventory_inventory_source_association` relationships between `inventories` and `inventory_sources` objects.
-
-Breaking change: use `inventory_id` and `inventory_source_id` instead of legacy `parent_id` and `child_id`.
+Manages `inventory_inventory_source_association` relationships between `inventories`
+and `inventory_sources` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_inventory_inventory_source_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `inventory_id` (Number) Parent object numeric ID.
 - `inventory_source_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_inventory_inventory_source_association.example 12:34
+terraform import awx_inventory_inventory_source_association.example \
+  12:34
 ```

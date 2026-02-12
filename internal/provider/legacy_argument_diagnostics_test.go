@@ -33,7 +33,7 @@ resource "awx_team" "legacy" {
 	})
 }
 
-func TestTerraformRejectsLegacyRelationshipDirectionalArguments(t *testing.T) {
+func TestTerraformRejectsUnexpectedRelationshipArguments(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
@@ -48,19 +48,19 @@ provider "awx" {
 }
 
 resource "awx_team_user_association" "legacy" {
-  team_id   = 1
-  user_id   = 2
-  parent_id = 1
-  child_id  = 2
+  team_id          = 1
+  user_id          = 2
+  legacy_source_id = 1
+  legacy_target_id = 2
 }
 `,
-				ExpectError: regexp.MustCompile(`(?s)(Unsupported argument|An argument named "(parent_id|child_id)" is not expected here)`),
+				ExpectError: regexp.MustCompile(`(?s)(Unsupported argument|An argument named "(legacy_source_id|legacy_target_id)" is not expected here)`),
 			},
 		},
 	})
 }
 
-func TestTerraformRejectsLegacySurveySpecParentArgument(t *testing.T) {
+func TestTerraformRejectsUnexpectedSurveySpecArguments(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
@@ -76,7 +76,7 @@ provider "awx" {
 
 resource "awx_job_template_survey_spec" "legacy" {
   job_template_id = 1
-  parent_id       = 1
+  legacy_id       = 1
   spec = jsonencode({
     name        = "legacy"
     description = "legacy"
@@ -84,7 +84,7 @@ resource "awx_job_template_survey_spec" "legacy" {
   })
 }
 `,
-				ExpectError: regexp.MustCompile(`(?s)(Unsupported argument|An argument named "parent_id" is not expected here)`),
+				ExpectError: regexp.MustCompile(`(?s)(Unsupported argument|An argument named "legacy_id" is not expected here)`),
 			},
 		},
 	})

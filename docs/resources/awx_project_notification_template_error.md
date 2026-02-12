@@ -1,8 +1,7 @@
 # Resource: awx_project_notification_template_error
 
-Manages `project_notification_template_error` relationships between `projects` and `notification_templates` objects.
-
-Breaking change: use `project_id` and `notification_template_id` instead of legacy `parent_id` and `child_id`.
+Manages `project_notification_template_error` relationships between `projects`
+and `notification_templates` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_project_notification_template_error" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `project_id` (Number) Parent object numeric ID.
 - `notification_template_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_project_notification_template_error.example 12:34
+terraform import awx_project_notification_template_error.example \
+  12:34
 ```

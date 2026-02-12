@@ -1,8 +1,7 @@
 # Resource: awx_inventory_group_association
 
-Manages `inventory_group_association` relationships between `inventories` and `groups` objects.
-
-Breaking change: use `inventory_id` and `group_id` instead of legacy `parent_id` and `child_id`.
+Manages `inventory_group_association` relationships between `inventories`
+and `groups` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_inventory_group_association" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `inventory_id` (Number) Parent object numeric ID.
 - `group_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_inventory_group_association.example 12:34
+terraform import awx_inventory_group_association.example \
+  12:34
 ```

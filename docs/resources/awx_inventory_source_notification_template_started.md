@@ -1,8 +1,7 @@
 # Resource: awx_inventory_source_notification_template_started
 
-Manages `inventory_source_notification_template_started` relationships between `inventory_sources` and `notification_templates` objects.
-
-Breaking change: use `inventory_source_id` and `notification_template_id` instead of legacy `parent_id` and `child_id`.
+Manages `inventory_source_notification_template_started` relationships between `inventory_sources`
+and `notification_templates` objects.
 
 ## Example Usage
 
@@ -20,12 +19,13 @@ resource "awx_inventory_source_notification_template_started" "example" {
 
 ## Attributes Reference
 
-- `id` (String) Composite ID in `<parent_id>:<child_id>` format.
+- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
 - `inventory_source_id` (Number) Parent object numeric ID.
 - `notification_template_id` (Number) Child object numeric ID.
 
 ## Import
 
 ```bash
-terraform import awx_inventory_source_notification_template_started.example 12:34
+terraform import awx_inventory_source_notification_template_started.example \
+  12:34
 ```
