@@ -643,6 +643,11 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, objEnrichm
 		overview = fmt.Sprintf("Manages AWX `%s` objects.", obj.Name)
 	}
 	builder.WriteString(overview + "\n\n")
+	if isSettingsObject(obj) {
+		builder.WriteString("Use `id = \"all\"` as the default and recommended settings scope.\n")
+		builder.WriteString("Category-scoped IDs (for example `system`, `authentication`, and `bulk`) remain supported for optional advanced scoping.\n")
+		builder.WriteString("Avoid overlapping ownership of the same setting key across `id = \"all\"` and category-scoped resources, because overlaps can cause configuration conflicts.\n\n")
+	}
 	if !obj.UpdateSupported {
 		builder.WriteString("This endpoint does not support in-place updates; Terraform replaces the resource when arguments change.\n\n")
 	}
@@ -718,6 +723,9 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, objEnrichm
 	importID := "42"
 	if !obj.CollectionCreate {
 		importID = "example"
+		if isSettingsObject(obj) {
+			importID = "all"
+		}
 	}
 	builder.WriteString(fmt.Sprintf("terraform import %s.example %s\n", obj.ResourceName, importID))
 	builder.WriteString("```\n\n")
@@ -732,6 +740,11 @@ func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject, objEnr
 	builder := strings.Builder{}
 	builder.WriteString(fmt.Sprintf("# Data Source: %s\n\n", obj.DataSourceName))
 	builder.WriteString(fmt.Sprintf("Reads AWX `%s` objects.\n\n", obj.Name))
+	if isSettingsObject(obj) {
+		builder.WriteString("Use `id = \"all\"` as the default and recommended settings scope.\n")
+		builder.WriteString("Category-scoped IDs (for example `system`, `authentication`, and `bulk`) remain supported for optional advanced scoping.\n")
+		builder.WriteString("Avoid overlapping ownership of the same setting key across `id = \"all\"` and category-scoped resources, because overlaps can cause configuration conflicts.\n\n")
+	}
 	builder.WriteString("## Example Usage\n\n")
 	renderExamples(&builder, []docsExample{dataSourceExample(obj)})
 
@@ -848,7 +861,11 @@ func defaultResourceExample(obj manifest.ManagedObject, managedResourceBySingula
 	builder := strings.Builder{}
 	builder.WriteString(fmt.Sprintf("resource %q %q {\n", obj.ResourceName, "example"))
 	if !obj.CollectionCreate {
-		builder.WriteString("  id = \"example\"\n")
+		idExample := "\"example\""
+		if isSettingsObject(obj) {
+			idExample = "\"all\""
+		}
+		builder.WriteString("  id = " + idExample + "\n")
 	}
 	exampleFields := map[string]struct{}{}
 	for _, field := range obj.Fields {
@@ -883,10 +900,17 @@ func dataSourceExample(obj manifest.ManagedObject) docsExample {
 	idExample := sampleValue(manifest.FieldTypeInt)
 	if !obj.CollectionCreate {
 		idExample = sampleValue(manifest.FieldTypeString)
+		if isSettingsObject(obj) {
+			idExample = "\"all\""
+		}
 	}
 	builder.WriteString("  id = " + idExample + "\n")
 	builder.WriteString("}")
 	return docsExample{HCL: builder.String()}
+}
+
+func isSettingsObject(obj manifest.ManagedObject) bool {
+	return strings.TrimSpace(obj.Name) == "settings"
 }
 
 func renderExamples(builder *strings.Builder, examples []docsExample) {
@@ -1346,6 +1370,11 @@ func validateGeneratedDocs(docsDir string, objects []manifest.ManagedObject, rel
 					return err
 				}
 			}
+			if isSettingsObject(object) {
+				if err := validateSettingsResourceDocumentation(resourceDoc, content); err != nil {
+					return err
+				}
+			}
 			if _, isPriority := prioritySet[object.ResourceName]; isPriority {
 				seenPriorities[object.ResourceName] = struct{}{}
 			}
@@ -1365,6 +1394,11 @@ func validateGeneratedDocs(docsDir string, objects []manifest.ManagedObject, rel
 			}
 			if err := validateFurtherReadingPolicy(dataSourceDoc, content, expectedObjectAWXLinks); err != nil {
 				return err
+			}
+			if isSettingsObject(object) {
+				if err := validateSettingsDataSourceDocumentation(dataSourceDoc, content); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -1402,6 +1436,47 @@ func validateGeneratedDocs(docsDir string, objects []manifest.ManagedObject, rel
 		}
 	}
 
+	return nil
+}
+
+func validateSettingsResourceDocumentation(path string, content string) error {
+	if err := validateSettingsDocumentationCommon(path, content); err != nil {
+		return err
+	}
+	importSection, err := extractTopLevelSection(content, "## Import")
+	if err != nil {
+		return fmt.Errorf("documentation file %s: %w", path, err)
+	}
+	if !strings.Contains(importSection, "terraform import awx_setting.example all") {
+		return fmt.Errorf("documentation file %s must use `all` as the primary awx_setting import example", path)
+	}
+	return nil
+}
+
+func validateSettingsDataSourceDocumentation(path string, content string) error {
+	return validateSettingsDocumentationCommon(path, content)
+}
+
+func validateSettingsDocumentationCommon(path string, content string) error {
+	exampleSection, err := extractTopLevelSection(content, "## Example Usage")
+	if err != nil {
+		return fmt.Errorf("documentation file %s: %w", path, err)
+	}
+	if !strings.Contains(exampleSection, "id = \"all\"") {
+		return fmt.Errorf("documentation file %s must use `id = \"all\"` in the canonical awx_setting example", path)
+	}
+	requiredMarkers := []string{
+		"category-scoped ids",
+		"optional advanced scoping",
+		"overlapping ownership",
+		"configuration conflicts",
+	}
+	contentLower := strings.ToLower(content)
+	for _, marker := range requiredMarkers {
+		if !strings.Contains(contentLower, marker) {
+			return fmt.Errorf("documentation file %s is missing required awx_setting guidance marker %q", path, marker)
+		}
+	}
 	return nil
 }
 

@@ -2,45 +2,6 @@
 
 ## MODIFIED Requirements
 
-### Requirement: Registry-compatible documentation structure
-
-The provider SHALL ship Terraform Registry-compatible documentation for
-provider configuration, each resource, and each data source. Generated resource
-pages SHALL use a stable section structure compatible with HashiCorp Plugin
-Framework documentation-generation guidance, including `Example Usage`,
-`Schema`, `Import`, and `Further Reading` sections. Schema qualifier guidance
-SHALL be rendered separately from argument entries and MUST NOT appear as a
-parameter bullet.
-
-#### Scenario: Documentation completeness check
-
-- **WHEN** documentation validation is executed
-- **THEN** provider, resource, and data source docs are present in the expected
-  structure
-
-#### Scenario: Resource schema structure check
-
-- **WHEN** a resource documentation page is generated
-- **THEN** it contains `## Example Usage`, `## Schema`, `## Import`, and
-  `## Further Reading` sections in consistent order
-
-#### Scenario: Qualifier placement check
-
-- **WHEN** qualifier guidance is rendered for resource arguments
-- **THEN** qualifier guidance is presented outside parameter bullet lists
-
-#### Scenario: Reading links check
-
-- **WHEN** a documentation page includes a `## Further Reading` section
-- **THEN** the section includes only resource-specific official AWX links for
-  behavior details (not only generic AWX index pages)
-
-#### Scenario: Official-link specificity check
-
-- **WHEN** documentation is generated for a managed object resource/data source
-- **THEN** `## Further Reading` includes at least one official AWX 24.6.1 link
-  mapped to that object's concept page (or closest official concept section)
-
 ### Requirement: Operational examples and import guidance
 
 Each resource documentation page SHALL include runnable usage examples and SHALL

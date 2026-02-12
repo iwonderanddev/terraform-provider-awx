@@ -87,6 +87,48 @@ func TestWriteResourceDocIncludesComputedArgumentMarker(t *testing.T) {
 	}
 }
 
+func TestWriteSettingsResourceDocDefaultsToAllAndIncludesScopeGuidance(t *testing.T) {
+	t.Parallel()
+
+	resourceDir := t.TempDir()
+	object := manifest.ManagedObject{
+		Name:             "settings",
+		ResourceName:     "awx_setting",
+		CollectionCreate: false,
+	}
+
+	awxLinks, err := awxOfficialLinksForObject(object.Name)
+	if err != nil {
+		t.Fatalf("awxOfficialLinksForObject returned error: %v", err)
+	}
+	if err := writeResourceDoc(resourceDir, object, objectDocsEnrichment{}, awxLinks, map[string]struct{}{}); err != nil {
+		t.Fatalf("writeResourceDoc returned error: %v", err)
+	}
+
+	docPath := filepath.Join(resourceDir, "awx_setting.md")
+	raw, err := os.ReadFile(docPath)
+	if err != nil {
+		t.Fatalf("failed to read generated resource doc: %v", err)
+	}
+	content := string(raw)
+	if !strings.Contains(content, "id = \"all\"") {
+		t.Fatalf("expected settings example to default to id=all, got:\n%s", content)
+	}
+	if !strings.Contains(content, "terraform import awx_setting.example all") {
+		t.Fatalf("expected settings import guidance to default to all, got:\n%s", content)
+	}
+	for _, marker := range []string{
+		"Category-scoped IDs",
+		"optional advanced scoping",
+		"overlapping ownership",
+		"configuration conflicts",
+	} {
+		if !strings.Contains(content, marker) {
+			t.Fatalf("expected settings guidance marker %q in doc, got:\n%s", marker, content)
+		}
+	}
+}
+
 func TestResolveFieldDescriptionPrefersCuratedThenSchemaThenFallback(t *testing.T) {
 	t.Parallel()
 
@@ -388,6 +430,79 @@ func TestSampleDocValueUsesReferenceWiringWhenTargetResourceExists(t *testing.T)
 	}
 }
 
+func TestDataSourceExampleUsesAllForSettings(t *testing.T) {
+	t.Parallel()
+
+	object := manifest.ManagedObject{
+		Name:             "settings",
+		DataSourceName:   "awx_setting",
+		CollectionCreate: false,
+	}
+
+	example := dataSourceExample(object)
+	if !strings.Contains(example.HCL, "id = \"all\"") {
+		t.Fatalf("expected settings data source example to default to id=all, got=%q", example.HCL)
+	}
+}
+
+func TestValidateSettingsResourceDocumentation(t *testing.T) {
+	t.Parallel()
+
+	valid := strings.Join([]string{
+		"## Example Usage",
+		"",
+		"```hcl",
+		"resource \"awx_setting\" \"example\" {",
+		"  id = \"all\"",
+		"}",
+		"```",
+		"",
+		"category-scoped IDs remain available for optional advanced scoping.",
+		"Avoid overlapping ownership because this can cause configuration conflicts.",
+		"",
+		"## Import",
+		"",
+		"```bash",
+		"terraform import awx_setting.example all",
+		"```",
+	}, "\n")
+
+	if err := validateSettingsResourceDocumentation("settings-resource.md", valid); err != nil {
+		t.Fatalf("expected valid settings resource doc, got: %v", err)
+	}
+
+	invalid := strings.ReplaceAll(valid, "id = \"all\"", "id = \"system\"")
+	if err := validateSettingsResourceDocumentation("settings-resource.md", invalid); err == nil {
+		t.Fatalf("expected invalid settings resource doc without id=all default")
+	}
+}
+
+func TestValidateSettingsDataSourceDocumentation(t *testing.T) {
+	t.Parallel()
+
+	valid := strings.Join([]string{
+		"## Example Usage",
+		"",
+		"```hcl",
+		"data \"awx_setting\" \"example\" {",
+		"  id = \"all\"",
+		"}",
+		"```",
+		"",
+		"category-scoped IDs remain available for optional advanced scoping.",
+		"Avoid overlapping ownership because this can cause configuration conflicts.",
+	}, "\n")
+
+	if err := validateSettingsDataSourceDocumentation("settings-ds.md", valid); err != nil {
+		t.Fatalf("expected valid settings data source doc, got: %v", err)
+	}
+
+	invalid := strings.ReplaceAll(valid, "configuration conflicts", "drift")
+	if err := validateSettingsDataSourceDocumentation("settings-ds.md", invalid); err == nil {
+		t.Fatalf("expected invalid settings data source doc without required conflict marker")
+	}
+}
+
 func TestWriteRelationshipDocUsesCanonicalArguments(t *testing.T) {
 	t.Parallel()
 
@@ -474,5 +589,75 @@ func TestWriteRelationshipDocUsesCanonicalSurveySpecParentArgument(t *testing.T)
 	}
 	if !strings.Contains(content, "userguide/job_templates.html") {
 		t.Fatalf("expected survey-spec relationship docs to include job template official AWX link, got:\n%s", content)
+	}
+}
+
+func TestGenerateDocsRendersSettingsDefaultsAndGuidance(t *testing.T) {
+	t.Parallel()
+
+	outputDir := t.TempDir()
+	objects := []manifest.ManagedObject{
+		{
+			Name:             "settings",
+			SingularName:     "setting",
+			ResourceName:     "awx_setting",
+			DataSourceName:   "awx_setting",
+			ResourceEligible: true,
+			DataSourceElig:   true,
+			CollectionCreate: false,
+		},
+	}
+
+	if err := generateDocs(outputDir, objects, nil, docsEnrichmentCatalog{}); err != nil {
+		t.Fatalf("generateDocs returned error: %v", err)
+	}
+
+	resourcePath := filepath.Join(outputDir, "resources", "awx_setting.md")
+	resourceRaw, err := os.ReadFile(resourcePath)
+	if err != nil {
+		t.Fatalf("failed to read generated resource doc: %v", err)
+	}
+	resourceContent := string(resourceRaw)
+	if _, err := requireDocSectionsInOrder(resourcePath, "## Example Usage", "## Schema", "## Import", "## Further Reading"); err != nil {
+		t.Fatalf("resource doc section ordering validation failed: %v", err)
+	}
+	if !strings.Contains(resourceContent, "id = \"all\"") {
+		t.Fatalf("expected canonical settings resource example id=all, got:\n%s", resourceContent)
+	}
+	if !strings.Contains(resourceContent, "terraform import awx_setting.example all") {
+		t.Fatalf("expected canonical settings resource import example with all, got:\n%s", resourceContent)
+	}
+	for _, marker := range []string{
+		"Category-scoped IDs",
+		"optional advanced scoping",
+		"overlapping ownership",
+		"configuration conflicts",
+	} {
+		if !strings.Contains(resourceContent, marker) {
+			t.Fatalf("expected settings resource guidance marker %q, got:\n%s", marker, resourceContent)
+		}
+	}
+
+	dataSourcePath := filepath.Join(outputDir, "data-sources", "awx_setting.md")
+	dataSourceRaw, err := os.ReadFile(dataSourcePath)
+	if err != nil {
+		t.Fatalf("failed to read generated data source doc: %v", err)
+	}
+	dataSourceContent := string(dataSourceRaw)
+	if _, err := requireDocSectionsInOrder(dataSourcePath, "## Example Usage", "## Schema", "## Further Reading"); err != nil {
+		t.Fatalf("data source doc section ordering validation failed: %v", err)
+	}
+	if !strings.Contains(dataSourceContent, "id = \"all\"") {
+		t.Fatalf("expected canonical settings data source example id=all, got:\n%s", dataSourceContent)
+	}
+	for _, marker := range []string{
+		"Category-scoped IDs",
+		"optional advanced scoping",
+		"overlapping ownership",
+		"configuration conflicts",
+	} {
+		if !strings.Contains(dataSourceContent, marker) {
+			t.Fatalf("expected settings data source guidance marker %q, got:\n%s", marker, dataSourceContent)
+		}
 	}
 }

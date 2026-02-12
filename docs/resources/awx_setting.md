@@ -2,13 +2,17 @@
 
 Manages AWX `settings` objects.
 
+Use `id = "all"` as the default and recommended settings scope.
+Category-scoped IDs (for example `system`, `authentication`, and `bulk`) remain supported for optional advanced scoping.
+Avoid overlapping ownership of the same setting key across `id = "all"` and category-scoped resources, because overlaps can cause configuration conflicts.
+
 ## Example Usage
 
 ### Basic configuration
 
 ```hcl
 resource "awx_setting" "example" {
-  id = "example"
+  id = "all"
   auth_ldap_1_connection_options = { key = "value" }
 }
 ```
@@ -50,10 +54,10 @@ resource "awx_setting" "example" {
 - `auth_basic_enabled` (Boolean, Optional, Computed) Enable HTTP Basic Auth for the API Browser.
 - `auth_ldap_1_bind_dn` (String, Optional, Computed) DN (Distinguished Name) of user to bind for all search queries. This is the system user account we will use to login to query LDAP for other user information. Refer to the documentation for example syntax.
 - `auth_ldap_1_bind_password` (String, Optional, Computed, Sensitive, Write-Only) Password used to bind LDAP user account.
-- `auth_ldap_1_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to https://www.python-ldap.org/doc/html/ldap.html#options for possible options and values that can be set.
+- `auth_ldap_1_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to <https://www.python-ldap.org/doc/html/ldap.html#options> for possible options and values that can be set.
 - `auth_ldap_1_deny_group` (String, Optional, Computed) Group DN denied from login. If specified, user will not be allowed to login if a member of this group. Only one deny group is supported.
 - `auth_ldap_1_group_search` (String, Optional, Computed) Users are mapped to organizations based on their membership in LDAP groups. This setting defines the LDAP search query to find groups. Unlike the user search, group search does not support LDAPSearchUnion.
-- `auth_ldap_1_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups
+- `auth_ldap_1_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: <https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups>
 - `auth_ldap_1_group_type_params` (Object, Optional, Computed) Key value parameters to send the chosen group type init method.
 - `auth_ldap_1_organization_map` (Object, Optional, Computed) Mapping between organization admins/users and LDAP groups. This controls which users are placed into which organizations relative to their LDAP group memberships. Configuration details are available in the documentation.
 - `auth_ldap_1_require_group` (String, Optional, Computed) Group DN required to login. If specified, user must be a member of this group to login via LDAP. If not set, everyone in LDAP that matches the user search will be able to login to the service. Only one require group is supported.
@@ -66,10 +70,10 @@ resource "awx_setting" "example" {
 - `auth_ldap_1_user_search` (String, Optional, Computed) LDAP search query to find users. Any user that matches the given pattern will be able to login to the service. The user should also be mapped into an organization (as defined in the AUTH_LDAP_ORGANIZATION_MAP setting). If multiple search queries need to be supported use of "LDAPUnion" is possible. See the documentation for details.
 - `auth_ldap_2_bind_dn` (String, Optional, Computed) DN (Distinguished Name) of user to bind for all search queries. This is the system user account we will use to login to query LDAP for other user information. Refer to the documentation for example syntax.
 - `auth_ldap_2_bind_password` (String, Optional, Computed, Sensitive, Write-Only) Password used to bind LDAP user account.
-- `auth_ldap_2_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to https://www.python-ldap.org/doc/html/ldap.html#options for possible options and values that can be set.
+- `auth_ldap_2_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to <https://www.python-ldap.org/doc/html/ldap.html#options> for possible options and values that can be set.
 - `auth_ldap_2_deny_group` (String, Optional, Computed) Group DN denied from login. If specified, user will not be allowed to login if a member of this group. Only one deny group is supported.
 - `auth_ldap_2_group_search` (String, Optional, Computed) Users are mapped to organizations based on their membership in LDAP groups. This setting defines the LDAP search query to find groups. Unlike the user search, group search does not support LDAPSearchUnion.
-- `auth_ldap_2_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups
+- `auth_ldap_2_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: <https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups>
 - `auth_ldap_2_group_type_params` (Object, Optional, Computed) Key value parameters to send the chosen group type init method.
 - `auth_ldap_2_organization_map` (Object, Optional, Computed) Mapping between organization admins/users and LDAP groups. This controls which users are placed into which organizations relative to their LDAP group memberships. Configuration details are available in the documentation.
 - `auth_ldap_2_require_group` (String, Optional, Computed) Group DN required to login. If specified, user must be a member of this group to login via LDAP. If not set, everyone in LDAP that matches the user search will be able to login to the service. Only one require group is supported.
@@ -82,10 +86,10 @@ resource "awx_setting" "example" {
 - `auth_ldap_2_user_search` (String, Optional, Computed) LDAP search query to find users. Any user that matches the given pattern will be able to login to the service. The user should also be mapped into an organization (as defined in the AUTH_LDAP_ORGANIZATION_MAP setting). If multiple search queries need to be supported use of "LDAPUnion" is possible. See the documentation for details.
 - `auth_ldap_3_bind_dn` (String, Optional, Computed) DN (Distinguished Name) of user to bind for all search queries. This is the system user account we will use to login to query LDAP for other user information. Refer to the documentation for example syntax.
 - `auth_ldap_3_bind_password` (String, Optional, Computed, Sensitive, Write-Only) Password used to bind LDAP user account.
-- `auth_ldap_3_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to https://www.python-ldap.org/doc/html/ldap.html#options for possible options and values that can be set.
+- `auth_ldap_3_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to <https://www.python-ldap.org/doc/html/ldap.html#options> for possible options and values that can be set.
 - `auth_ldap_3_deny_group` (String, Optional, Computed) Group DN denied from login. If specified, user will not be allowed to login if a member of this group. Only one deny group is supported.
 - `auth_ldap_3_group_search` (String, Optional, Computed) Users are mapped to organizations based on their membership in LDAP groups. This setting defines the LDAP search query to find groups. Unlike the user search, group search does not support LDAPSearchUnion.
-- `auth_ldap_3_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups
+- `auth_ldap_3_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: <https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups>
 - `auth_ldap_3_group_type_params` (Object, Optional, Computed) Key value parameters to send the chosen group type init method.
 - `auth_ldap_3_organization_map` (Object, Optional, Computed) Mapping between organization admins/users and LDAP groups. This controls which users are placed into which organizations relative to their LDAP group memberships. Configuration details are available in the documentation.
 - `auth_ldap_3_require_group` (String, Optional, Computed) Group DN required to login. If specified, user must be a member of this group to login via LDAP. If not set, everyone in LDAP that matches the user search will be able to login to the service. Only one require group is supported.
@@ -98,10 +102,10 @@ resource "awx_setting" "example" {
 - `auth_ldap_3_user_search` (String, Optional, Computed) LDAP search query to find users. Any user that matches the given pattern will be able to login to the service. The user should also be mapped into an organization (as defined in the AUTH_LDAP_ORGANIZATION_MAP setting). If multiple search queries need to be supported use of "LDAPUnion" is possible. See the documentation for details.
 - `auth_ldap_4_bind_dn` (String, Optional, Computed) DN (Distinguished Name) of user to bind for all search queries. This is the system user account we will use to login to query LDAP for other user information. Refer to the documentation for example syntax.
 - `auth_ldap_4_bind_password` (String, Optional, Computed, Sensitive, Write-Only) Password used to bind LDAP user account.
-- `auth_ldap_4_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to https://www.python-ldap.org/doc/html/ldap.html#options for possible options and values that can be set.
+- `auth_ldap_4_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to <https://www.python-ldap.org/doc/html/ldap.html#options> for possible options and values that can be set.
 - `auth_ldap_4_deny_group` (String, Optional, Computed) Group DN denied from login. If specified, user will not be allowed to login if a member of this group. Only one deny group is supported.
 - `auth_ldap_4_group_search` (String, Optional, Computed) Users are mapped to organizations based on their membership in LDAP groups. This setting defines the LDAP search query to find groups. Unlike the user search, group search does not support LDAPSearchUnion.
-- `auth_ldap_4_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups
+- `auth_ldap_4_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: <https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups>
 - `auth_ldap_4_group_type_params` (Object, Optional, Computed) Key value parameters to send the chosen group type init method.
 - `auth_ldap_4_organization_map` (Object, Optional, Computed) Mapping between organization admins/users and LDAP groups. This controls which users are placed into which organizations relative to their LDAP group memberships. Configuration details are available in the documentation.
 - `auth_ldap_4_require_group` (String, Optional, Computed) Group DN required to login. If specified, user must be a member of this group to login via LDAP. If not set, everyone in LDAP that matches the user search will be able to login to the service. Only one require group is supported.
@@ -114,10 +118,10 @@ resource "awx_setting" "example" {
 - `auth_ldap_4_user_search` (String, Optional, Computed) LDAP search query to find users. Any user that matches the given pattern will be able to login to the service. The user should also be mapped into an organization (as defined in the AUTH_LDAP_ORGANIZATION_MAP setting). If multiple search queries need to be supported use of "LDAPUnion" is possible. See the documentation for details.
 - `auth_ldap_5_bind_dn` (String, Optional, Computed) DN (Distinguished Name) of user to bind for all search queries. This is the system user account we will use to login to query LDAP for other user information. Refer to the documentation for example syntax.
 - `auth_ldap_5_bind_password` (String, Optional, Computed, Sensitive, Write-Only) Password used to bind LDAP user account.
-- `auth_ldap_5_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to https://www.python-ldap.org/doc/html/ldap.html#options for possible options and values that can be set.
+- `auth_ldap_5_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to <https://www.python-ldap.org/doc/html/ldap.html#options> for possible options and values that can be set.
 - `auth_ldap_5_deny_group` (String, Optional, Computed) Group DN denied from login. If specified, user will not be allowed to login if a member of this group. Only one deny group is supported.
 - `auth_ldap_5_group_search` (String, Optional, Computed) Users are mapped to organizations based on their membership in LDAP groups. This setting defines the LDAP search query to find groups. Unlike the user search, group search does not support LDAPSearchUnion.
-- `auth_ldap_5_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups
+- `auth_ldap_5_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: <https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups>
 - `auth_ldap_5_group_type_params` (Object, Optional, Computed) Key value parameters to send the chosen group type init method.
 - `auth_ldap_5_organization_map` (Object, Optional, Computed) Mapping between organization admins/users and LDAP groups. This controls which users are placed into which organizations relative to their LDAP group memberships. Configuration details are available in the documentation.
 - `auth_ldap_5_require_group` (String, Optional, Computed) Group DN required to login. If specified, user must be a member of this group to login via LDAP. If not set, everyone in LDAP that matches the user search will be able to login to the service. Only one require group is supported.
@@ -130,10 +134,10 @@ resource "awx_setting" "example" {
 - `auth_ldap_5_user_search` (String, Optional, Computed) LDAP search query to find users. Any user that matches the given pattern will be able to login to the service. The user should also be mapped into an organization (as defined in the AUTH_LDAP_ORGANIZATION_MAP setting). If multiple search queries need to be supported use of "LDAPUnion" is possible. See the documentation for details.
 - `auth_ldap_bind_dn` (String, Optional, Computed) DN (Distinguished Name) of user to bind for all search queries. This is the system user account we will use to login to query LDAP for other user information. Refer to the documentation for example syntax.
 - `auth_ldap_bind_password` (String, Optional, Computed, Sensitive, Write-Only) Password used to bind LDAP user account.
-- `auth_ldap_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to https://www.python-ldap.org/doc/html/ldap.html#options for possible options and values that can be set.
+- `auth_ldap_connection_options` (Object, Optional, Computed) Additional options to set for the LDAP connection. LDAP referrals are disabled by default (to prevent certain LDAP queries from hanging with AD). Option names should be strings (e.g. "OPT_REFERRALS"). Refer to <https://www.python-ldap.org/doc/html/ldap.html#options> for possible options and values that can be set.
 - `auth_ldap_deny_group` (String, Optional, Computed) Group DN denied from login. If specified, user will not be allowed to login if a member of this group. Only one deny group is supported.
 - `auth_ldap_group_search` (String, Optional, Computed) Users are mapped to organizations based on their membership in LDAP groups. This setting defines the LDAP search query to find groups. Unlike the user search, group search does not support LDAPSearchUnion.
-- `auth_ldap_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups
+- `auth_ldap_group_type` (String, Optional, Computed) The group type may need to be changed based on the type of the LDAP server. Values are listed at: <https://django-auth-ldap.readthedocs.io/en/stable/groups.html#types-of-groups>
 - `auth_ldap_group_type_params` (Object, Optional, Computed) Key value parameters to send the chosen group type init method.
 - `auth_ldap_organization_map` (Object, Optional, Computed) Mapping between organization admins/users and LDAP groups. This controls which users are placed into which organizations relative to their LDAP group memberships. Configuration details are available in the documentation.
 - `auth_ldap_require_group` (String, Optional, Computed) Group DN required to login. If specified, user must be a member of this group to login via LDAP. If not set, everyone in LDAP that matches the user search will be able to login to the service. Only one require group is supported.
@@ -275,15 +279,15 @@ resource "awx_setting" "example" {
 - `social_auth_github_enterprise_org_api_url` (String, Optional, Computed) The API URL for your GitHub Enterprise instance, e.g.: http(s)://hostname/api/v3/. Refer to Github Enterprise documentation for more details.
 - `social_auth_github_enterprise_org_callback_url` (String, Optional, Computed) Provide this URL as the callback URL for your application as part of your registration process. Refer to the documentation for more detail.
 - `social_auth_github_enterprise_org_key` (String, Optional, Computed) The OAuth2 key (Client ID) from your GitHub Enterprise organization application.
-- `social_auth_github_enterprise_org_name` (String, Optional, Computed) The name of your GitHub Enterprise organization, as used in your organization's URL: https://github.com/&lt;yourorg&gt;/.
+- `social_auth_github_enterprise_org_name` (String, Optional, Computed) The name of your GitHub Enterprise organization, as used in your organization's URL: <https://github.com/&lt;yourorg&gt;/>.
 - `social_auth_github_enterprise_org_organization_map` (Object, Optional, Computed) Mapping to organization admins/users from social auth accounts. This setting controls which users are placed into which organizations based on their username and email address. Configuration details are available in the documentation.
 - `social_auth_github_enterprise_org_secret` (String, Optional, Computed, Sensitive, Write-Only) The OAuth2 secret (Client Secret) from your GitHub Enterprise organization application.
 - `social_auth_github_enterprise_org_team_map` (Object, Optional, Computed) Mapping of team members (users) from social auth accounts. Configuration details are available in the documentation.
 - `social_auth_github_enterprise_org_url` (String, Optional, Computed) The URL for your Github Enterprise instance, e.g.: http(s)://hostname/. Refer to Github Enterprise documentation for more details.
 - `social_auth_github_enterprise_secret` (String, Optional, Computed, Sensitive, Write-Only) The OAuth2 secret (Client Secret) from your GitHub Enterprise developer application.
 - `social_auth_github_enterprise_team_api_url` (String, Optional, Computed) The API URL for your GitHub Enterprise instance, e.g.: http(s)://hostname/api/v3/. Refer to Github Enterprise documentation for more details.
-- `social_auth_github_enterprise_team_callback_url` (String, Optional, Computed) Create an organization-owned application at https://github.com/organizations/&lt;yourorg&gt;/settings/applications and obtain an OAuth2 key (Client ID) and secret (Client Secret). Provide this URL as the callback URL for your application.
-- `social_auth_github_enterprise_team_id` (String, Optional, Computed) Find the numeric team ID using the Github Enterprise API: http://fabian-kostadinov.github.io/2015/01/16/how-to-find-a-github-team-id/.
+- `social_auth_github_enterprise_team_callback_url` (String, Optional, Computed) Create an organization-owned application at <https://github.com/organizations/&lt;yourorg&gt;/settings/applications> and obtain an OAuth2 key (Client ID) and secret (Client Secret). Provide this URL as the callback URL for your application.
+- `social_auth_github_enterprise_team_id` (String, Optional, Computed) Find the numeric team ID using the Github Enterprise API: <http://fabian-kostadinov.github.io/2015/01/16/how-to-find-a-github-team-id/>.
 - `social_auth_github_enterprise_team_key` (String, Optional, Computed) The OAuth2 key (Client ID) from your GitHub Enterprise organization application.
 - `social_auth_github_enterprise_team_map` (Object, Optional, Computed) Mapping of team members (users) from social auth accounts. Configuration details are available in the documentation.
 - `social_auth_github_enterprise_team_organization_map` (Object, Optional, Computed) Mapping to organization admins/users from social auth accounts. This setting controls which users are placed into which organizations based on their username and email address. Configuration details are available in the documentation.
@@ -295,13 +299,13 @@ resource "awx_setting" "example" {
 - `social_auth_github_organization_map` (Object, Optional, Computed) Mapping to organization admins/users from social auth accounts. This setting controls which users are placed into which organizations based on their username and email address. Configuration details are available in the documentation.
 - `social_auth_github_org_callback_url` (String, Optional, Computed) Provide this URL as the callback URL for your application as part of your registration process. Refer to the documentation for more detail.
 - `social_auth_github_org_key` (String, Optional, Computed) The OAuth2 key (Client ID) from your GitHub organization application.
-- `social_auth_github_org_name` (String, Optional, Computed) The name of your GitHub organization, as used in your organization's URL: https://github.com/&lt;yourorg&gt;/.
+- `social_auth_github_org_name` (String, Optional, Computed) The name of your GitHub organization, as used in your organization's URL: <https://github.com/&lt;yourorg&gt;/>.
 - `social_auth_github_org_organization_map` (Object, Optional, Computed) Mapping to organization admins/users from social auth accounts. This setting controls which users are placed into which organizations based on their username and email address. Configuration details are available in the documentation.
 - `social_auth_github_org_secret` (String, Optional, Computed, Sensitive, Write-Only) The OAuth2 secret (Client Secret) from your GitHub organization application.
 - `social_auth_github_org_team_map` (Object, Optional, Computed) Mapping of team members (users) from social auth accounts. Configuration details are available in the documentation.
 - `social_auth_github_secret` (String, Optional, Computed, Sensitive, Write-Only) The OAuth2 secret (Client Secret) from your GitHub developer application.
-- `social_auth_github_team_callback_url` (String, Optional, Computed) Create an organization-owned application at https://github.com/organizations/&lt;yourorg&gt;/settings/applications and obtain an OAuth2 key (Client ID) and secret (Client Secret). Provide this URL as the callback URL for your application.
-- `social_auth_github_team_id` (String, Optional, Computed) Find the numeric team ID using the Github API: http://fabian-kostadinov.github.io/2015/01/16/how-to-find-a-github-team-id/.
+- `social_auth_github_team_callback_url` (String, Optional, Computed) Create an organization-owned application at <https://github.com/organizations/&lt;yourorg&gt;/settings/applications> and obtain an OAuth2 key (Client ID) and secret (Client Secret). Provide this URL as the callback URL for your application.
+- `social_auth_github_team_id` (String, Optional, Computed) Find the numeric team ID using the Github API: <http://fabian-kostadinov.github.io/2015/01/16/how-to-find-a-github-team-id/>.
 - `social_auth_github_team_key` (String, Optional, Computed) The OAuth2 key (Client ID) from your GitHub organization application.
 - `social_auth_github_team_map` (Object, Optional, Computed) Mapping of team members (users) from social auth accounts. Configuration details are available in the documentation.
 - `social_auth_github_team_organization_map` (Object, Optional, Computed) Mapping to organization admins/users from social auth accounts. This setting controls which users are placed into which organizations based on their username and email address. Configuration details are available in the documentation.
@@ -326,7 +330,7 @@ resource "awx_setting" "example" {
 - `social_auth_saml_organization_attr` (Object, Optional, Computed) Used to translate user organization membership.
 - `social_auth_saml_organization_map` (Object, Optional, Computed) Mapping to organization admins/users from social auth accounts. This setting controls which users are placed into which organizations based on their username and email address. Configuration details are available in the documentation.
 - `social_auth_saml_org_info` (Object, Optional, Computed) Provide the URL, display name, and the name of your app. Refer to the documentation for example syntax.
-- `social_auth_saml_security_config` (Object, Optional, Computed) A dict of key value pairs that are passed to the underlying python-saml security setting https://github.com/onelogin/python-saml#settings
+- `social_auth_saml_security_config` (Object, Optional, Computed) A dict of key value pairs that are passed to the underlying python-saml security setting <https://github.com/onelogin/python-saml#settings>
 - `social_auth_saml_sp_entity_id` (String, Optional, Computed) The application-defined unique identifier used as the audience of the SAML service provider (SP) configuration. This is usually the URL for the service.
 - `social_auth_saml_sp_extra` (Object, Optional, Computed) A dict of key value pairs to be passed to the underlying python-saml Service Provider configuration setting.
 - `social_auth_saml_sp_private_key` (String, Optional, Computed, Sensitive, Write-Only) Create a keypair to use as a service provider (SP) and include the private key content here.
@@ -363,7 +367,7 @@ resource "awx_setting" "example" {
 ## Import
 
 ```bash
-terraform import awx_setting.example example
+terraform import awx_setting.example all
 ```
 
 ## Further Reading
