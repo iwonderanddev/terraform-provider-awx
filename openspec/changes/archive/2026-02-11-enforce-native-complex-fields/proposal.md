@@ -37,7 +37,7 @@ Additionally, both `awx_job_template.extra_vars` and `awx_workflow_job_template.
 
 ## Impact
 
-- Affected runtime code in `/Users/damien/git/terraform-awx-provider/internal/provider` for resource/data source schema and value conversion.
-- Affected curated manifests in `/Users/damien/git/terraform-awx-provider/internal/manifest/field_overrides.json` (including job template and workflow job template `extra_vars` typing overrides).
-- Affected generated outputs in `/Users/damien/git/terraform-awx-provider/internal/manifest/*.json` and `/Users/damien/git/terraform-awx-provider/docs/*`.
+- Affected runtime code in `/Users/damien/git/terraform-provider-awx-iwd/internal/provider` for resource/data source schema and value conversion.
+- Affected curated manifests in `/Users/damien/git/terraform-provider-awx-iwd/internal/manifest/field_overrides.json` (including job template and workflow job template `extra_vars` typing overrides).
+- Affected generated outputs in `/Users/damien/git/terraform-provider-awx-iwd/internal/manifest/*.json` and `/Users/damien/git/terraform-provider-awx-iwd/docs/*`.
 - Breaking behavior change for users currently passing JSON strings with `jsonencode(...)` (or raw JSON strings) for object fields.

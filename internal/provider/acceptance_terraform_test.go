@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	awxprovider "github.com/damien/terraform-awx-provider/internal/provider"
+	awxprovider "github.com/damien/terraform-provider-awx-iwd/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"

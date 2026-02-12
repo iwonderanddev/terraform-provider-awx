@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/damien/terraform-awx-provider/internal/provider"
+	"github.com/damien/terraform-provider-awx-iwd/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 

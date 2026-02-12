@@ -17,7 +17,7 @@ make validate-manifest
 make test
 make test-acceptance
 
-go build -o dist/terraform-provider-awx ./cmd/terraform-provider-awx
+go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
 ```
 
 Configure Terraform CLI dev override in `~/.terraformrc`:
@@ -25,7 +25,7 @@ Configure Terraform CLI dev override in `~/.terraformrc`:
 ```hcl
 provider_installation {
   dev_overrides {
-    "registry.terraform.io/damien/awx" = "/Users/damien/git/terraform-awx-provider/dist"
+    "registry.terraform.io/damien/awx" = "/Users/damien/git/terraform-provider-awx-iwd/dist"
   }
   direct {}
 }
@@ -53,7 +53,7 @@ Then run:
 
 ```bash
 # with dev_overrides, build the provider binary and skip terraform init
-go build -o dist/terraform-provider-awx ./cmd/terraform-provider-awx
+go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
 terraform plan
 ```
 
@@ -109,7 +109,7 @@ If you change schema inputs or curated files, run `make generate`, then `make va
 
 ## Repository Layout
 
-- `cmd/terraform-provider-awx` provider server entrypoint
+- `cmd/terraform-provider-awx-iwd` provider server entrypoint
 - `internal/provider` resource/data source/provider runtime
 - `internal/client` shared AWX HTTP transport and error handling
 - `internal/openapi` schema parsing and derivation logic
@@ -194,7 +194,7 @@ If tests show `SKIP`, check `.env` values and confirm `AWX_ACCEPTANCE=1`.
 ## Build Provider Binary
 
 ```bash
-go build -o dist/terraform-provider-awx ./cmd/terraform-provider-awx
+go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
 ```
 
 ## Use Locally With Terraform (Dev Override)
@@ -206,7 +206,7 @@ Because this provider is local development, use a Terraform CLI dev override.
 ```hcl
 provider_installation {
   dev_overrides {
-    "registry.terraform.io/damien/awx" = "/Users/damien/git/terraform-awx-provider/dist"
+    "registry.terraform.io/damien/awx" = "/Users/damien/git/terraform-provider-awx-iwd/dist"
   }
   direct {}
 }
@@ -233,7 +233,7 @@ provider "awx" {
 Run:
 
 ```bash
-go build -o dist/terraform-provider-awx ./cmd/terraform-provider-awx
+go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
 terraform plan
 terraform apply
 ```

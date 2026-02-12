@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/damien/terraform-awx-provider/internal/client"
-	"github.com/damien/terraform-awx-provider/internal/manifest"
+	"github.com/damien/terraform-provider-awx-iwd/internal/client"
+	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -140,7 +140,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		Timeout:               durationFromSeconds(config.RequestTimeoutSeconds, 30*time.Second),
 		RetryMaxAttempts:      int(valueOrDefault(config.RetryMaxAttempts, 3)),
 		RetryInitialBackoff:   time.Duration(valueOrDefault(config.RetryBackoffMillis, 500)) * time.Millisecond,
-		UserAgent:             fmt.Sprintf("terraform-provider-awx/%s", p.version),
+		UserAgent:             fmt.Sprintf("terraform-provider-awx-iwd/%s", p.version),
 	}
 
 	apiClient, err := client.New(clientConfig)

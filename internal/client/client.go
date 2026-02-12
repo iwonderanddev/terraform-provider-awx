@@ -108,7 +108,7 @@ func New(cfg Config) (*Client, error) {
 	}
 	userAgent := strings.TrimSpace(cfg.UserAgent)
 	if userAgent == "" {
-		userAgent = "terraform-provider-awx/dev"
+		userAgent = "terraform-provider-awx-iwd/dev"
 	}
 
 	return &Client{

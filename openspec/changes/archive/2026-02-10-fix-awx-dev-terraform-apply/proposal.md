@@ -22,7 +22,7 @@ The full AWX deployment at `/Users/damien/git/mockshop-in-cloud-2/terraform/infr
 
 ## Impact
 
-- Provider runtime behavior in `/Users/damien/git/terraform-awx-provider/internal/provider` and/or `/Users/damien/git/terraform-awx-provider/internal/client`.
+- Provider runtime behavior in `/Users/damien/git/terraform-provider-awx-iwd/internal/provider` and/or `/Users/damien/git/terraform-provider-awx-iwd/internal/client`.
 - Potential updates to infrastructure usage in `/Users/damien/git/mockshop-in-cloud-2/terraform/infrastructure/awx/dev`.
-- Test coverage under `/Users/damien/git/terraform-awx-provider/internal/provider` and related acceptance paths.
-- Documentation updates in `/Users/damien/git/terraform-awx-provider/docs` if user-facing behavior or configuration expectations change.
+- Test coverage under `/Users/damien/git/terraform-provider-awx-iwd/internal/provider` and related acceptance paths.
+- Documentation updates in `/Users/damien/git/terraform-provider-awx-iwd/docs` if user-facing behavior or configuration expectations change.

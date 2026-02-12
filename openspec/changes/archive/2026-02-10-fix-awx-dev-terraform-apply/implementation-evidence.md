@@ -15,7 +15,7 @@ The initial AWX dev stack apply failure was a mixed-cause issue:
 
 ## Implemented Fixes
 
-Provider repo (`/Users/damien/git/terraform-awx-provider`):
+Provider repo (`/Users/damien/git/terraform-provider-awx-iwd`):
 - Updated curated overrides in `internal/manifest/field_overrides.json` for:
   - `credential_types.inputs` -> `object`
   - `credential_types.injectors` -> `object`
@@ -45,13 +45,13 @@ Infrastructure repo (`/Users/damien/git/mockshop-in-cloud-2`):
 ## Validation Evidence
 
 Apply runs and diagnostics were captured at:
-- `/Users/damien/git/terraform-awx-provider/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-failure.log`
-- `/Users/damien/git/terraform-awx-provider/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-fix.log`
-- `/Users/damien/git/terraform-awx-provider/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-import.log`
-- `/Users/damien/git/terraform-awx-provider/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-second-fixes.log`
-- `/Users/damien/git/terraform-awx-provider/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-role-workaround.log`
-- `/Users/damien/git/terraform-awx-provider/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-state-rm.log`
-- `/Users/damien/git/terraform-awx-provider/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-notif-fix.log`
+- `/Users/damien/git/terraform-provider-awx-iwd/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-failure.log`
+- `/Users/damien/git/terraform-provider-awx-iwd/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-fix.log`
+- `/Users/damien/git/terraform-provider-awx-iwd/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-import.log`
+- `/Users/damien/git/terraform-provider-awx-iwd/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-second-fixes.log`
+- `/Users/damien/git/terraform-provider-awx-iwd/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-role-workaround.log`
+- `/Users/damien/git/terraform-provider-awx-iwd/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-state-rm.log`
+- `/Users/damien/git/terraform-provider-awx-iwd/openspec/changes/fix-awx-dev-terraform-apply/evidence/terraform-apply-after-notif-fix.log`
 
 Final successful command:
 - `terraform apply -auto-approve -no-color` in `/Users/damien/git/mockshop-in-cloud-2/terraform/infrastructure/awx/dev`

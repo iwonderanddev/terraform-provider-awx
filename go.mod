@@ -1,4 +1,4 @@
-module github.com/damien/terraform-awx-provider
+module github.com/damien/terraform-provider-awx-iwd
 
 go 1.25.0
 

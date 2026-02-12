@@ -19,7 +19,7 @@ coverage-report:
 
 build:
 	mkdir -p dist
-	GOCACHE=$(GOCACHE) go build -o dist/terraform-provider-awx ./cmd/terraform-provider-awx
+	GOCACHE=$(GOCACHE) go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
 
 test:
 	GOCACHE=$(GOCACHE) go test ./...

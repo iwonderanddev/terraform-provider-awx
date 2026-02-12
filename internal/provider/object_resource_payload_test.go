@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/damien/terraform-awx-provider/internal/manifest"
+	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"

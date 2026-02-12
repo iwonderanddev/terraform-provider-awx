@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/damien/terraform-awx-provider/internal/manifest"
+	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"

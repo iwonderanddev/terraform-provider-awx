@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"testing"
 
-	awxclient "github.com/damien/terraform-awx-provider/internal/client"
-	"github.com/damien/terraform-awx-provider/internal/manifest"
+	awxclient "github.com/damien/terraform-provider-awx-iwd/internal/client"
+	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"

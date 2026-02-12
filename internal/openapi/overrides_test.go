@@ -3,7 +3,7 @@ package openapi
 import (
 	"testing"
 
-	"github.com/damien/terraform-awx-provider/internal/manifest"
+	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
 )
 
 func TestApplyFieldOverridesSetsComputed(t *testing.T) {

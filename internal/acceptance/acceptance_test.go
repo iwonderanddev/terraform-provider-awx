@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/damien/terraform-awx-provider/internal/client"
+	"github.com/damien/terraform-provider-awx-iwd/internal/client"
 )
 
 const (

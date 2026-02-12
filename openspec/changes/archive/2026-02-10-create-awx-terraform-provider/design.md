@@ -1,6 +1,6 @@
 ## Context
 
-This change builds a Terraform provider for AWX using the AWX REST API (`/api/v2`) and the vendored OpenAPI schema at `/Users/damien/git/terraform-awx-provider/external/awx-openapi/schema.json`.
+This change builds a Terraform provider for AWX using the AWX REST API (`/api/v2`) and the vendored OpenAPI schema at `/Users/damien/git/terraform-provider-awx-iwd/external/awx-openapi/schema.json`.
 
 Confirmed constraints:
 

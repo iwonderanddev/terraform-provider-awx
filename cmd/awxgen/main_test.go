@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/damien/terraform-awx-provider/internal/manifest"
+	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
 )
 
 func TestBuildReportExcludesRuntimeDataSourcesFromManagedCoverage(t *testing.T) {

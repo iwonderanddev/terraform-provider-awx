@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/damien/terraform-awx-provider/internal/manifest"
-	"github.com/damien/terraform-awx-provider/internal/openapi"
+	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
+	"github.com/damien/terraform-provider-awx-iwd/internal/openapi"
 )
 
 const (
