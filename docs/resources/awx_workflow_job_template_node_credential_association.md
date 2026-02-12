@@ -1,31 +1,35 @@
 # Resource: awx_workflow_job_template_node_credential_association
 
-Manages `workflow_job_template_node_credential_association` relationships between `workflow_job_template_nodes`
-and `credentials` objects.
+Manages AWX associations between `workflow_job_template_nodes` and `credentials` objects.
 
 ## Example Usage
 
 ```hcl
 resource "awx_workflow_job_template_node_credential_association" "example" {
   workflow_job_template_node_id = 12
-  credential_id  = 34
+  credential_id = 34
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Required
 
 - `workflow_job_template_node_id` (Number, Required) Parent object numeric ID.
 - `credential_id` (Number, Required) Child object numeric ID.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
-- `workflow_job_template_node_id` (Number) Parent object numeric ID.
-- `credential_id` (Number) Child object numeric ID.
-
+- `id` (String, Read-Only) Composite ID in `<primary_id>:<related_id>` format.
+- `workflow_job_template_node_id` (Number, Read-Only) Parent object numeric ID.
+- `credential_id` (Number, Read-Only) Child object numeric ID.
 ## Import
 
 ```bash
-terraform import awx_workflow_job_template_node_credential_association.example \
-  12:34
+terraform import awx_workflow_job_template_node_credential_association.example <primary_id>:<related_id>
 ```
+
+## Further Reading
+
+- [AWX Workflow Job Templates](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/workflow_templates.html)
+- [AWX Credentials](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/credentials.html)

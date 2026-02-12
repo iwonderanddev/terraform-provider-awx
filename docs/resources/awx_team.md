@@ -4,6 +4,8 @@ Manages AWX `teams` objects.
 
 ## Example Usage
 
+### Basic configuration
+
 ```hcl
 resource "awx_team" "example" {
   name = "example"
@@ -11,23 +13,35 @@ resource "awx_team" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
 
-Argument qualifiers used below:
+### Qualifiers
+
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
-- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+- `Computed`: AWX sets the value during create or refresh.
+- `Sensitive`: Terraform redacts the value in normal CLI output.
+- `Write-Only`: Sent to AWX during create/update and not read back.
 
-- `description` (Optional) Managed field from AWX OpenAPI schema.
-- `name` (Required) Managed field from AWX OpenAPI schema.
-- `organization_id` (Required) Managed field from AWX OpenAPI schema.
+### Required
 
-## Attributes Reference
+- `name` (String, Required) Value for `name`.
+- `organization_id` (Number, Required) Numeric ID of the related AWX organization object.
 
-- `id` (Number) Numeric AWX object identifier.
+### Optional
+
+- `description` (String, Optional) Value for `description`.
+
+### Read-Only
+
+- `id` (Number, Read-Only) Numeric AWX object identifier.
 
 ## Import
 
 ```bash
 terraform import awx_team.example 42
 ```
+
+## Further Reading
+
+- [AWX Teams](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/teams.html)

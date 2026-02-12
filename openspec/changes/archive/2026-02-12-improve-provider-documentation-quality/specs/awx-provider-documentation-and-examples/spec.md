@@ -32,8 +32,14 @@ parameter bullet.
 #### Scenario: Reading links check
 
 - **WHEN** a documentation page includes a `## Further Reading` section
-- **THEN** the section includes official AWX links for behavior details and
-  HashiCorp/AWS references for documentation style guidance
+- **THEN** the section includes only resource-specific official AWX links for
+  behavior details (not only generic AWX index pages)
+
+#### Scenario: Official-link specificity check
+
+- **WHEN** documentation is generated for a managed object resource/data source
+- **THEN** `## Further Reading` includes at least one official AWX 24.6.1 link
+  mapped to that object's concept page (or closest official concept section)
 
 ### Requirement: Operational examples and import guidance
 
@@ -52,7 +58,9 @@ object `id` as `Number` for collection-created objects and `String` for
 detail-path keyed objects. Documentation for relationship resources SHALL use
 canonical explicit object-specific `_id` argument names (for example,
 `job_template_id`, `credential_id`). Examples SHALL avoid unnecessary
-type-conversion workarounds for reference wiring.
+type-conversion workarounds for reference wiring. For prioritized resources,
+docs-enrichment metadata SHALL record curation provenance with an official AWX
+link and a verification date in `YYYY-MM-DD` format.
 
 #### Scenario: Resource documentation review
 
@@ -77,6 +85,13 @@ type-conversion workarounds for reference wiring.
 - **WHEN** documentation is generated for prioritized resources
 - **THEN** no field description contains
   `Managed field from AWX OpenAPI schema`
+
+#### Scenario: Online-grounded curation check
+
+- **WHEN** curated descriptions/examples are updated for prioritized resources
+- **THEN** the content reflects official AWX 24.6.1 behavior documented in
+  linked official AWX pages and docs-enrichment metadata records the
+  corresponding official AWX link plus verification date
 
 #### Scenario: Reference typing documentation consistency
 

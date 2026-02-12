@@ -10,17 +10,32 @@ data "awx_notification_template" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Optional
 
 - `id` (Number, Optional) Numeric AWX object ID.
 - `name` (String, Optional) Deterministic exact-name lookup if `id` is omitted.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (Number) Numeric AWX object ID.
-- `description` (string)
-- `messages` (object)
-- `name` (string)
-- `notification_configuration` (object, Sensitive)
-- `notification_type` (string)
-- `organization_id` (integer)
+- `id` (Number, Read-Only) Numeric AWX object ID.
+- `description` (String, Read-Only) Value for `description`.
+- `messages` (Object, Read-Only) Optional custom messages as a Terraform object.
+- `name` (String, Read-Only) Value for `name`.
+- `notification_configuration` (Object, Read-Only, Sensitive) Notification transport configuration as a write-only sensitive Terraform object.
+- `notification_type` (String, Read-Only) * `awssns` - AWS SNS
+  - `email` - Email
+  - `grafana` - Grafana
+  - `irc` - IRC
+  - `mattermost` - Mattermost
+  - `pagerduty` - Pagerduty
+  - `rocketchat` - Rocket.Chat
+  - `slack` - Slack
+  - `twilio` - Twilio
+  - `webhook` - Webhook
+- `organization_id` (Number, Read-Only) Numeric ID of the related AWX organization object.
+
+## Further Reading
+
+- [AWX Notifications](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/notifications.html)

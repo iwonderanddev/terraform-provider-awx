@@ -1,31 +1,35 @@
 # Resource: awx_user_credential_association
 
-Manages `user_credential_association` relationships between `users`
-and `credentials` objects.
+Manages AWX associations between `users` and `credentials` objects.
 
 ## Example Usage
 
 ```hcl
 resource "awx_user_credential_association" "example" {
   user_id = 12
-  credential_id  = 34
+  credential_id = 34
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Required
 
 - `user_id` (Number, Required) Parent object numeric ID.
 - `credential_id` (Number, Required) Child object numeric ID.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
-- `user_id` (Number) Parent object numeric ID.
-- `credential_id` (Number) Child object numeric ID.
-
+- `id` (String, Read-Only) Composite ID in `<primary_id>:<related_id>` format.
+- `user_id` (Number, Read-Only) Parent object numeric ID.
+- `credential_id` (Number, Read-Only) Child object numeric ID.
 ## Import
 
 ```bash
-terraform import awx_user_credential_association.example \
-  12:34
+terraform import awx_user_credential_association.example <primary_id>:<related_id>
 ```
+
+## Further Reading
+
+- [AWX Users](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/users.html)
+- [AWX Credentials](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/credentials.html)

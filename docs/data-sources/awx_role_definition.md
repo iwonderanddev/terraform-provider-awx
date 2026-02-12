@@ -10,15 +10,21 @@ data "awx_role_definition" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Optional
 
 - `id` (Number, Optional) Numeric AWX object ID.
 - `name` (String, Optional) Deterministic exact-name lookup if `id` is omitted.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (Number) Numeric AWX object ID.
-- `content_type` (string)
-- `description` (string)
-- `name` (string)
-- `permissions` (array)
+- `id` (Number, Read-Only) Numeric AWX object ID.
+- `content_type` (String, Read-Only) String to use for references to this type from other models in the API.
+- `description` (String, Read-Only) A description of this role.
+- `name` (String, Read-Only) The name of this role.
+- `permissions` (String, Read-Only) JSON-encoded list value for `permissions`.
+
+## Further Reading
+
+- [AWX Role-Based Access Controls](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/rbac.html)

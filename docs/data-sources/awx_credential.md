@@ -10,18 +10,24 @@ data "awx_credential" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Optional
 
 - `id` (Number, Optional) Numeric AWX object ID.
 - `name` (String, Optional) Deterministic exact-name lookup if `id` is omitted.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (Number) Numeric AWX object ID.
-- `credential_type_id` (integer)
-- `description` (string)
-- `inputs` (object, Sensitive)
-- `name` (string)
-- `organization_id` (integer)
-- `team_id` (integer, Sensitive)
-- `user_id` (integer, Sensitive)
+- `id` (Number, Read-Only) Numeric AWX object ID.
+- `credential_type_id` (Number, Read-Only) Numeric ID of the credential type definition (for example Machine, Source Control, or Vault).
+- `description` (String, Read-Only) Optional explanation of credential usage.
+- `inputs` (Object, Read-Only, Sensitive) Object containing credential input fields required by the selected credential type.
+- `name` (String, Read-Only) Credential name shown in AWX.
+- `organization_id` (Number, Read-Only) Numeric ID of the organization that owns this credential.
+- `team_id` (Number, Read-Only, Sensitive) Numeric ID of a team granted owner access when the credential is created.
+- `user_id` (Number, Read-Only, Sensitive) Numeric ID of a user granted owner access when the credential is created.
+
+## Further Reading
+
+- [AWX Credentials](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/credentials.html)

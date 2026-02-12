@@ -21,8 +21,14 @@ Confirmed constraints for this change:
   `awx_inventory_source`.
 - `## Example Usage` may include up to 3 examples when needed.
 - AWX concept primers are added only for complex resources.
-- References include both official AWX docs (behavior source) and
-  HashiCorp/AWS docs (documentation quality benchmark).
+- References use official AWX docs as the behavior source.
+- Official AWX links in generated pages must be resource-specific links to the
+  exact AWX concept page (or closest official section for that concept), not
+  only the generic AWX documentation index page.
+- Curated descriptions/examples are validated against live official AWX 24.6.1
+  docs before finalizing output.
+- Prioritized-resource curation metadata includes official AWX link provenance
+  plus verification date.
 - Enhanced pages include a dedicated `## Further Reading` section.
 - Strict quality gates are enforced first on the prioritized resources.
 
@@ -38,8 +44,8 @@ Confirmed constraints for this change:
   deeper reading.
 - Fix qualifier rendering so qualifier guidance is not mixed into argument
   lists.
-- Align generated docs with Terraform Plugin Framework guidance and
-  AWS-provider-level clarity.
+- Align generated docs with Terraform Plugin Framework guidance and AWX-focused
+  clarity.
 - Add automated checks that protect phase-1 quality standards.
 
 **Non-Goals:**
@@ -86,6 +92,8 @@ Decision:
 
 - Add a docs-enrichment source for page intros, field description overrides,
   curated links, complexity flags, and additional examples.
+- Record per-prioritized-resource curation provenance in docs metadata using an
+  official AWX link and verification date.
 - Consume this source during `awxgen docs` generation only.
 
 Alternative considered:
@@ -153,24 +161,26 @@ Alternative considered:
 
 - Primers on every page were rejected as repetitive and verbose.
 
-### 6. Use a dual-link policy
+### 6. Use an AWX-only official-link policy
 
 Reasoning:
 
-- AWX links ensure semantic correctness; HashiCorp/AWS links provide a style
-  benchmark.
+- AWX links ensure semantic correctness and keep generated pages focused on the
+  platform behavior being managed.
 
 Decision:
 
 - For enhanced pages, include:
-  - official AWX docs links for behavior/domain details
-  - HashiCorp Plugin Framework docs and AWS provider docs references for
-    style and composition guidance
+  - resource-specific official AWX docs links for behavior/domain details
 - Add a dedicated `## Further Reading` section for these links.
+- Maintain an explicit object-to-official-AWX-doc mapping in generator logic,
+  with fallback to closest canonical official AWX section when no exact page
+  exists.
 
 Alternative considered:
 
-- AWX-only links were rejected because style guidance would stay implicit.
+- Including non-AWX style-benchmark links was rejected to reduce noise and
+  preserve a single source of behavior truth.
 
 ### 7. Restructure schema sections and fix qualifier placement
 
@@ -202,7 +212,11 @@ Decision:
   - expected schema section shape
   - qualifier guidance correctly separated
   - example count between 1 and 3
+  - official AWX links are resource-specific and are not generic index links
+  - `## Further Reading` includes official AWX links only
   - concept-and-link requirements when page is flagged complex
+  - prioritized docs metadata includes curation provenance (`officialAwxUrl`
+    and `verifiedOn`)
 - In phase 2, extend the same gates to all remaining resources and data
   sources in one batch.
 
@@ -224,13 +238,17 @@ Alternative considered:
 ## Migration Plan
 
 1. Finalize capability deltas in specs.
-2. Add docs-enrichment metadata model and loader in `cmd/awxgen`.
-3. Implement rendering updates for descriptions, schema sections, qualifiers,
-   primers, and links.
-4. Add curated content and up-to-3 examples for the six prioritized resources.
-5. Extend `docs-validate` and generator tests for phase-1 quality gates.
-6. Extend the same gates to all remaining resources/data sources in one batch.
-7. Regenerate docs and run `make docs`, `make docs-validate`, and `make test`.
+2. Collect and verify official AWX 24.6.1 resource pages online for mapped
+   concepts.
+3. Add docs-enrichment metadata model, including curation provenance fields,
+   and loader in `cmd/awxgen`.
+4. Implement rendering updates for descriptions, schema sections, qualifiers,
+   primers, and resource-specific links.
+5. Add curated content and up-to-3 examples for the six prioritized resources.
+6. Extend `docs-validate` and generator tests for phase-1 quality gates,
+   including resource-specific AWX link enforcement.
+7. Extend the same gates to all remaining resources/data sources in one batch.
+8. Regenerate docs and run `make docs`, `make docs-validate`, and `make test`.
 
 ## Open Questions
 

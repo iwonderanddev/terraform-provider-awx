@@ -10,7 +10,7 @@ for realistic workflows, and at least one formatting bug
 
 This should be corrected now to align with Terraform Plugin Framework
 documentation-generation expectations and to move closer to the quality bar of
-mature providers, using the official AWS provider docs as a concrete benchmark.
+mature providers.
 
 ## What Changes
 
@@ -24,17 +24,25 @@ mature providers, using the official AWS provider docs as a concrete benchmark.
   documentation page.
 - Add short AWX concept primers only on complex resources, with links to
   official AWX docs for deeper details.
+- Require each generated resource/data-source page to include at least one
+  resource-specific official AWX 24.6.1 link for that exact AWX concept
+  (for example, projects -> AWX Projects docs), rather than generic AWX index
+  links.
+- Verify curated descriptions and examples against official AWX 24.6.1
+  documentation pages before finalizing generated content.
+- Record curation provenance for prioritized resources in docs-enrichment
+  metadata using official AWX links and verification dates.
 - Fix the documentation formatting bug where `Argument qualifiers used below`
   appears in the same list as parameters; place qualifier guidance in the
   correct dedicated section.
 - Align generated documentation structure and section ordering with HashiCorp
   Terraform Plugin Framework documentation-generation guidance.
 - Align writing style and example clarity with established Terraform provider
-  documentation quality patterns, using HashiCorp guidance and official AWS
-  provider docs as concrete references.
+  documentation quality patterns.
 - Add validation coverage to prevent regressions in placeholder descriptions,
-  example completeness, and qualifier section formatting, with quality gates
-  enforced first on the prioritized resources.
+  example completeness, qualifier section formatting, and resource-specific
+  official AWX link policy, with quality gates enforced first on the
+  prioritized resources.
 
 ## Capabilities
 
@@ -46,9 +54,9 @@ mature providers, using the official AWS provider docs as a concrete benchmark.
 
 - `awx-provider-documentation-and-examples`: Expand requirements to enforce
   high-quality field descriptions, contextual real-world examples (up to 3 when
-  needed), concise AWX concept primers on complex resources, official AWX links
-  plus HashiCorp/AWS quality references, correct qualifier
-  rendering/placement, and HashiCorp-aligned generated documentation
+  needed), concise AWX concept primers on complex resources, official AWX link
+  policy, curation provenance metadata, correct qualifier rendering/placement,
+  and HashiCorp-aligned generated documentation
   structure.
 
 ## Impact
@@ -63,9 +71,11 @@ mature providers, using the official AWS provider docs as a concrete benchmark.
   `docs/resources/awx_inventory.md`, and
   `docs/resources/awx_inventory_source.md`.
 - Likely affected curated/generated inputs and tooling:
-  `internal/manifest/field_overrides.json`, documentation generation logic in
+  `internal/manifest/field_overrides.json`,
+  `internal/manifest/docs_enrichment.json`, documentation generation logic in
   `cmd/awxgen`, and docs validation behavior.
 - External references used as content/style constraints: official AWX 24.6.1
-  user documentation, HashiCorp Plugin Framework documentation-generation
-  guidance, and official AWS provider docs as a documentation quality/style
-  benchmark.
+  user documentation and HashiCorp Plugin Framework
+  documentation-generation guidance.
+- Curation process requirement: verify examples and terminology against live
+  official AWX documentation pages for version 24.6.1.

@@ -1,31 +1,35 @@
 # Resource: awx_instance_group_instance_association
 
-Manages `instance_group_instance_association` relationships between `instance_groups`
-and `instances` objects.
+Manages AWX associations between `instance_groups` and `instances` objects.
 
 ## Example Usage
 
 ```hcl
 resource "awx_instance_group_instance_association" "example" {
   instance_group_id = 12
-  instance_id  = 34
+  instance_id = 34
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Required
 
 - `instance_group_id` (Number, Required) Parent object numeric ID.
 - `instance_id` (Number, Required) Child object numeric ID.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
-- `instance_group_id` (Number) Parent object numeric ID.
-- `instance_id` (Number) Child object numeric ID.
-
+- `id` (String, Read-Only) Composite ID in `<primary_id>:<related_id>` format.
+- `instance_group_id` (Number, Read-Only) Parent object numeric ID.
+- `instance_id` (Number, Read-Only) Child object numeric ID.
 ## Import
 
 ```bash
-terraform import awx_instance_group_instance_association.example \
-  12:34
+terraform import awx_instance_group_instance_association.example <primary_id>:<related_id>
 ```
+
+## Further Reading
+
+- [AWX Instance Groups](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/instance_groups.html)
+- [AWX Instances](https://docs.ansible.com/projects/awx/en/24.6.1/administration/instances.html)

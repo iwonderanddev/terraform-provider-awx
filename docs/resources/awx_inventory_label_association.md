@@ -1,31 +1,35 @@
 # Resource: awx_inventory_label_association
 
-Manages `inventory_label_association` relationships between `inventories`
-and `labels` objects.
+Manages AWX associations between `inventories` and `labels` objects.
 
 ## Example Usage
 
 ```hcl
 resource "awx_inventory_label_association" "example" {
   inventory_id = 12
-  label_id  = 34
+  label_id = 34
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Required
 
 - `inventory_id` (Number, Required) Parent object numeric ID.
 - `label_id` (Number, Required) Child object numeric ID.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
-- `inventory_id` (Number) Parent object numeric ID.
-- `label_id` (Number) Child object numeric ID.
-
+- `id` (String, Read-Only) Composite ID in `<primary_id>:<related_id>` format.
+- `inventory_id` (Number, Read-Only) Parent object numeric ID.
+- `label_id` (Number, Read-Only) Child object numeric ID.
 ## Import
 
 ```bash
-terraform import awx_inventory_label_association.example \
-  12:34
+terraform import awx_inventory_label_association.example <primary_id>:<related_id>
 ```
+
+## Further Reading
+
+- [AWX Inventories](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html)
+- [AWX Job Templates](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/job_templates.html)

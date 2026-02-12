@@ -10,29 +10,35 @@ data "awx_project" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Optional
 
 - `id` (Number, Optional) Numeric AWX object ID.
 - `name` (String, Optional) Deterministic exact-name lookup if `id` is omitted.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (Number) Numeric AWX object ID.
-- `allow_override` (boolean)
-- `credential_id` (integer)
-- `default_environment_id` (integer)
-- `description` (string)
-- `local_path` (string)
-- `name` (string)
-- `organization_id` (integer)
-- `scm_branch` (string)
-- `scm_clean` (boolean)
-- `scm_delete_on_update` (boolean)
-- `scm_refspec` (string)
-- `scm_track_submodules` (boolean)
-- `scm_type` (string)
-- `scm_update_cache_timeout` (integer)
-- `scm_update_on_launch` (boolean)
-- `scm_url` (string)
-- `signature_validation_credential_id` (integer)
-- `timeout` (integer)
+- `id` (Number, Read-Only) Numeric AWX object ID.
+- `allow_override` (Boolean, Read-Only) Allows job templates to override this project branch at launch.
+- `credential_id` (Number, Read-Only) Numeric ID of the source-control credential used to access private repositories.
+- `default_environment_id` (Number, Read-Only) Numeric ID of the default execution environment for project jobs.
+- `description` (String, Read-Only) Optional explanation displayed to project users.
+- `local_path` (String, Read-Only) Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project.
+- `name` (String, Read-Only) Human-readable project name in AWX.
+- `organization_id` (Number, Read-Only) Numeric ID of the owning organization.
+- `scm_branch` (String, Read-Only) Branch, tag, or revision checked out by AWX.
+- `scm_clean` (Boolean, Read-Only) Discard any local changes before syncing the project.
+- `scm_delete_on_update` (Boolean, Read-Only) Delete the project before syncing.
+- `scm_refspec` (String, Read-Only) For git projects, an additional refspec to fetch.
+- `scm_track_submodules` (Boolean, Read-Only) Track submodules latest commits on defined branch.
+- `scm_type` (String, Read-Only) Source control backend used by AWX (`git`, `svn`, `archive`, or manual).
+- `scm_update_cache_timeout` (Number, Read-Only) Seconds AWX waits before allowing another automatic project update.
+- `scm_update_on_launch` (Boolean, Read-Only) When true, AWX updates project content before dependent jobs launch.
+- `scm_url` (String, Read-Only) Repository URL or remote archive URL for project content.
+- `signature_validation_credential_id` (Number, Read-Only) An optional credential used for validating files in the project against unexpected changes.
+- `timeout` (Number, Read-Only) Maximum project update runtime in seconds before AWX cancels the update.
+
+## Further Reading
+
+- [AWX Projects](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html)

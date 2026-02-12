@@ -4,6 +4,8 @@ Manages AWX `hosts` objects.
 
 ## Example Usage
 
+### Basic configuration
+
 ```hcl
 resource "awx_host" "example" {
   inventory_id = awx_inventory.example.id
@@ -11,26 +13,38 @@ resource "awx_host" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
 
-Argument qualifiers used below:
+### Qualifiers
+
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
-- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+- `Computed`: AWX sets the value during create or refresh.
+- `Sensitive`: Terraform redacts the value in normal CLI output.
+- `Write-Only`: Sent to AWX during create/update and not read back.
 
-- `description` (Optional) Managed field from AWX OpenAPI schema.
-- `enabled` (Optional, Computed) Is this host online and available for running jobs?
-- `instance_id` (Optional) The value used by the remote inventory source to uniquely identify the host
-- `inventory_id` (Required) Managed field from AWX OpenAPI schema.
-- `name` (Required) Managed field from AWX OpenAPI schema.
-- `variables` (Optional) Host variables in JSON or YAML format.
+### Required
 
-## Attributes Reference
+- `inventory_id` (Number, Required) Numeric ID of the related AWX inventory object.
+- `name` (String, Required) Value for `name`.
 
-- `id` (Number) Numeric AWX object identifier.
+### Optional
+
+- `description` (String, Optional) Value for `description`.
+- `enabled` (Boolean, Optional, Computed) Is this host online and available for running jobs?
+- `instance_id` (String, Optional) The value used by the remote inventory source to uniquely identify the host
+- `variables` (String, Optional) Host variables in JSON or YAML format.
+
+### Read-Only
+
+- `id` (Number, Read-Only) Numeric AWX object identifier.
 
 ## Import
 
 ```bash
 terraform import awx_host.example 42
 ```
+
+## Further Reading
+
+- [AWX Inventories](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html)

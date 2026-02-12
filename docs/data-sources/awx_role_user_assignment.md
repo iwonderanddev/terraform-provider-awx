@@ -10,22 +10,28 @@ data "awx_role_user_assignment" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Optional
 
 - `id` (Number, Optional) Numeric AWX object ID.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (Number) Numeric AWX object ID.
-- `content_type` (string)
-- `created` (string)
-- `created_by_id` (integer)
-- `id` (integer)
-- `object_ansible_id` (string)
-- `object_id` (string)
-- `related` (object)
-- `role_definition_id` (integer)
-- `summary_fields` (object)
-- `url` (string)
-- `user_id` (integer)
-- `user_ansible_id` (string)
+- `id` (Number, Read-Only) Numeric AWX object ID.
+- `content_type` (String, Read-Only) String to use for references to this type from other models in the API.
+- `created` (String, Read-Only) The date/time this resource was created.
+- `created_by_id` (Number, Read-Only) The user who created this resource.
+- `id` (Number, Read-Only) Numeric setting for `id`.
+- `object_ansible_id` (String, Read-Only) The resource id of the object this role applies to. An alternative to the object_id field.
+- `object_id` (String, Read-Only) The primary key of the object this assignment applies to; null value indicates system-wide assignment.
+- `related` (Object, Read-Only) Object value for `related`.
+- `role_definition_id` (Number, Read-Only) The role definition which defines permissions conveyed by this assignment.
+- `summary_fields` (Object, Read-Only) Object value for `summary_fields`.
+- `url` (String, Read-Only) Value for `url`.
+- `user_id` (Number, Read-Only) Numeric ID of the related AWX user object.
+- `user_ansible_id` (String, Read-Only) The resource ID of the user who will receive permissions from this assignment. An alternative to user field.
+
+## Further Reading
+
+- [AWX Role-Based Access Controls](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/rbac.html)

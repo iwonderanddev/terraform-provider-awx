@@ -4,6 +4,8 @@ Manages AWX `execution_environments` objects.
 
 ## Example Usage
 
+### Basic configuration
+
 ```hcl
 resource "awx_execution_environment" "example" {
   image = "example"
@@ -11,29 +13,41 @@ resource "awx_execution_environment" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
 
-Argument qualifiers used below:
+### Qualifiers
+
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
-- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+- `Computed`: AWX sets the value during create or refresh.
+- `Sensitive`: Terraform redacts the value in normal CLI output.
+- `Write-Only`: Sent to AWX during create/update and not read back.
 
-- `credential_id` (Optional) Managed field from AWX OpenAPI schema.
-- `description` (Optional) Managed field from AWX OpenAPI schema.
-- `image` (Required) The full image location, including the container registry, image name, and version tag.
-- `name` (Required) Managed field from AWX OpenAPI schema.
-- `organization_id` (Optional) The organization used to determine access to this execution environment.
-- `pull` (Optional) Pull image before running?
+### Required
+
+- `image` (String, Required) The full image location, including the container registry, image name, and version tag.
+- `name` (String, Required) Value for `name`.
+
+### Optional
+
+- `credential_id` (Number, Optional) Numeric ID of the related AWX credential object.
+- `description` (String, Optional) Value for `description`.
+- `organization_id` (Number, Optional) The organization used to determine access to this execution environment.
+- `pull` (String, Optional) Pull image before running?
   - `always` - Always pull container before running.
   - `missing` - Only pull the image if not present before running.
   - `never` - Never pull container before running.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (Number) Numeric AWX object identifier.
+- `id` (Number, Read-Only) Numeric AWX object identifier.
 
 ## Import
 
 ```bash
 terraform import awx_execution_environment.example 42
 ```
+
+## Further Reading
+
+- [AWX Execution Environments](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/execution_environments.html)

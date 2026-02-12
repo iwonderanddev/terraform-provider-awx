@@ -1,31 +1,35 @@
 # Resource: awx_inventory_source_notification_template_error
 
-Manages `inventory_source_notification_template_error` relationships between `inventory_sources`
-and `notification_templates` objects.
+Manages AWX associations between `inventory_sources` and `notification_templates` objects.
 
 ## Example Usage
 
 ```hcl
 resource "awx_inventory_source_notification_template_error" "example" {
   inventory_source_id = 12
-  notification_template_id  = 34
+  notification_template_id = 34
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Required
 
 - `inventory_source_id` (Number, Required) Parent object numeric ID.
 - `notification_template_id` (Number, Required) Child object numeric ID.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
-- `inventory_source_id` (Number) Parent object numeric ID.
-- `notification_template_id` (Number) Child object numeric ID.
-
+- `id` (String, Read-Only) Composite ID in `<primary_id>:<related_id>` format.
+- `inventory_source_id` (Number, Read-Only) Parent object numeric ID.
+- `notification_template_id` (Number, Read-Only) Child object numeric ID.
 ## Import
 
 ```bash
-terraform import awx_inventory_source_notification_template_error.example \
-  12:34
+terraform import awx_inventory_source_notification_template_error.example <primary_id>:<related_id>
 ```
+
+## Further Reading
+
+- [AWX Inventory Sources](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html)
+- [AWX Notifications](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/notifications.html)

@@ -1,7 +1,6 @@
 # Resource: awx_workflow_job_template_survey_spec
 
-Manages `workflow_job_template_survey_spec` survey specification for
-`workflow_job_templates` objects.
+Manages the AWX survey specification for `workflow_job_templates` objects.
 
 ## Example Usage
 
@@ -16,20 +15,26 @@ resource "awx_workflow_job_template_survey_spec" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Required
 
 - `workflow_job_template_id` (Number, Required) Parent object numeric ID.
+
+### Optional
+
 - `spec` (String, Optional) JSON-encoded survey specification payload.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (String) Survey specification ID (same as `workflow_job_template_id`).
-- `workflow_job_template_id` (Number) Parent object numeric ID.
-- `spec` (String) JSON-encoded survey specification payload.
-
+- `id` (String, Read-Only) Survey specification ID (same as `workflow_job_template_id`).
+- `workflow_job_template_id` (Number, Read-Only) Parent object numeric ID.
 ## Import
 
 ```bash
-terraform import awx_workflow_job_template_survey_spec.example \
-  12
+terraform import awx_workflow_job_template_survey_spec.example <resource_id>
 ```
+
+## Further Reading
+
+- [AWX Workflow Job Templates](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/workflow_templates.html)

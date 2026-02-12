@@ -4,6 +4,8 @@ Manages AWX `role_definitions` objects.
 
 ## Example Usage
 
+### Basic configuration
+
 ```hcl
 resource "awx_role_definition" "example" {
   name = "example"
@@ -11,24 +13,36 @@ resource "awx_role_definition" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
 
-Argument qualifiers used below:
+### Qualifiers
+
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
-- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+- `Computed`: AWX sets the value during create or refresh.
+- `Sensitive`: Terraform redacts the value in normal CLI output.
+- `Write-Only`: Sent to AWX during create/update and not read back.
 
-- `content_type` (Optional) String to use for references to this type from other models in the API.
-- `description` (Optional) A description of this role.
-- `name` (Required) The name of this role.
-- `permissions` (Required) Managed field from AWX OpenAPI schema.
+### Required
 
-## Attributes Reference
+- `name` (String, Required) The name of this role.
+- `permissions` (String, Required) JSON-encoded list value for `permissions`.
 
-- `id` (Number) Numeric AWX object identifier.
+### Optional
+
+- `content_type` (String, Optional) String to use for references to this type from other models in the API.
+- `description` (String, Optional) A description of this role.
+
+### Read-Only
+
+- `id` (Number, Read-Only) Numeric AWX object identifier.
 
 ## Import
 
 ```bash
 terraform import awx_role_definition.example 42
 ```
+
+## Further Reading
+
+- [AWX Role-Based Access Controls](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/rbac.html)

@@ -4,6 +4,8 @@ Manages AWX `credential_types` objects.
 
 ## Example Usage
 
+### Basic configuration
+
 ```hcl
 resource "awx_credential_type" "example" {
   kind = "example"
@@ -12,25 +14,37 @@ resource "awx_credential_type" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
 
-Argument qualifiers used below:
+### Qualifiers
+
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
-- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+- `Computed`: AWX sets the value during create or refresh.
+- `Sensitive`: Terraform redacts the value in normal CLI output.
+- `Write-Only`: Sent to AWX during create/update and not read back.
 
-- `description` (Optional) Managed field from AWX OpenAPI schema.
-- `injectors` (Optional, Computed) Terraform object defining credential type injectors. Refer to the documentation for expected structure.
-- `inputs` (Optional, Computed) Terraform object defining credential type inputs. Refer to the documentation for expected structure.
-- `kind` (Required) * `cloud` - Cloud\n* `net` - Network
-- `name` (Required) Managed field from AWX OpenAPI schema.
+### Required
 
-## Attributes Reference
+- `kind` (String, Required) * `cloud` - Cloud\n* `net` - Network
+- `name` (String, Required) Value for `name`.
 
-- `id` (Number) Numeric AWX object identifier.
+### Optional
+
+- `description` (String, Optional) Value for `description`.
+- `injectors` (Object, Optional, Computed) Terraform object defining credential type injectors. Refer to the documentation for expected structure.
+- `inputs` (Object, Optional, Computed) Terraform object defining credential type inputs. Refer to the documentation for expected structure.
+
+### Read-Only
+
+- `id` (Number, Read-Only) Numeric AWX object identifier.
 
 ## Import
 
 ```bash
 terraform import awx_credential_type.example 42
 ```
+
+## Further Reading
+
+- [AWX Credential Types](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/credential_types.html)

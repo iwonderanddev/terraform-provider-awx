@@ -1,31 +1,35 @@
 # Resource: awx_organization_project_association
 
-Manages `organization_project_association` relationships between `organizations`
-and `projects` objects.
+Manages AWX associations between `organizations` and `projects` objects.
 
 ## Example Usage
 
 ```hcl
 resource "awx_organization_project_association" "example" {
   organization_id = 12
-  project_id  = 34
+  project_id = 34
 }
 ```
 
-## Argument Reference
+## Schema
+
+### Required
 
 - `organization_id` (Number, Required) Parent object numeric ID.
 - `project_id` (Number, Required) Child object numeric ID.
 
-## Attributes Reference
+### Read-Only
 
-- `id` (String) Composite ID in `<primary_id>:<related_id>` format.
-- `organization_id` (Number) Parent object numeric ID.
-- `project_id` (Number) Child object numeric ID.
-
+- `id` (String, Read-Only) Composite ID in `<primary_id>:<related_id>` format.
+- `organization_id` (Number, Read-Only) Parent object numeric ID.
+- `project_id` (Number, Read-Only) Child object numeric ID.
 ## Import
 
 ```bash
-terraform import awx_organization_project_association.example \
-  12:34
+terraform import awx_organization_project_association.example <primary_id>:<related_id>
 ```
+
+## Further Reading
+
+- [AWX Organizations](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/organizations.html)
+- [AWX Projects](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html)

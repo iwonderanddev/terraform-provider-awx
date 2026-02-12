@@ -1,41 +1,64 @@
 # Resource: awx_inventory
 
-Manages AWX `inventories` objects.
+Manages AWX inventories used as host collections for job execution.
 
 ## Example Usage
 
+### Standard inventory
+
 ```hcl
-resource "awx_inventory" "example" {
-  name = "example"
-  organization_id = awx_organization.example.id
+resource "awx_inventory" "production" {
+  name            = "production"
+  organization_id = awx_organization.platform.id
+  description     = "Primary production inventory"
 }
 ```
 
-## Argument Reference
+### Smart inventory
 
-Argument qualifiers used below:
+```hcl
+resource "awx_inventory" "linux_hosts" {
+  name            = "linux-hosts"
+  organization_id = awx_organization.platform.id
+  kind            = "smart"
+  host_filter     = "ansible_facts__os_family=RedHat"
+}
+```
+
+## Schema
+
+### Qualifiers
+
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
-- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+- `Computed`: AWX sets the value during create or refresh.
+- `Sensitive`: Terraform redacts the value in normal CLI output.
+- `Write-Only`: Sent to AWX during create/update and not read back.
 
-- `description` (Optional) Managed field from AWX OpenAPI schema.
-- `host_filter` (Optional) Filter that will be applied to the hosts of this inventory.
-- `kind` (Optional) Kind of inventory being represented.
-  - `` - Hosts have a direct link to this inventory.
-  - `smart` - Hosts for inventory generated using the host_filter property.
-  - `constructed` - Parse list of source inventories with the constructed inventory plugin.
-- `name` (Required) Managed field from AWX OpenAPI schema.
-- `opa_query_path` (Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
-- `organization_id` (Required) Organization containing this inventory.
-- `prevent_instance_group_fallback` (Optional, Computed) If enabled, the inventory will prevent adding any organization instance groups to the list of preferred instances groups to run associated job templates on.If this setting is enabled and you provided an empty list, the global instance groups will be applied.
-- `variables` (Optional) Inventory variables in JSON or YAML format.
+### Required
 
-## Attributes Reference
+- `name` (String, Required) Inventory name shown in AWX.
+- `organization_id` (Number, Required) Numeric ID of the organization that owns the inventory.
 
-- `id` (Number) Numeric AWX object identifier.
+### Optional
+
+- `description` (String, Optional) Optional inventory description for operators.
+- `host_filter` (String, Optional) Host filter expression used by smart inventories.
+- `kind` (String, Optional) Inventory behavior mode (empty string for normal, `smart`, or `constructed`).
+- `opa_query_path` (String, Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
+- `prevent_instance_group_fallback` (Boolean, Optional, Computed) Prevents AWX from automatically applying organization/global instance group fallback behavior.
+- `variables` (String, Optional) JSON-encoded object of inventory-level variables.
+
+### Read-Only
+
+- `id` (Number, Read-Only) Numeric AWX object identifier.
 
 ## Import
 
 ```bash
 terraform import awx_inventory.example 42
 ```
+
+## Further Reading
+
+- [AWX Inventories](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html)

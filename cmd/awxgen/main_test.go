@@ -62,7 +62,11 @@ func TestWriteResourceDocIncludesComputedArgumentMarker(t *testing.T) {
 		},
 	}
 
-	if err := writeResourceDoc(resourceDir, object, map[string]struct{}{}); err != nil {
+	awxLinks, err := awxOfficialLinksForObject(object.Name)
+	if err != nil {
+		t.Fatalf("awxOfficialLinksForObject returned error: %v", err)
+	}
+	if err := writeResourceDoc(resourceDir, object, objectDocsEnrichment{}, awxLinks, map[string]struct{}{}); err != nil {
 		t.Fatalf("writeResourceDoc returned error: %v", err)
 	}
 
@@ -72,8 +76,176 @@ func TestWriteResourceDocIncludesComputedArgumentMarker(t *testing.T) {
 		t.Fatalf("failed to read generated resource doc: %v", err)
 	}
 	content := string(raw)
-	if !strings.Contains(content, "`max_hosts` (Optional, Computed)") {
+	if !strings.Contains(content, "`max_hosts` (Number, Optional, Computed)") {
 		t.Fatalf("expected computed marker in generated docs, got:\n%s", content)
+	}
+	if strings.Contains(content, "Argument qualifiers used below") {
+		t.Fatalf("did not expect legacy qualifier phrasing in generated docs, got:\n%s", content)
+	}
+	if !strings.Contains(content, "userguide/organizations.html") {
+		t.Fatalf("expected resource-specific official AWX link in docs, got:\n%s", content)
+	}
+}
+
+func TestResolveFieldDescriptionPrefersCuratedThenSchemaThenFallback(t *testing.T) {
+	t.Parallel()
+
+	field := manifest.FieldSpec{
+		Name:        "inventory",
+		Type:        manifest.FieldTypeInt,
+		Reference:   true,
+		Description: "Schema description",
+	}
+	withCurated := resolveFieldDescription("inventory_id", field, objectDocsEnrichment{
+		FieldDescriptions: map[string]string{
+			"inventory_id": "Curated description",
+		},
+	})
+	if withCurated != "Curated description" {
+		t.Fatalf("expected curated description precedence, got=%q", withCurated)
+	}
+
+	withSchema := resolveFieldDescription("inventory_id", field, objectDocsEnrichment{})
+	if withSchema != "Schema description" {
+		t.Fatalf("expected schema description fallback, got=%q", withSchema)
+	}
+
+	field.Description = ""
+	withFallback := resolveFieldDescription("inventory_id", field, objectDocsEnrichment{})
+	if !strings.Contains(withFallback, "Numeric ID of the related AWX inventory object.") {
+		t.Fatalf("expected typed fallback description, got=%q", withFallback)
+	}
+}
+
+func TestObjectFieldDocTypeAndSampleValue(t *testing.T) {
+	t.Parallel()
+
+	label := terraformTypeLabel(manifest.FieldSpec{Type: manifest.FieldTypeObject})
+	if label != "Object" {
+		t.Fatalf("expected object field doc label to be Object, got=%q", label)
+	}
+
+	value := sampleValue(manifest.FieldTypeObject)
+	if strings.Contains(value, "jsonencode(") {
+		t.Fatalf("expected object sample value to use object literal, got=%q", value)
+	}
+	if value != "{ key = \"value\" }" {
+		t.Fatalf("unexpected object sample value, got=%q", value)
+	}
+}
+
+func TestReadDocsEnrichmentRejectsInvalidMetadata(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "docs_enrichment.json")
+	payload := `{
+  "priorityResources": ["awx_project"],
+  "objects": {
+    "awx_project": {
+      "primaryExample": {"hcl": ""},
+      "furtherReading": [{"title": "bad", "url": "not-a-url"}]
+    }
+  }
+}`
+	if err := os.WriteFile(path, []byte(payload), 0o644); err != nil {
+		t.Fatalf("failed to write docs enrichment fixture: %v", err)
+	}
+
+	_, err := readDocsEnrichment(path)
+	if err == nil {
+		t.Fatalf("expected metadata validation error")
+	}
+	if !strings.Contains(err.Error(), "empty hcl content") {
+		t.Fatalf("unexpected metadata validation error: %v", err)
+	}
+}
+
+func TestReadDocsEnrichmentRejectsInvalidCurationSourceDate(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "docs_enrichment.json")
+	payload := `{
+  "priorityResources": [],
+  "objects": {
+    "awx_project": {
+      "primaryExample": {
+        "hcl": "resource \"awx_project\" \"example\" { name = \"demo\" }"
+      },
+      "curationSource": {
+        "officialAwxUrl": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html",
+        "verifiedOn": "2026/02/12"
+      }
+    }
+  }
+}`
+	if err := os.WriteFile(path, []byte(payload), 0o644); err != nil {
+		t.Fatalf("failed to write docs enrichment fixture: %v", err)
+	}
+
+	_, err := readDocsEnrichment(path)
+	if err == nil {
+		t.Fatalf("expected metadata validation error")
+	}
+	if !strings.Contains(err.Error(), "verifiedOn must use YYYY-MM-DD") {
+		t.Fatalf("unexpected metadata validation error: %v", err)
+	}
+}
+
+func TestAwxOfficialLinksForObjectRequiresKnownMapping(t *testing.T) {
+	t.Parallel()
+
+	if _, err := awxOfficialLinksForObject("projects"); err != nil {
+		t.Fatalf("expected mapped object to succeed, got: %v", err)
+	}
+
+	if _, err := awxOfficialLinksForObject("nonexistent_object"); err == nil {
+		t.Fatalf("expected unknown object mapping to fail")
+	}
+}
+
+func TestValidateFurtherReadingPolicyRequiresOfficialAWXLinks(t *testing.T) {
+	t.Parallel()
+
+	valid := strings.Join([]string{
+		"## Further Reading",
+		"",
+		"- [AWX Projects](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html)",
+		"",
+	}, "\n")
+	if err := validateFurtherReadingPolicy("valid.md", valid, []docsLink{{
+		Title: "AWX Projects",
+		URL:   "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html",
+	}}); err != nil {
+		t.Fatalf("expected valid Further Reading policy, got error: %v", err)
+	}
+
+	invalid := strings.Join([]string{
+		"## Further Reading",
+		"",
+		"- [AWX Index](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/index.html)",
+		"",
+	}, "\n")
+	if err := validateFurtherReadingPolicy("invalid.md", invalid, []docsLink{{
+		Title: "AWX Projects",
+		URL:   "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html",
+	}}); err == nil {
+		t.Fatalf("expected generic AWX index to fail validation")
+	}
+
+	nonAWX := strings.Join([]string{
+		"## Further Reading",
+		"",
+		"- [AWX Projects](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html)",
+		"- [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework)",
+		"",
+	}, "\n")
+	if err := validateFurtherReadingPolicy("non-awx.md", nonAWX, []docsLink{{
+		Title: "AWX Projects",
+		URL:   "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html",
+	}}); err == nil {
+		t.Fatalf("expected non-AWX link to fail validation")
 	}
 }
 
@@ -96,6 +268,66 @@ func TestWriteProviderDocIncludesQualifierGuidance(t *testing.T) {
 	}
 	if !strings.Contains(content, "`Optional, Computed`") {
 		t.Fatalf("expected Optional, Computed guidance in provider docs, got:\n%s", content)
+	}
+}
+
+func TestValidateDocsEnrichmentTargetsRequiresPriorityCurationSource(t *testing.T) {
+	t.Parallel()
+
+	objects := []manifest.ManagedObject{{
+		Name:             "projects",
+		ResourceName:     "awx_project",
+		DataSourceName:   "awx_project",
+		ResourceEligible: true,
+	}}
+
+	err := validateDocsEnrichmentTargets(docsEnrichmentCatalog{
+		PriorityResources: []string{"awx_project"},
+		Objects: map[string]objectDocsEnrichment{
+			"awx_project": {
+				PrimaryExample: &docsExample{
+					HCL: "resource \"awx_project\" \"example\" { name = \"demo\" }",
+				},
+			},
+		},
+	}, objects)
+	if err == nil {
+		t.Fatalf("expected priority curation source validation error")
+	}
+	if !strings.Contains(err.Error(), "requires curationSource") {
+		t.Fatalf("unexpected validation error: %v", err)
+	}
+}
+
+func TestValidateDocsEnrichmentTargetsRequiresMappedCurationSourceURL(t *testing.T) {
+	t.Parallel()
+
+	objects := []manifest.ManagedObject{{
+		Name:             "projects",
+		ResourceName:     "awx_project",
+		DataSourceName:   "awx_project",
+		ResourceEligible: true,
+	}}
+
+	err := validateDocsEnrichmentTargets(docsEnrichmentCatalog{
+		PriorityResources: []string{"awx_project"},
+		Objects: map[string]objectDocsEnrichment{
+			"awx_project": {
+				CurationSource: &docsSource{
+					OfficialAWXURL: "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/teams.html",
+					VerifiedOn:     "2026-02-12",
+				},
+				PrimaryExample: &docsExample{
+					HCL: "resource \"awx_project\" \"example\" { name = \"demo\" }",
+				},
+			},
+		},
+	}, objects)
+	if err == nil {
+		t.Fatalf("expected curation source mapping validation error")
+	}
+	if !strings.Contains(err.Error(), "must reference the mapped official AWX concept link") {
+		t.Fatalf("unexpected validation error: %v", err)
 	}
 }
 
@@ -170,7 +402,11 @@ func TestWriteRelationshipDocUsesCanonicalArguments(t *testing.T) {
 		Path:              "/api/v2/teams/{id}/users/",
 	}
 
-	if err := writeRelationshipDoc(resourceDir, rel); err != nil {
+	awxLinks, err := awxOfficialLinksForRelationship(rel)
+	if err != nil {
+		t.Fatalf("awxOfficialLinksForRelationship returned error: %v", err)
+	}
+	if err := writeRelationshipDoc(resourceDir, rel, awxLinks); err != nil {
 		t.Fatalf("writeRelationshipDoc returned error: %v", err)
 	}
 
@@ -192,6 +428,12 @@ func TestWriteRelationshipDocUsesCanonicalArguments(t *testing.T) {
 	if !strings.Contains(content, "<primary_id>:<related_id>") {
 		t.Fatalf("expected neutral composite ID placeholder in docs, got:\n%s", content)
 	}
+	if !strings.Contains(content, "## Schema") || !strings.Contains(content, "## Further Reading") {
+		t.Fatalf("expected schema and further-reading sections in relationship docs, got:\n%s", content)
+	}
+	if !strings.Contains(content, "userguide/teams.html") || !strings.Contains(content, "userguide/users.html") {
+		t.Fatalf("expected relationship docs to include parent/child official AWX links, got:\n%s", content)
+	}
 }
 
 func TestWriteRelationshipDocUsesCanonicalSurveySpecParentArgument(t *testing.T) {
@@ -207,7 +449,11 @@ func TestWriteRelationshipDocUsesCanonicalSurveySpecParentArgument(t *testing.T)
 		Path:              "/api/v2/job_templates/{id}/survey_spec/",
 	}
 
-	if err := writeRelationshipDoc(resourceDir, rel); err != nil {
+	awxLinks, err := awxOfficialLinksForRelationship(rel)
+	if err != nil {
+		t.Fatalf("awxOfficialLinksForRelationship returned error: %v", err)
+	}
+	if err := writeRelationshipDoc(resourceDir, rel, awxLinks); err != nil {
 		t.Fatalf("writeRelationshipDoc returned error: %v", err)
 	}
 
@@ -222,5 +468,11 @@ func TestWriteRelationshipDocUsesCanonicalSurveySpecParentArgument(t *testing.T)
 	}
 	if strings.Contains(content, "Breaking change:") {
 		t.Fatalf("did not expect legacy breaking-change migration guidance, got:\n%s", content)
+	}
+	if !strings.Contains(content, "<resource_id>") {
+		t.Fatalf("expected survey-spec import placeholder in docs, got:\n%s", content)
+	}
+	if !strings.Contains(content, "userguide/job_templates.html") {
+		t.Fatalf("expected survey-spec relationship docs to include job template official AWX link, got:\n%s", content)
 	}
 }

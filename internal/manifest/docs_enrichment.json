@@ -1,0 +1,241 @@
+{
+  "priorityResources": [
+    "awx_job_template",
+    "awx_workflow_job_template",
+    "awx_project",
+    "awx_credential",
+    "awx_inventory",
+    "awx_inventory_source"
+  ],
+  "objects": {
+    "awx_job_template": {
+      "overview": "Manages AWX job templates that launch project playbooks against inventories with optional runtime prompts.",
+      "complex": true,
+      "conceptPrimer": "Job templates are reusable launch definitions in AWX. They combine a project, playbook, inventory defaults, and prompt flags so operators can run consistent automation with controlled runtime overrides.",
+      "fieldDescriptions": {
+        "name": "Human-readable name shown in the AWX UI and API listings.",
+        "description": "Optional explanation displayed to operators in AWX.",
+        "job_type": "Execution mode for the template, usually `run` for normal automation or `check` for dry-run behavior.",
+        "project_id": "Numeric ID of the AWX project that provides the playbook content.",
+        "playbook": "Playbook path inside the project repository, for example `site.yml`.",
+        "inventory_id": "Numeric ID of the default inventory used when the launch does not prompt for inventory.",
+        "execution_environment_id": "Numeric ID of the execution environment container image used to run jobs.",
+        "extra_vars": "Object of default extra variables passed to launched jobs.",
+        "ask_variables_on_launch": "When true, AWX allows operators to provide extra vars at launch time.",
+        "ask_inventory_on_launch": "When true, AWX prompts for inventory selection during launch.",
+        "ask_limit_on_launch": "When true, AWX prompts for an Ansible limit pattern at launch.",
+        "ask_tags_on_launch": "When true, AWX prompts for job tags at launch.",
+        "ask_skip_tags_on_launch": "When true, AWX prompts for skip tags at launch.",
+        "ask_timeout_on_launch": "When true, AWX prompts for a job timeout at launch.",
+        "verbosity": "Ansible verbosity level used when running this template.",
+        "survey_enabled": "Enables survey-based prompts for this template.",
+        "use_fact_cache": "Enables AWX fact caching for jobs launched from this template.",
+        "webhook_service": "Webhook provider AWX accepts for launch requests.",
+        "webhook_credential_id": "Numeric ID of the credential used to validate webhook callbacks."
+      },
+      "furtherReading": [
+        {
+          "title": "AWX Job Templates",
+          "url": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/job_templates.html"
+        }
+      ],
+      "curationSource": {
+        "officialAwxUrl": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/job_templates.html",
+        "verifiedOn": "2026-02-12"
+      },
+      "primaryExample": {
+        "title": "Standard project-backed job template",
+        "hcl": "resource \"awx_job_template\" \"deploy\" {\n  name         = \"deploy-app\"\n  job_type     = \"run\"\n  project_id   = awx_project.app.id\n  inventory_id = awx_inventory.production.id\n  playbook     = \"site.yml\"\n}\n"
+      },
+      "extraExamples": [
+        {
+          "title": "Prompted launch with defaults",
+          "hcl": "resource \"awx_job_template\" \"ops_prompted\" {\n  name                    = \"ops-prompted\"\n  job_type                = \"run\"\n  project_id              = awx_project.ops.id\n  playbook                = \"operations.yml\"\n  ask_variables_on_launch = true\n  ask_limit_on_launch     = true\n  ask_tags_on_launch      = true\n  extra_vars = {\n    release_channel = \"stable\"\n  }\n}\n"
+        },
+        {
+          "title": "Webhook-enabled job template",
+          "hcl": "resource \"awx_job_template\" \"webhook\" {\n  name                  = \"ci-webhook\"\n  job_type              = \"run\"\n  project_id            = awx_project.app.id\n  inventory_id          = awx_inventory.production.id\n  playbook              = \"ci.yml\"\n  webhook_service       = \"github\"\n  webhook_credential_id = awx_credential.github_token.id\n}\n"
+        }
+      ]
+    },
+    "awx_workflow_job_template": {
+      "overview": "Manages AWX workflow job templates that coordinate multi-step automation across linked nodes.",
+      "complex": true,
+      "conceptPrimer": "Workflow job templates orchestrate multiple job templates with conditional paths. They are useful when releases or operations require ordered stages, approvals, and failure handling in one AWX launch artifact.",
+      "fieldDescriptions": {
+        "name": "Human-readable workflow template name in AWX.",
+        "description": "Optional summary shown in AWX for operators.",
+        "organization_id": "Numeric ID of the owning organization.",
+        "inventory_id": "Numeric ID of the inventory prompt default for workflow launches.",
+        "extra_vars": "Object of default extra vars used by the workflow launch.",
+        "ask_variables_on_launch": "When true, launch requests can provide extra vars.",
+        "ask_inventory_on_launch": "When true, launch requests can override inventory.",
+        "ask_limit_on_launch": "When true, launch requests can set a limit pattern.",
+        "survey_enabled": "Enables survey prompts for workflow launches.",
+        "webhook_service": "Webhook provider accepted for workflow launches.",
+        "webhook_credential_id": "Numeric ID of the credential used for webhook signature validation."
+      },
+      "furtherReading": [
+        {
+          "title": "AWX Workflow Templates",
+          "url": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/workflow_templates.html"
+        }
+      ],
+      "curationSource": {
+        "officialAwxUrl": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/workflow_templates.html",
+        "verifiedOn": "2026-02-12"
+      },
+      "primaryExample": {
+        "title": "Workflow template for release orchestration",
+        "hcl": "resource \"awx_workflow_job_template\" \"release\" {\n  name            = \"release-workflow\"\n  organization_id = awx_organization.platform.id\n  survey_enabled  = true\n  ask_variables_on_launch = true\n  extra_vars = {\n    release_track = \"stable\"\n  }\n}\n"
+      },
+      "extraExamples": [
+        {
+          "title": "Webhook-triggered workflow",
+          "hcl": "resource \"awx_workflow_job_template\" \"from_gitlab\" {\n  name                  = \"workflow-from-gitlab\"\n  organization_id       = awx_organization.platform.id\n  webhook_service       = \"gitlab\"\n  webhook_credential_id = awx_credential.gitlab_token.id\n}\n"
+        }
+      ]
+    },
+    "awx_project": {
+      "overview": "Manages AWX projects that supply automation content from source control or archive locations.",
+      "fieldDescriptions": {
+        "name": "Human-readable project name in AWX.",
+        "description": "Optional explanation displayed to project users.",
+        "organization_id": "Numeric ID of the owning organization.",
+        "scm_type": "Source control backend used by AWX (`git`, `svn`, `archive`, or manual).",
+        "scm_url": "Repository URL or remote archive URL for project content.",
+        "scm_branch": "Branch, tag, or revision checked out by AWX.",
+        "scm_update_on_launch": "When true, AWX updates project content before dependent jobs launch.",
+        "scm_update_cache_timeout": "Seconds AWX waits before allowing another automatic project update.",
+        "allow_override": "Allows job templates to override this project branch at launch.",
+        "credential_id": "Numeric ID of the source-control credential used to access private repositories.",
+        "default_environment_id": "Numeric ID of the default execution environment for project jobs.",
+        "timeout": "Maximum project update runtime in seconds before AWX cancels the update."
+      },
+      "furtherReading": [
+        {
+          "title": "AWX Projects",
+          "url": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html"
+        }
+      ],
+      "curationSource": {
+        "officialAwxUrl": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html",
+        "verifiedOn": "2026-02-12"
+      },
+      "primaryExample": {
+        "title": "Git-based project",
+        "hcl": "resource \"awx_project\" \"app\" {\n  name                 = \"app-project\"\n  organization_id      = awx_organization.platform.id\n  scm_type             = \"git\"\n  scm_url              = \"https://github.com/example/app-automation.git\"\n  scm_branch           = \"main\"\n  scm_update_on_launch = true\n}\n"
+      },
+      "extraExamples": [
+        {
+          "title": "Project with private repository credential",
+          "hcl": "resource \"awx_project\" \"private_repo\" {\n  name                 = \"private-automation\"\n  organization_id      = awx_organization.platform.id\n  scm_type             = \"git\"\n  scm_url              = \"git@github.com:example/private-automation.git\"\n  scm_branch           = \"release\"\n  credential_id        = awx_credential.git_deploy_key.id\n  scm_update_on_launch = true\n}\n"
+        }
+      ]
+    },
+    "awx_credential": {
+      "overview": "Manages AWX credentials used by job templates, inventory sources, and integrations.",
+      "fieldDescriptions": {
+        "name": "Credential name shown in AWX.",
+        "description": "Optional explanation of credential usage.",
+        "credential_type_id": "Numeric ID of the credential type definition (for example Machine, Source Control, or Vault).",
+        "organization_id": "Numeric ID of the organization that owns this credential.",
+        "team_id": "Numeric ID of a team granted owner access when the credential is created.",
+        "user_id": "Numeric ID of a user granted owner access when the credential is created.",
+        "inputs": "Object containing credential input fields required by the selected credential type."
+      },
+      "furtherReading": [
+        {
+          "title": "AWX Credentials",
+          "url": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/credentials.html"
+        }
+      ],
+      "curationSource": {
+        "officialAwxUrl": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/credentials.html",
+        "verifiedOn": "2026-02-12"
+      },
+      "primaryExample": {
+        "title": "Machine credential",
+        "hcl": "data \"awx_credential_type\" \"machine\" {\n  name = \"Machine\"\n}\n\nresource \"awx_credential\" \"machine\" {\n  name               = \"linux-ssh\"\n  credential_type_id = data.awx_credential_type.machine.id\n  organization_id    = awx_organization.platform.id\n  inputs = {\n    username     = \"ec2-user\"\n    ssh_key_data = var.machine_private_key\n  }\n}\n"
+      },
+      "extraExamples": [
+        {
+          "title": "Source control token credential",
+          "hcl": "data \"awx_credential_type\" \"scm\" {\n  name = \"Source Control\"\n}\n\nresource \"awx_credential\" \"git_token\" {\n  name               = \"git-token\"\n  credential_type_id = data.awx_credential_type.scm.id\n  organization_id    = awx_organization.platform.id\n  inputs = {\n    username = \"git\"\n    password = var.git_pat\n  }\n}\n"
+        }
+      ]
+    },
+    "awx_inventory": {
+      "overview": "Manages AWX inventories used as host collections for job execution.",
+      "fieldDescriptions": {
+        "name": "Inventory name shown in AWX.",
+        "description": "Optional inventory description for operators.",
+        "organization_id": "Numeric ID of the organization that owns the inventory.",
+        "kind": "Inventory behavior mode (empty string for normal, `smart`, or `constructed`).",
+        "host_filter": "Host filter expression used by smart inventories.",
+        "variables": "JSON-encoded object of inventory-level variables.",
+        "prevent_instance_group_fallback": "Prevents AWX from automatically applying organization/global instance group fallback behavior."
+      },
+      "furtherReading": [
+        {
+          "title": "AWX Inventories",
+          "url": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html"
+        }
+      ],
+      "curationSource": {
+        "officialAwxUrl": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html",
+        "verifiedOn": "2026-02-12"
+      },
+      "primaryExample": {
+        "title": "Standard inventory",
+        "hcl": "resource \"awx_inventory\" \"production\" {\n  name            = \"production\"\n  organization_id = awx_organization.platform.id\n  description     = \"Primary production inventory\"\n}\n"
+      },
+      "extraExamples": [
+        {
+          "title": "Smart inventory",
+          "hcl": "resource \"awx_inventory\" \"linux_hosts\" {\n  name            = \"linux-hosts\"\n  organization_id = awx_organization.platform.id\n  kind            = \"smart\"\n  host_filter     = \"ansible_facts__os_family=RedHat\"\n}\n"
+        }
+      ]
+    },
+    "awx_inventory_source": {
+      "overview": "Manages dynamic inventory sources that synchronize host data into AWX inventories.",
+      "complex": true,
+      "conceptPrimer": "Inventory sources connect AWX inventories to external systems such as cloud APIs or SCM files. AWX can refresh these sources on launch and control overwrite behavior for imported groups, hosts, and variables.",
+      "fieldDescriptions": {
+        "name": "Inventory source name shown in AWX.",
+        "description": "Optional explanation of the source purpose.",
+        "inventory_id": "Numeric ID of the destination inventory populated by this source.",
+        "source": "Dynamic inventory backend plugin (for example `ec2`, `gce`, `scm`, or `constructed`).",
+        "credential_id": "Numeric ID of the credential used to authenticate to the source system.",
+        "source_project_id": "Numeric ID of the AWX project used when `source = \"scm\"`.",
+        "source_path": "Relative path in the source project that points to the inventory file.",
+        "source_vars": "JSON-encoded object or YAML string of source-specific plugin variables.",
+        "overwrite": "When true, AWX replaces local groups/hosts using the synced source data.",
+        "overwrite_vars": "When true, AWX replaces local variable values during sync.",
+        "update_on_launch": "When true, AWX refreshes this source before dependent launches.",
+        "update_cache_timeout": "Seconds AWX waits before allowing another automatic source refresh.",
+        "timeout": "Maximum sync runtime in seconds before AWX cancels the update."
+      },
+      "furtherReading": [
+        {
+          "title": "AWX Inventory Sources",
+          "url": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html#inventory-sources"
+        }
+      ],
+      "curationSource": {
+        "officialAwxUrl": "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html#inventory-sources",
+        "verifiedOn": "2026-02-12"
+      },
+      "primaryExample": {
+        "title": "EC2 dynamic inventory source",
+        "hcl": "resource \"awx_inventory_source\" \"aws_dynamic\" {\n  name             = \"aws-dynamic\"\n  inventory_id     = awx_inventory.production.id\n  source           = \"ec2\"\n  credential_id    = awx_credential.aws.id\n  update_on_launch = true\n  overwrite        = true\n}\n"
+      },
+      "extraExamples": [
+        {
+          "title": "SCM-backed inventory source",
+          "hcl": "resource \"awx_inventory_source\" \"scm_hosts\" {\n  name              = \"scm-hosts\"\n  inventory_id      = awx_inventory.production.id\n  source            = \"scm\"\n  source_project_id = awx_project.inventory_definitions.id\n  source_path       = \"inventories/prod.yml\"\n  update_on_launch  = true\n}\n"
+        }
+      ]
+    }
+  }
+}

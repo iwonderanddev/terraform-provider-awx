@@ -4,6 +4,8 @@ Manages AWX `constructed_inventories` objects.
 
 ## Example Usage
 
+### Basic configuration
+
 ```hcl
 resource "awx_constructed_inventory" "example" {
   name = "example"
@@ -11,30 +13,42 @@ resource "awx_constructed_inventory" "example" {
 }
 ```
 
-## Argument Reference
+## Schema
 
-Argument qualifiers used below:
+### Qualifiers
+
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
-- `Optional, Computed`: May be omitted; AWX can apply a server-side default and Terraform records the resulting value after apply.
+- `Computed`: AWX sets the value during create or refresh.
+- `Sensitive`: Terraform redacts the value in normal CLI output.
+- `Write-Only`: Sent to AWX during create/update and not read back.
 
-- `description` (Optional) Managed field from AWX OpenAPI schema.
-- `limit` (Optional) The limit to restrict the returned hosts for the related auto-created inventory source, special to constructed inventory.
-- `name` (Required) Managed field from AWX OpenAPI schema.
-- `opa_query_path` (Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
-- `organization_id` (Required) Organization containing this inventory.
-- `prevent_instance_group_fallback` (Optional, Computed) If enabled, the inventory will prevent adding any organization instance groups to the list of preferred instances groups to run associated job templates on.If this setting is enabled and you provided an empty list, the global instance groups will be applied.
-- `source_vars` (Optional) The source_vars for the related auto-created inventory source, special to constructed inventory.
-- `update_cache_timeout` (Optional) The cache timeout for the related auto-created inventory source, special to constructed inventory
-- `variables` (Optional) Inventory variables in JSON or YAML format.
-- `verbosity` (Optional) The verbosity level for the related auto-created inventory source, special to constructed inventory
+### Required
 
-## Attributes Reference
+- `name` (String, Required) Value for `name`.
+- `organization_id` (Number, Required) Organization containing this inventory.
 
-- `id` (Number) Numeric AWX object identifier.
+### Optional
+
+- `description` (String, Optional) Value for `description`.
+- `limit` (String, Optional) The limit to restrict the returned hosts for the related auto-created inventory source, special to constructed inventory.
+- `opa_query_path` (String, Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
+- `prevent_instance_group_fallback` (Boolean, Optional, Computed) If enabled, the inventory will prevent adding any organization instance groups to the list of preferred instances groups to run associated job templates on.If this setting is enabled and you provided an empty list, the global instance groups will be applied.
+- `source_vars` (String, Optional) The source_vars for the related auto-created inventory source, special to constructed inventory.
+- `update_cache_timeout` (Number, Optional) The cache timeout for the related auto-created inventory source, special to constructed inventory
+- `variables` (String, Optional) Inventory variables in JSON or YAML format.
+- `verbosity` (Number, Optional) The verbosity level for the related auto-created inventory source, special to constructed inventory
+
+### Read-Only
+
+- `id` (Number, Read-Only) Numeric AWX object identifier.
 
 ## Import
 
 ```bash
 terraform import awx_constructed_inventory.example 42
 ```
+
+## Further Reading
+
+- [AWX Inventories](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/inventories.html)
