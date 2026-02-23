@@ -33,19 +33,21 @@ resource "awx_workflow_job_template_node" "example" {
 - `diff_mode` (Boolean, Optional) Controls whether `diff_mode` is enabled in AWX.
 - `execution_environment_id` (Number, Optional) The container image to be used for execution.
 - `extra_data` (Object, Optional, Computed) Structured extra data as a Terraform object.
-- `forks` (Number, Optional) Numeric setting for `forks`.
+- `forks` (Number, Optional) Numeric AWX value used for `forks`.
 - `identifier` (String, Optional) An identifier for this node that is unique within its workflow. It is copied to workflow job nodes corresponding to this node.
 - `inventory_id` (Number, Optional) Inventory applied as a prompt, assuming job template prompts for inventory
-- `job_slice_count` (Number, Optional) Numeric setting for `job_slice_count`.
-- `job_tags` (String, Optional) Value for `job_tags`.
-- `job_type` (String, Optional) * `run` - Run
+- `job_slice_count` (Number, Optional) Numeric AWX value used for `job_slice_count`.
+- `job_tags` (String, Optional) AWX value stored in `job_tags`.
+- `job_type` (String, Optional) Allowed values:
+  - `run` - Run
   - `check` - Check
-- `limit` (String, Optional) Value for `limit`.
-- `scm_branch` (String, Optional) Value for `scm_branch`.
-- `skip_tags` (String, Optional) Value for `skip_tags`.
-- `timeout` (Number, Optional) Numeric setting for `timeout`.
+- `limit` (String, Optional) AWX value stored in `limit`.
+- `scm_branch` (String, Optional) AWX value stored in `scm_branch`.
+- `skip_tags` (String, Optional) AWX value stored in `skip_tags`.
+- `timeout` (Number, Optional) Numeric AWX value used for `timeout`.
 - `unified_job_template_id` (Number, Optional) Numeric ID of the related AWX unified job template object.
-- `verbosity` (Number, Optional) * `0` - 0 (Normal)
+- `verbosity` (Number, Optional) Allowed values:
+  - `0` - 0 (Normal)
   - `1` - 1 (Verbose)
   - `2` - 2 (More Verbose)
   - `3` - 3 (Debug)

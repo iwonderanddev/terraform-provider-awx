@@ -26,12 +26,12 @@ resource "awx_execution_environment" "example" {
 ### Required
 
 - `image` (String, Required) The full image location, including the container registry, image name, and version tag.
-- `name` (String, Required) Value for `name`.
+- `name` (String, Required) AWX value stored in `name`.
 
 ### Optional
 
 - `credential_id` (Number, Optional) Numeric ID of the related AWX credential object.
-- `description` (String, Optional) Value for `description`.
+- `description` (String, Optional) AWX value stored in `description`.
 - `organization_id` (Number, Optional) The organization used to determine access to this execution environment.
 - `pull` (String, Optional) Pull image before running?
   - `always` - Always pull container before running.

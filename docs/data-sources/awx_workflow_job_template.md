@@ -31,12 +31,12 @@ data "awx_workflow_job_template" "example" {
 - `description` (String, Read-Only) Optional summary shown in AWX for operators.
 - `extra_vars` (Object, Read-Only) Object of default extra vars used by the workflow launch.
 - `inventory_id` (Number, Read-Only) Numeric ID of the inventory prompt default for workflow launches.
-- `job_tags` (String, Read-Only) Value for `job_tags`.
-- `limit` (String, Read-Only) Value for `limit`.
+- `job_tags` (String, Read-Only) AWX value stored in `job_tags`.
+- `limit` (String, Read-Only) AWX value stored in `limit`.
 - `name` (String, Read-Only) Human-readable workflow template name in AWX.
 - `organization_id` (Number, Read-Only) Numeric ID of the owning organization.
-- `scm_branch` (String, Read-Only) Value for `scm_branch`.
-- `skip_tags` (String, Read-Only) Value for `skip_tags`.
+- `scm_branch` (String, Read-Only) AWX value stored in `scm_branch`.
+- `skip_tags` (String, Read-Only) AWX value stored in `skip_tags`.
 - `survey_enabled` (Boolean, Read-Only) Enables survey prompts for workflow launches.
 - `webhook_credential_id` (Number, Read-Only) Numeric ID of the credential used for webhook signature validation.
 - `webhook_service` (String, Read-Only) Webhook provider accepted for workflow launches.

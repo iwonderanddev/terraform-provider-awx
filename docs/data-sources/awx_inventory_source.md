@@ -39,7 +39,8 @@ data "awx_inventory_source" "example" {
 - `timeout` (Number, Read-Only) Maximum sync runtime in seconds before AWX cancels the update.
 - `update_cache_timeout` (Number, Read-Only) Seconds AWX waits before allowing another automatic source refresh.
 - `update_on_launch` (Boolean, Read-Only) When true, AWX refreshes this source before dependent launches.
-- `verbosity` (Number, Read-Only) * `0` - 0 (WARNING)
+- `verbosity` (Number, Read-Only) Allowed values:
+  - `0` - 0 (WARNING)
   - `1` - 1 (INFO)
   - `2` - 2 (DEBUG)
 

@@ -7,6 +7,10 @@ Manages AWX projects that supply automation content from source control or archi
 ### Git-based project
 
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
 resource "awx_project" "app" {
   name                 = "app-project"
   organization_id      = awx_organization.platform.id
@@ -19,14 +23,24 @@ resource "awx_project" "app" {
 
 ### Project with private repository credential
 
+This example assumes an existing source-control credential named `git-deploy-key`.
+
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
+data "awx_credential" "git_deploy_key" {
+  name = "git-deploy-key"
+}
+
 resource "awx_project" "private_repo" {
   name                 = "private-automation"
   organization_id      = awx_organization.platform.id
   scm_type             = "git"
   scm_url              = "git@github.com:example/private-automation.git"
   scm_branch           = "release"
-  credential_id        = awx_credential.git_deploy_key.id
+  credential_id        = data.awx_credential.git_deploy_key.id
   scm_update_on_launch = true
 }
 ```

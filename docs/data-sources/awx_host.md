@@ -20,11 +20,11 @@ data "awx_host" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `description` (String, Read-Only) Value for `description`.
+- `description` (String, Read-Only) AWX value stored in `description`.
 - `enabled` (Boolean, Read-Only) Is this host online and available for running jobs?
 - `instance_id` (String, Read-Only) The value used by the remote inventory source to uniquely identify the host
 - `inventory_id` (Number, Read-Only) Numeric ID of the related AWX inventory object.
-- `name` (String, Read-Only) Value for `name`.
+- `name` (String, Read-Only) AWX value stored in `name`.
 - `variables` (String, Read-Only) Host variables in JSON or YAML format.
 
 ## Further Reading

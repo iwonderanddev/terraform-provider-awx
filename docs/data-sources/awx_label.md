@@ -20,7 +20,7 @@ data "awx_label" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `name` (String, Read-Only) Value for `name`.
+- `name` (String, Read-Only) AWX value stored in `name`.
 - `organization_id` (Number, Read-Only) Organization this label belongs to.
 
 ## Further Reading

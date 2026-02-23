@@ -255,6 +255,7 @@ func (c *Client) FindByField(ctx context.Context, endpointPath string, field str
 
 // Associate creates a relationship between a parent and child object using an AWX association endpoint.
 func (c *Client) Associate(ctx context.Context, relationshipPath string, parentID, childID int64) error {
+	relationshipPath = normalizeRelationshipPath(relationshipPath)
 	resolvedPath := resolvePathParameter(relationshipPath, strconv.FormatInt(parentID, 10))
 
 	payload := map[string]any{"id": childID}
@@ -271,6 +272,7 @@ func (c *Client) Associate(ctx context.Context, relationshipPath string, parentI
 
 // Disassociate removes a relationship between a parent and child object.
 func (c *Client) Disassociate(ctx context.Context, relationshipPath string, parentID, childID int64) error {
+	relationshipPath = normalizeRelationshipPath(relationshipPath)
 	resolvedPath := resolvePathParameter(relationshipPath, strconv.FormatInt(parentID, 10))
 
 	payload := map[string]any{
@@ -296,6 +298,7 @@ func (c *Client) Disassociate(ctx context.Context, relationshipPath string, pare
 
 // RelationshipExists checks whether parent-child association exists by scanning the relationship list endpoint.
 func (c *Client) RelationshipExists(ctx context.Context, relationshipPath string, parentID, childID int64) (bool, error) {
+	relationshipPath = normalizeRelationshipPath(relationshipPath)
 	resolvedPath := resolvePathParameter(relationshipPath, strconv.FormatInt(parentID, 10))
 	items, err := c.ListAll(ctx, resolvedPath, nil)
 	if err != nil {
@@ -322,6 +325,16 @@ func resolvePathParameter(pathTemplate string, identifier string) string {
 		return pathTemplate
 	}
 	return pathParameterPattern.ReplaceAllString(pathTemplate, identifier)
+}
+
+func normalizeRelationshipPath(relationshipPath string) string {
+	trimmed := strings.TrimSpace(relationshipPath)
+	switch trimmed {
+	case "/api/v2/organizations/{id}/credentials", "/api/v2/organizations/{id}/credentials/":
+		return "/api/v2/organizations/{id}/galaxy_credentials/"
+	default:
+		return relationshipPath
+	}
 }
 
 // DoJSON executes an HTTP request with retry behavior and decodes the JSON response body.

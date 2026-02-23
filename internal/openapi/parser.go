@@ -334,7 +334,7 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 	}
 
 	relationships := make([]manifest.Relationship, 0)
-	seen := make(map[string]struct{})
+	relationshipIndexByName := make(map[string]int)
 
 	for _, endpointPath := range sortedPathKeys(doc.Paths) {
 		matches := relationshipPathPattern.FindStringSubmatch(endpointPath)
@@ -358,10 +358,9 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 			}
 
 			name := fmt.Sprintf("%s_survey_spec", singularize(parentCollection))
-			if _, exists := seen[name]; exists {
+			if _, exists := relationshipIndexByName[name]; exists {
 				continue
 			}
-			seen[name] = struct{}{}
 
 			priority := 100
 			if explicit, ok := priorities[name]; ok {
@@ -377,6 +376,7 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 				Path:              endpointPath,
 				Priority:          priority,
 			})
+			relationshipIndexByName[name] = len(relationships) - 1
 			continue
 		}
 
@@ -397,17 +397,13 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 		if specialVariant {
 			name = fmt.Sprintf("%s_%s", singularize(parentCollection), childToken)
 		}
-		if _, exists := seen[name]; exists {
-			continue
-		}
-		seen[name] = struct{}{}
 
 		priority := 100
 		if explicit, ok := priorities[name]; ok {
 			priority = explicit
 		}
 
-		relationships = append(relationships, manifest.Relationship{
+		candidate := manifest.Relationship{
 			Name:              name,
 			ResourceName:      fmt.Sprintf("awx_%s", name),
 			ParentObject:      parentCollection,
@@ -416,7 +412,17 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 			ChildIDAttribute:  manifest.RelationshipObjectIDAttribute(resolvedChildCollection),
 			Path:              endpointPath,
 			Priority:          priority,
-		})
+		}
+
+		if existingIndex, exists := relationshipIndexByName[name]; exists {
+			if shouldPreferRelationshipPath(name, relationships[existingIndex].Path, candidate.Path) {
+				relationships[existingIndex] = candidate
+			}
+			continue
+		}
+
+		relationships = append(relationships, candidate)
+		relationshipIndexByName[name] = len(relationships) - 1
 	}
 
 	sort.SliceStable(relationships, func(i, j int) bool {
@@ -806,6 +812,12 @@ func resolveRelationshipChildCollection(childCollection string, objectByCollecti
 	if _, ok := objectByCollection[childCollection]; ok {
 		return childCollection, singularize(childCollection), false
 	}
+	if childCollection == "galaxy_credentials" {
+		if _, ok := objectByCollection["credentials"]; ok {
+			return "credentials", singularize("credentials"), false
+		}
+		return "", "", false
+	}
 
 	const notificationTemplatePrefix = "notification_templates_"
 	if strings.HasPrefix(childCollection, notificationTemplatePrefix) {
@@ -820,6 +832,16 @@ func resolveRelationshipChildCollection(childCollection string, objectByCollecti
 	}
 
 	return "", "", false
+}
+
+func shouldPreferRelationshipPath(name string, existingPath string, candidatePath string) bool {
+	if name == "organization_credential_association" &&
+		strings.TrimSpace(existingPath) == "/api/v2/organizations/{id}/credentials/" &&
+		strings.TrimSpace(candidatePath) == "/api/v2/organizations/{id}/galaxy_credentials/" {
+		return true
+	}
+
+	return false
 }
 
 func uniqueSorted(values []string) []string {

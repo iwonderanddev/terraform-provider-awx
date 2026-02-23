@@ -20,9 +20,9 @@ data "awx_constructed_inventory" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `description` (String, Read-Only) Value for `description`.
+- `description` (String, Read-Only) AWX value stored in `description`.
 - `limit` (String, Read-Only) The limit to restrict the returned hosts for the related auto-created inventory source, special to constructed inventory.
-- `name` (String, Read-Only) Value for `name`.
+- `name` (String, Read-Only) AWX value stored in `name`.
 - `opa_query_path` (String, Read-Only) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
 - `organization_id` (Number, Read-Only) Organization containing this inventory.
 - `prevent_instance_group_fallback` (Boolean, Read-Only) If enabled, the inventory will prevent adding any organization instance groups to the list of preferred instances groups to run associated job templates on.If this setting is enabled and you provided an empty list, the global instance groups will be applied.

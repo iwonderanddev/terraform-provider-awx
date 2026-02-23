@@ -7,6 +7,10 @@ Manages AWX inventories used as host collections for job execution.
 ### Standard inventory
 
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
 resource "awx_inventory" "production" {
   name            = "production"
   organization_id = awx_organization.platform.id
@@ -17,6 +21,10 @@ resource "awx_inventory" "production" {
 ### Smart inventory
 
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
 resource "awx_inventory" "linux_hosts" {
   name            = "linux-hosts"
   organization_id = awx_organization.platform.id

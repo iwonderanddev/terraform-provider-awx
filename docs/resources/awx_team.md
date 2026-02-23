@@ -25,12 +25,12 @@ resource "awx_team" "example" {
 
 ### Required
 
-- `name` (String, Required) Value for `name`.
+- `name` (String, Required) AWX value stored in `name`.
 - `organization_id` (Number, Required) Numeric ID of the related AWX organization object.
 
 ### Optional
 
-- `description` (String, Optional) Value for `description`.
+- `description` (String, Optional) AWX value stored in `description`.
 
 ### Read-Only
 

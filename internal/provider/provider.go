@@ -27,7 +27,7 @@ type awxProvider struct {
 }
 
 type providerModel struct {
-	BaseURL               types.String `tfsdk:"base_url"`
+	Hostname              types.String `tfsdk:"hostname"`
 	Username              types.String `tfsdk:"username"`
 	Password              types.String `tfsdk:"password"`
 	InsecureSkipTLSVerify types.Bool   `tfsdk:"insecure_skip_tls_verify"`
@@ -63,7 +63,7 @@ func (p *awxProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *
 	resp.Schema = providerschema.Schema{
 		Description: "Terraform provider for AWX API v2.",
 		Attributes: map[string]providerschema.Attribute{
-			"base_url": providerschema.StringAttribute{
+			"hostname": providerschema.StringAttribute{
 				Description: "Base URL for AWX, for example https://awx.example.com.",
 				Required:    true,
 			},
@@ -113,8 +113,8 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 		return
 	}
 
-	if config.BaseURL.IsUnknown() || config.BaseURL.IsNull() {
-		resp.Diagnostics.AddAttributeError(path.Root("base_url"), "Missing AWX base URL", "Set base_url to the AWX server URL.")
+	if config.Hostname.IsUnknown() || config.Hostname.IsNull() {
+		resp.Diagnostics.AddAttributeError(path.Root("hostname"), "Missing AWX hostname", "Set hostname to the AWX server URL.")
 	}
 	if config.Username.IsUnknown() || config.Username.IsNull() {
 		resp.Diagnostics.AddAttributeError(path.Root("username"), "Missing username", "Set username for HTTP Basic auth.")
@@ -132,7 +132,7 @@ func (p *awxProvider) Configure(ctx context.Context, req provider.ConfigureReque
 	}
 
 	clientConfig := client.Config{
-		BaseURL:               config.BaseURL.ValueString(),
+		BaseURL:               config.Hostname.ValueString(),
 		Username:              config.Username.ValueString(),
 		Password:              config.Password.ValueString(),
 		InsecureSkipTLSVerify: !config.InsecureSkipTLSVerify.IsNull() && config.InsecureSkipTLSVerify.ValueBool(),
@@ -199,20 +199,20 @@ func (p *awxProvider) DataSources(_ context.Context) []func() datasource.DataSou
 }
 
 func validateConfig(config providerModel, diags *diag.Diagnostics) {
-	if config.BaseURL.IsNull() || config.BaseURL.IsUnknown() {
+	if config.Hostname.IsNull() || config.Hostname.IsUnknown() {
 		return
 	}
 
-	parsedURL, err := url.Parse(strings.TrimSpace(config.BaseURL.ValueString()))
+	parsedURL, err := url.Parse(strings.TrimSpace(config.Hostname.ValueString()))
 	if err != nil {
-		diags.AddAttributeError(path.Root("base_url"), "Invalid AWX base URL", err.Error())
+		diags.AddAttributeError(path.Root("hostname"), "Invalid AWX hostname", err.Error())
 		return
 	}
 	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
-		diags.AddAttributeError(path.Root("base_url"), "Invalid AWX base URL", "base_url must use http or https.")
+		diags.AddAttributeError(path.Root("hostname"), "Invalid AWX hostname", "hostname must use http or https.")
 	}
 	if parsedURL.Host == "" {
-		diags.AddAttributeError(path.Root("base_url"), "Invalid AWX base URL", "base_url must include a host.")
+		diags.AddAttributeError(path.Root("hostname"), "Invalid AWX hostname", "hostname must include a host.")
 	}
 
 	if !config.RequestTimeoutSeconds.IsNull() && !config.RequestTimeoutSeconds.IsUnknown() && config.RequestTimeoutSeconds.ValueInt64() <= 0 {

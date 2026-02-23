@@ -10,12 +10,27 @@ Inventory sources connect AWX inventories to external systems such as cloud APIs
 
 ### EC2 dynamic inventory source
 
+This example assumes an existing AWS credential named `aws-inventory`.
+
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
+resource "awx_inventory" "production" {
+  name            = "production"
+  organization_id = awx_organization.platform.id
+}
+
+data "awx_credential" "aws_inventory" {
+  name = "aws-inventory"
+}
+
 resource "awx_inventory_source" "aws_dynamic" {
   name             = "aws-dynamic"
   inventory_id     = awx_inventory.production.id
   source           = "ec2"
-  credential_id    = awx_credential.aws.id
+  credential_id    = data.awx_credential.aws_inventory.id
   update_on_launch = true
   overwrite        = true
 }
@@ -24,6 +39,22 @@ resource "awx_inventory_source" "aws_dynamic" {
 ### SCM-backed inventory source
 
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
+resource "awx_inventory" "production" {
+  name            = "production"
+  organization_id = awx_organization.platform.id
+}
+
+resource "awx_project" "inventory_definitions" {
+  name            = "inventory-definitions"
+  organization_id = awx_organization.platform.id
+  scm_type        = "git"
+  scm_url         = "https://github.com/example/inventory-definitions.git"
+}
+
 resource "awx_inventory_source" "scm_hosts" {
   name              = "scm-hosts"
   inventory_id      = awx_inventory.production.id
@@ -68,7 +99,8 @@ resource "awx_inventory_source" "scm_hosts" {
 - `timeout` (Number, Optional, Computed) Maximum sync runtime in seconds before AWX cancels the update.
 - `update_cache_timeout` (Number, Optional, Computed) Seconds AWX waits before allowing another automatic source refresh.
 - `update_on_launch` (Boolean, Optional, Computed) When true, AWX refreshes this source before dependent launches.
-- `verbosity` (Number, Optional, Computed) * `0` - 0 (WARNING)
+- `verbosity` (Number, Optional, Computed) Allowed values:
+  - `0` - 0 (WARNING)
   - `1` - 1 (INFO)
   - `2` - 2 (DEBUG)
 

@@ -275,7 +275,7 @@
     "childObject": "credentials",
     "parentIDAttribute": "organization_id",
     "childIDAttribute": "credential_id",
-    "path": "/api/v2/organizations/{id}/credentials/",
+    "path": "/api/v2/organizations/{id}/galaxy_credentials/",
     "priority": 100
   },
   {

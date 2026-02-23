@@ -20,9 +20,9 @@ data "awx_group" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `description` (String, Read-Only) Value for `description`.
+- `description` (String, Read-Only) AWX value stored in `description`.
 - `inventory_id` (Number, Read-Only) Numeric ID of the related AWX inventory object.
-- `name` (String, Read-Only) Value for `name`.
+- `name` (String, Read-Only) AWX value stored in `name`.
 - `variables` (String, Read-Only) Group variables in JSON or YAML format.
 
 ## Further Reading

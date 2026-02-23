@@ -21,9 +21,9 @@ data "awx_execution_environment" "example" {
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
 - `credential_id` (Number, Read-Only) Numeric ID of the related AWX credential object.
-- `description` (String, Read-Only) Value for `description`.
+- `description` (String, Read-Only) AWX value stored in `description`.
 - `image` (String, Read-Only) The full image location, including the container registry, image name, and version tag.
-- `name` (String, Read-Only) Value for `name`.
+- `name` (String, Read-Only) AWX value stored in `name`.
 - `organization_id` (Number, Read-Only) The organization used to determine access to this execution environment.
 - `pull` (String, Read-Only) Pull image before running?
   - `always` - Always pull container before running.

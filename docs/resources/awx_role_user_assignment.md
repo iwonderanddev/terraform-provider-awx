@@ -34,12 +34,12 @@ resource "awx_role_user_assignment" "example" {
 - `content_type` (String, Optional, Computed) String to use for references to this type from other models in the API.
 - `created` (String, Optional, Computed) The date/time this resource was created.
 - `created_by_id` (Number, Optional, Computed) The user who created this resource.
-- `id` (Number, Optional, Computed) Numeric setting for `id`.
+- `id` (Number, Optional, Computed) Numeric AWX value used for `id`.
 - `object_ansible_id` (String, Optional) The resource id of the object this role applies to. An alternative to the object_id field.
 - `object_id` (String, Optional) The primary key of the object this assignment applies to; null value indicates system-wide assignment.
 - `related` (Object, Optional, Computed) Object value for `related`.
 - `summary_fields` (Object, Optional, Computed) Object value for `summary_fields`.
-- `url` (String, Optional, Computed) Value for `url`.
+- `url` (String, Optional, Computed) AWX value stored in `url`.
 - `user_id` (Number, Optional) Numeric ID of the related AWX user object.
 - `user_ansible_id` (String, Optional) The resource ID of the user who will receive permissions from this assignment. An alternative to user field.
 

@@ -7,6 +7,10 @@ Manages AWX credentials used by job templates, inventory sources, and integratio
 ### Machine credential
 
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
 data "awx_credential_type" "machine" {
   name = "Machine"
 }
@@ -25,6 +29,10 @@ resource "awx_credential" "machine" {
 ### Source control token credential
 
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
 data "awx_credential_type" "scm" {
   name = "Source Control"
 }

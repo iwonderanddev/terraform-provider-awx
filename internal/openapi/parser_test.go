@@ -527,6 +527,61 @@ func TestDeriveRelationshipsDetectsNotificationTemplateVariantAndSurveySpec(t *t
 	}
 }
 
+func TestDeriveRelationshipsPrefersOrganizationGalaxyCredentialsPath(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/job_templates/{id}/credentials/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+			"/api/v2/organizations/{id}/credentials/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+			"/api/v2/organizations/{id}/galaxy_credentials/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+		},
+	}
+	objects := []manifest.ManagedObject{
+		{Name: "job_templates"},
+		{Name: "organizations"},
+		{Name: "credentials"},
+	}
+
+	relationships := DeriveRelationships(doc, objects, map[string]int{}, map[string]string{})
+
+	seen := map[string]manifest.Relationship{}
+	for _, rel := range relationships {
+		seen[rel.Name] = rel
+	}
+
+	orgRel, ok := seen["organization_credential_association"]
+	if !ok {
+		t.Fatalf("missing organization credential relationship")
+	}
+	if orgRel.Path != "/api/v2/organizations/{id}/galaxy_credentials/" {
+		t.Fatalf("unexpected organization credential relationship path: got=%q want=%q", orgRel.Path, "/api/v2/organizations/{id}/galaxy_credentials/")
+	}
+	if orgRel.ParentIDAttribute != "organization_id" {
+		t.Fatalf("unexpected organization relationship parent attribute: got=%q want=%q", orgRel.ParentIDAttribute, "organization_id")
+	}
+	if orgRel.ChildIDAttribute != "credential_id" {
+		t.Fatalf("unexpected organization relationship child attribute: got=%q want=%q", orgRel.ChildIDAttribute, "credential_id")
+	}
+
+	jtRel, ok := seen["job_template_credential_association"]
+	if !ok {
+		t.Fatalf("missing job template credential relationship")
+	}
+	if jtRel.Path != "/api/v2/job_templates/{id}/credentials/" {
+		t.Fatalf("unexpected job template credential relationship path: got=%q want=%q", jtRel.Path, "/api/v2/job_templates/{id}/credentials/")
+	}
+}
+
 func TestDeriveRelationshipsExcludesDeprecatedPaths(t *testing.T) {
 	t.Parallel()
 

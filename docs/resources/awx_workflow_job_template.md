@@ -11,10 +11,14 @@ Workflow job templates orchestrate multiple job templates with conditional paths
 ### Workflow template for release orchestration
 
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
 resource "awx_workflow_job_template" "release" {
-  name            = "release-workflow"
-  organization_id = awx_organization.platform.id
-  survey_enabled  = true
+  name                    = "release-workflow"
+  organization_id         = awx_organization.platform.id
+  survey_enabled          = true
   ask_variables_on_launch = true
   extra_vars = {
     release_track = "stable"
@@ -24,12 +28,22 @@ resource "awx_workflow_job_template" "release" {
 
 ### Webhook-triggered workflow
 
+This example assumes an existing webhook credential named `gitlab-webhook`.
+
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
+data "awx_credential" "gitlab_webhook" {
+  name = "gitlab-webhook"
+}
+
 resource "awx_workflow_job_template" "from_gitlab" {
   name                  = "workflow-from-gitlab"
   organization_id       = awx_organization.platform.id
   webhook_service       = "gitlab"
-  webhook_credential_id = awx_credential.gitlab_token.id
+  webhook_credential_id = data.awx_credential.gitlab_webhook.id
 }
 ```
 
@@ -60,11 +74,11 @@ resource "awx_workflow_job_template" "from_gitlab" {
 - `description` (String, Optional) Optional summary shown in AWX for operators.
 - `extra_vars` (Object, Optional) Object of default extra vars used by the workflow launch.
 - `inventory_id` (Number, Optional) Numeric ID of the inventory prompt default for workflow launches.
-- `job_tags` (String, Optional) Value for `job_tags`.
-- `limit` (String, Optional) Value for `limit`.
+- `job_tags` (String, Optional) AWX value stored in `job_tags`.
+- `limit` (String, Optional) AWX value stored in `limit`.
 - `organization_id` (Number, Optional) Numeric ID of the owning organization.
-- `scm_branch` (String, Optional) Value for `scm_branch`.
-- `skip_tags` (String, Optional) Value for `skip_tags`.
+- `scm_branch` (String, Optional) AWX value stored in `scm_branch`.
+- `skip_tags` (String, Optional) AWX value stored in `skip_tags`.
 - `survey_enabled` (Boolean, Optional, Computed) Enables survey prompts for workflow launches.
 - `webhook_credential_id` (Number, Optional) Numeric ID of the credential used for webhook signature validation.
 - `webhook_service` (String, Optional) Webhook provider accepted for workflow launches.

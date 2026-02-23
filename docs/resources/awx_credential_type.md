@@ -26,12 +26,14 @@ resource "awx_credential_type" "example" {
 
 ### Required
 
-- `kind` (String, Required) * `cloud` - Cloud\n* `net` - Network
-- `name` (String, Required) Value for `name`.
+- `kind` (String, Required) Allowed values:
+  - `cloud` - Cloud
+  - `net` - Network
+- `name` (String, Required) AWX value stored in `name`.
 
 ### Optional
 
-- `description` (String, Optional) Value for `description`.
+- `description` (String, Optional) AWX value stored in `description`.
 - `injectors` (Object, Optional, Computed) Terraform object defining credential type injectors. Refer to the documentation for expected structure.
 - `inputs` (Object, Optional, Computed) Terraform object defining credential type inputs. Refer to the documentation for expected structure.
 

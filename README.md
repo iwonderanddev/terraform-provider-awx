@@ -43,7 +43,7 @@ terraform {
 }
 
 provider "awx" {
-  base_url = "https://awx.example.com"
+  hostname = "https://awx.example.com"
   username = "admin"
   password = "..."
 }
@@ -224,7 +224,7 @@ terraform {
 }
 
 provider "awx" {
-  base_url = "https://awx.example.com"
+  hostname = "https://awx.example.com"
   username = "admin"
   password = "..."
 }

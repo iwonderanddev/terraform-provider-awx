@@ -271,6 +271,36 @@ func TestResolvePathParameter(t *testing.T) {
 	}
 }
 
+func TestClientAssociateUsesGalaxyCredentialEndpointForOrganizations(t *testing.T) {
+	t.Parallel()
+
+	client := newTestClient(t)
+	client.httpClient = &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			if req.Method != http.MethodPost {
+				t.Fatalf("unexpected method: got=%s want=%s", req.Method, http.MethodPost)
+			}
+			if req.URL.Path != "/api/v2/organizations/9/galaxy_credentials/" {
+				t.Fatalf("unexpected path: got=%q want=%q", req.URL.Path, "/api/v2/organizations/9/galaxy_credentials/")
+			}
+
+			var payload map[string]any
+			if err := json.NewDecoder(req.Body).Decode(&payload); err != nil {
+				t.Fatalf("failed to decode payload: %v", err)
+			}
+			if got, ok := payload["id"]; !ok || fmt.Sprintf("%v", got) != "2" {
+				t.Fatalf("unexpected payload id: %#v", payload["id"])
+			}
+			return jsonResponse(http.StatusCreated, map[string]any{"id": 2}), nil
+		}),
+		Timeout: 5 * time.Second,
+	}
+
+	if err := client.Associate(context.Background(), "/api/v2/organizations/{id}/credentials/", 9, 2); err != nil {
+		t.Fatalf("Associate returned error: %v", err)
+	}
+}
+
 func newTestClient(t *testing.T) *Client {
 	t.Helper()
 

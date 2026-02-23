@@ -20,11 +20,12 @@ data "awx_notification_template" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `description` (String, Read-Only) Value for `description`.
+- `description` (String, Read-Only) AWX value stored in `description`.
 - `messages` (Object, Read-Only) Optional custom messages as a Terraform object.
-- `name` (String, Read-Only) Value for `name`.
+- `name` (String, Read-Only) AWX value stored in `name`.
 - `notification_configuration` (Object, Read-Only, Sensitive) Notification transport configuration as a write-only sensitive Terraform object.
-- `notification_type` (String, Read-Only) * `awssns` - AWS SNS
+- `notification_type` (String, Read-Only) Allowed values:
+  - `awssns` - AWS SNS
   - `email` - Email
   - `grafana` - Grafana
   - `irc` - IRC

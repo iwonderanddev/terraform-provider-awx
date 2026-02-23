@@ -20,11 +20,13 @@ data "awx_credential_type" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `description` (String, Read-Only) Value for `description`.
+- `description` (String, Read-Only) AWX value stored in `description`.
 - `injectors` (Object, Read-Only) Terraform object defining credential type injectors. Refer to the documentation for expected structure.
 - `inputs` (Object, Read-Only) Terraform object defining credential type inputs. Refer to the documentation for expected structure.
-- `kind` (String, Read-Only) * `cloud` - Cloud\n* `net` - Network
-- `name` (String, Read-Only) Value for `name`.
+- `kind` (String, Read-Only) Allowed values:
+  - `cloud` - Cloud
+  - `net` - Network
+- `name` (String, Read-Only) AWX value stored in `name`.
 
 ## Further Reading
 

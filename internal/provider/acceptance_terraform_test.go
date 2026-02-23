@@ -338,7 +338,7 @@ func testAccPreCheck(t *testing.T, required ...string) int64 {
 
 func testAccProviderConfig() string {
 	return fmt.Sprintf(`provider "awx" {
-  base_url = %q
+  hostname = %q
   username = %q
   password = %q
 }

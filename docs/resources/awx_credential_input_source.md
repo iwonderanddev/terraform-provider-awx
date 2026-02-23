@@ -26,14 +26,14 @@ resource "awx_credential_input_source" "example" {
 
 ### Required
 
-- `input_field_name` (String, Required) Value for `input_field_name`.
+- `input_field_name` (String, Required) AWX value stored in `input_field_name`.
 - `source_credential_id` (Number, Required) Numeric ID of the related AWX source credential object.
 - `target_credential_id` (Number, Required) Numeric ID of the related AWX target credential object.
 
 ### Optional
 
-- `description` (String, Optional) Value for `description`.
-- `metadata` (String, Optional, Computed) Value for `metadata`.
+- `description` (String, Optional) AWX value stored in `description`.
+- `metadata` (String, Optional, Computed) AWX value stored in `metadata`.
 
 ### Read-Only
 

@@ -20,25 +20,27 @@ data "awx_schedule" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `description` (String, Read-Only) Value for `description`.
+- `description` (String, Read-Only) AWX value stored in `description`.
 - `diff_mode` (Boolean, Read-Only) Controls whether `diff_mode` is enabled in AWX.
 - `enabled` (Boolean, Read-Only) Enables processing of this schedule.
 - `execution_environment_id` (Number, Read-Only) The container image to be used for execution.
 - `extra_data` (Object, Read-Only) Structured extra data as a Terraform object.
-- `forks` (Number, Read-Only) Numeric setting for `forks`.
+- `forks` (Number, Read-Only) Numeric AWX value used for `forks`.
 - `inventory_id` (Number, Read-Only) Inventory applied as a prompt, assuming job template prompts for inventory
-- `job_slice_count` (Number, Read-Only) Numeric setting for `job_slice_count`.
-- `job_tags` (String, Read-Only) Value for `job_tags`.
-- `job_type` (String, Read-Only) * `run` - Run
+- `job_slice_count` (Number, Read-Only) Numeric AWX value used for `job_slice_count`.
+- `job_tags` (String, Read-Only) AWX value stored in `job_tags`.
+- `job_type` (String, Read-Only) Allowed values:
+  - `run` - Run
   - `check` - Check
-- `limit` (String, Read-Only) Value for `limit`.
-- `name` (String, Read-Only) Value for `name`.
+- `limit` (String, Read-Only) AWX value stored in `limit`.
+- `name` (String, Read-Only) AWX value stored in `name`.
 - `rrule` (String, Read-Only) A value representing the schedules iCal recurrence rule.
-- `scm_branch` (String, Read-Only) Value for `scm_branch`.
-- `skip_tags` (String, Read-Only) Value for `skip_tags`.
-- `timeout` (Number, Read-Only) Numeric setting for `timeout`.
+- `scm_branch` (String, Read-Only) AWX value stored in `scm_branch`.
+- `skip_tags` (String, Read-Only) AWX value stored in `skip_tags`.
+- `timeout` (Number, Read-Only) Numeric AWX value used for `timeout`.
 - `unified_job_template_id` (Number, Read-Only) Numeric ID of the related AWX unified job template object.
-- `verbosity` (Number, Read-Only) * `0` - 0 (Normal)
+- `verbosity` (Number, Read-Only) Allowed values:
+  - `0` - 0 (Normal)
   - `1` - 1 (Verbose)
   - `2` - 2 (More Verbose)
   - `3` - 3 (Debug)

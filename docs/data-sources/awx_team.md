@@ -20,8 +20,8 @@ data "awx_team" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `description` (String, Read-Only) Value for `description`.
-- `name` (String, Read-Only) Value for `name`.
+- `description` (String, Read-Only) AWX value stored in `description`.
+- `name` (String, Read-Only) AWX value stored in `name`.
 - `organization_id` (Number, Read-Only) Numeric ID of the related AWX organization object.
 
 ## Further Reading

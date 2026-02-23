@@ -28,11 +28,11 @@ resource "awx_user" "example" {
 
 ### Optional
 
-- `email` (String, Optional) Value for `email`.
-- `first_name` (String, Optional) Value for `first_name`.
+- `email` (String, Optional) Email address used for notifications and API identity context in AWX.
+- `first_name` (String, Optional) Given name shown in the AWX UI for this user account.
 - `is_superuser` (Boolean, Optional, Computed) Designates that this user has all permissions without explicitly assigning them.
 - `is_system_auditor` (Boolean, Optional, Computed) Controls whether `is_system_auditor` is enabled in AWX.
-- `last_name` (String, Optional) Value for `last_name`.
+- `last_name` (String, Optional) Family name shown in the AWX UI for this user account.
 - `password` (String, Optional, Sensitive, Write-Only) Field used to change the password.
 
 ### Read-Only

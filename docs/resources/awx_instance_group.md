@@ -24,7 +24,7 @@ resource "awx_instance_group" "example" {
 
 ### Required
 
-- `name` (String, Required) Value for `name`.
+- `name` (String, Required) AWX value stored in `name`.
 
 ### Optional
 
@@ -32,7 +32,7 @@ resource "awx_instance_group" "example" {
 - `is_container_group` (Boolean, Optional) Indicates whether instances in this group are containerized.Containerized groups have a designated Openshift or Kubernetes cluster.
 - `max_concurrent_jobs` (Number, Optional, Computed) Maximum number of concurrent jobs to run on a group. When set to zero, no maximum is enforced.
 - `max_forks` (Number, Optional, Computed) Maximum number of forks to execute concurrently on a group. When set to zero, no maximum is enforced.
-- `pod_spec_override` (String, Optional) Value for `pod_spec_override`.
+- `pod_spec_override` (String, Optional) AWX value stored in `pod_spec_override`.
 - `policy_instance_list` (String, Optional) List of exact-match Instances that will be assigned to this group
 - `policy_instance_minimum` (Number, Optional, Computed) Static minimum number of Instances that will be automatically assign to this group when new instances come online.
 - `policy_instance_percentage` (Number, Optional, Computed) Minimum percentage of all instances that will be automatically assigned to this group when new instances come online.

@@ -19,9 +19,9 @@ data "awx_credential_input_source" "example" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
-- `description` (String, Read-Only) Value for `description`.
-- `input_field_name` (String, Read-Only) Value for `input_field_name`.
-- `metadata` (String, Read-Only) Value for `metadata`.
+- `description` (String, Read-Only) AWX value stored in `description`.
+- `input_field_name` (String, Read-Only) AWX value stored in `input_field_name`.
+- `metadata` (String, Read-Only) AWX value stored in `metadata`.
 - `source_credential_id` (Number, Read-Only) Numeric ID of the related AWX source credential object.
 - `target_credential_id` (Number, Read-Only) Numeric ID of the related AWX target credential object.
 

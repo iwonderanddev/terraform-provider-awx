@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -156,6 +159,13 @@ func TestResolveFieldDescriptionPrefersCuratedThenSchemaThenFallback(t *testing.
 	withFallback := resolveFieldDescription("inventory_id", field, objectDocsEnrichment{})
 	if !strings.Contains(withFallback, "Numeric ID of the related AWX inventory object.") {
 		t.Fatalf("expected typed fallback description, got=%q", withFallback)
+	}
+
+	field.Reference = false
+	field.Description = "Value for `inventory`."
+	lowInfoFallback := resolveFieldDescription("inventory", field, objectDocsEnrichment{})
+	if strings.Contains(strings.ToLower(lowInfoFallback), "value for") {
+		t.Fatalf("expected low-information schema description to be replaced, got=%q", lowInfoFallback)
 	}
 }
 
@@ -359,6 +369,11 @@ func TestValidateDocsEnrichmentTargetsRequiresMappedCurationSourceURL(t *testing
 					OfficialAWXURL: "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/teams.html",
 					VerifiedOn:     "2026-02-12",
 				},
+				OnlineResearchChecklist: &onlineResearchChecklist{
+					ObjectBehavior:      "Reviewed project behavior.",
+					RelatedInteractions: "Reviewed project interactions.",
+					ParameterSemantics:  "Reviewed project parameters.",
+				},
 				PrimaryExample: &docsExample{
 					HCL: "resource \"awx_project\" \"example\" { name = \"demo\" }",
 				},
@@ -370,6 +385,185 @@ func TestValidateDocsEnrichmentTargetsRequiresMappedCurationSourceURL(t *testing
 	}
 	if !strings.Contains(err.Error(), "must reference the mapped official AWX concept link") {
 		t.Fatalf("unexpected validation error: %v", err)
+	}
+}
+
+func TestValidateDocsEnrichmentTargetsRequiresOnlineResearchChecklist(t *testing.T) {
+	t.Parallel()
+
+	objects := []manifest.ManagedObject{{
+		Name:             "users",
+		ResourceName:     "awx_user",
+		DataSourceName:   "awx_user",
+		ResourceEligible: true,
+		DataSourceElig:   true,
+	}}
+
+	err := validateDocsEnrichmentTargets(docsEnrichmentCatalog{
+		Objects: map[string]objectDocsEnrichment{
+			"awx_user": {
+				CurationSource: &docsSource{
+					OfficialAWXURL: "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/users.html",
+					VerifiedOn:     "2026-02-12",
+				},
+			},
+		},
+	}, objects)
+	if err == nil {
+		t.Fatalf("expected missing onlineResearchChecklist validation error")
+	}
+	if !strings.Contains(err.Error(), "requires onlineResearchChecklist") {
+		t.Fatalf("unexpected validation error: %v", err)
+	}
+}
+
+func TestVerifyOfficialAWXLinkOnlineRejectsUnexpectedStatus(t *testing.T) {
+	t.Parallel()
+
+	client := &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			if req.URL.String() != "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html" {
+				t.Fatalf("unexpected request URL: %s", req.URL.String())
+			}
+			return &http.Response{
+				StatusCode: http.StatusNotFound,
+				Body:       io.NopCloser(strings.NewReader("not found")),
+				Header:     make(http.Header),
+				Request:    req,
+			}, nil
+		}),
+	}
+
+	err := verifyOfficialAWXLinkOnline(client, "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html", []docsLink{{
+		Title: "AWX Projects",
+		URL:   "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html",
+	}})
+	if err == nil {
+		t.Fatalf("expected non-2xx status validation failure")
+	}
+	if !strings.Contains(err.Error(), "unexpected status") {
+		t.Fatalf("unexpected online verification error: %v", err)
+	}
+}
+
+func TestVerifyOfficialAWXLinkOnlineRejectsMappingMismatch(t *testing.T) {
+	t.Parallel()
+
+	client := &http.Client{
+		Transport: roundTripFunc(func(_ *http.Request) (*http.Response, error) {
+			t.Fatalf("request should not be executed when mapping fails")
+			return nil, nil
+		}),
+	}
+	err := verifyOfficialAWXLinkOnline(client, "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/teams.html", []docsLink{{
+		Title: "AWX Projects",
+		URL:   "https://docs.ansible.com/projects/awx/en/24.6.1/userguide/projects.html",
+	}})
+	if err == nil {
+		t.Fatalf("expected concept mapping mismatch error")
+	}
+	if !strings.Contains(err.Error(), "does not match expected AWX concept mapping") {
+		t.Fatalf("unexpected mapping mismatch error: %v", err)
+	}
+}
+
+func TestValidateResolvedExampleReferences(t *testing.T) {
+	t.Parallel()
+
+	valid := strings.Join([]string{
+		"## Example Usage",
+		"",
+		"```hcl",
+		"resource \"awx_organization\" \"platform\" {",
+		"  name = \"platform\"",
+		"}",
+		"",
+		"resource \"awx_project\" \"app\" {",
+		"  name            = \"app\"",
+		"  organization_id = awx_organization.platform.id",
+		"}",
+		"```",
+	}, "\n")
+	if err := validateResolvedExampleReferences("valid.md", valid); err != nil {
+		t.Fatalf("expected valid reference wiring, got: %v", err)
+	}
+
+	invalid := strings.Join([]string{
+		"## Example Usage",
+		"",
+		"```hcl",
+		"resource \"awx_project\" \"app\" {",
+		"  name            = \"app\"",
+		"  organization_id = awx_organization.platform.id",
+		"}",
+		"```",
+	}, "\n")
+	err := validateResolvedExampleReferences("invalid.md", invalid)
+	if err == nil {
+		t.Fatalf("expected unresolved reference validation failure")
+	}
+	if !strings.Contains(err.Error(), "unresolved cross-resource reference") {
+		t.Fatalf("unexpected reference wiring error: %v", err)
+	}
+}
+
+func TestValidateInteractionReferenceFields(t *testing.T) {
+	t.Parallel()
+
+	content := strings.Join([]string{
+		"## Example Usage",
+		"",
+		"```hcl",
+		"resource \"awx_organization\" \"platform\" {",
+		"  name = \"platform\"",
+		"}",
+		"",
+		"resource \"awx_project\" \"app\" {",
+		"  name            = \"app\"",
+		"  organization_id = awx_organization.platform.id",
+		"}",
+		"```",
+	}, "\n")
+	if err := validateInteractionReferenceFields("project.md", content, objectDocsEnrichment{
+		InteractionReferenceFields: []string{"organization_id"},
+	}); err != nil {
+		t.Fatalf("expected interaction reference validation success, got: %v", err)
+	}
+
+	err := validateInteractionReferenceFields("project.md", content, objectDocsEnrichment{
+		InteractionReferenceFields: []string{"credential_id"},
+	})
+	if err == nil {
+		t.Fatalf("expected missing interaction reference wiring error")
+	}
+	if !strings.Contains(err.Error(), "must show `credential_id` wired") {
+		t.Fatalf("unexpected interaction wiring error: %v", err)
+	}
+}
+
+func TestEnsureNoLowInformationTextRejectsPlaceholders(t *testing.T) {
+	t.Parallel()
+
+	err := ensureNoLowInformationText("user.md", "- `email` (String, Optional) Value for `email`.")
+	if err == nil {
+		t.Fatalf("expected low-information text validation error")
+	}
+	if !strings.Contains(err.Error(), "low-information placeholder pattern") {
+		t.Fatalf("unexpected low-information validation error: %v", err)
+	}
+}
+
+func TestValidateEnumFormattingRejectsMalformedPatterns(t *testing.T) {
+	t.Parallel()
+
+	err := validateEnumFormatting("setting.md", "- `mode` (String, Optional) Allowed values:\\n* `a` - A")
+	if err == nil {
+		t.Fatalf("expected escaped newline enum formatting error")
+	}
+
+	err = validateEnumFormatting("setting.md", "- `mode` (String, Optional) Allowed values: * `a` - A * `b` - B")
+	if err == nil {
+		t.Fatalf("expected inline enum bullet formatting error")
 	}
 }
 
@@ -660,4 +854,168 @@ func TestGenerateDocsRendersSettingsDefaultsAndGuidance(t *testing.T) {
 			t.Fatalf("expected settings data source guidance marker %q, got:\n%s", marker, dataSourceContent)
 		}
 	}
+}
+
+func TestValidateQualityAnalysisSummary(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "implementation-summary.md")
+	content := strings.Join([]string{
+		"# Implementation Summary: example-change",
+		"",
+		"## Quality Analysis Pass 1",
+		"",
+		"### Inputs reviewed",
+		"",
+		"- docs/resources/awx_project.md",
+		"",
+		"### Findings",
+		"",
+		"- No issues found.",
+		"",
+		"### Pass result",
+		"",
+		"- Pass 1 is sufficient.",
+	}, "\n")
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("failed to write quality analysis fixture: %v", err)
+	}
+
+	if err := validateQualityAnalysisSummary(path, 3); err != nil {
+		t.Fatalf("expected quality analysis summary validation success, got: %v", err)
+	}
+}
+
+func TestValidateQualityAnalysisSummaryRejectsMissingPassSections(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "implementation-summary.md")
+	content := "# Implementation Summary: example-change\n\nNo quality analysis recorded.\n"
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("failed to write quality analysis fixture: %v", err)
+	}
+
+	err := validateQualityAnalysisSummary(path, 3)
+	if err == nil {
+		t.Fatalf("expected missing pass section validation error")
+	}
+	if !strings.Contains(err.Error(), "missing required") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestValidateQualityAnalysisSummaryRejectsNonContiguousPasses(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "implementation-summary.md")
+	content := strings.Join([]string{
+		"# Implementation Summary: example-change",
+		"",
+		"## Quality Analysis Pass 1",
+		"",
+		"### Pass result",
+		"",
+		"- Needs remediation.",
+		"",
+		"## Quality Analysis Pass 3",
+		"",
+		"### Pass result",
+		"",
+		"- Pass 3 is sufficient.",
+	}, "\n")
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("failed to write quality analysis fixture: %v", err)
+	}
+
+	err := validateQualityAnalysisSummary(path, 3)
+	if err == nil {
+		t.Fatalf("expected non-contiguous pass validation error")
+	}
+	if !strings.Contains(err.Error(), "non-contiguous") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestValidateQualityAnalysisSummaryRejectsExceededMaxPasses(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "implementation-summary.md")
+	content := strings.Join([]string{
+		"# Implementation Summary: example-change",
+		"",
+		"## Quality Analysis Pass 1",
+		"",
+		"### Pass result",
+		"",
+		"- Needs remediation.",
+		"",
+		"## Quality Analysis Pass 2",
+		"",
+		"### Pass result",
+		"",
+		"- Needs remediation.",
+		"",
+		"## Quality Analysis Pass 3",
+		"",
+		"### Pass result",
+		"",
+		"- Needs remediation.",
+		"",
+		"## Quality Analysis Pass 4",
+		"",
+		"### Pass result",
+		"",
+		"- Pass 4 is sufficient.",
+	}, "\n")
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("failed to write quality analysis fixture: %v", err)
+	}
+
+	err := validateQualityAnalysisSummary(path, 3)
+	if err == nil {
+		t.Fatalf("expected max pass validation error")
+	}
+	if !strings.Contains(err.Error(), "maximum of 3 passes") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestValidateQualityAnalysisSummaryRejectsMissingPassResult(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "implementation-summary.md")
+	content := strings.Join([]string{
+		"# Implementation Summary: example-change",
+		"",
+		"## Quality Analysis Pass 1",
+		"",
+		"### Findings",
+		"",
+		"- Needs another pass.",
+	}, "\n")
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("failed to write quality analysis fixture: %v", err)
+	}
+
+	err := validateQualityAnalysisSummary(path, 3)
+	if err == nil {
+		t.Fatalf("expected pass result validation error")
+	}
+	if !strings.Contains(err.Error(), "missing \"### Pass result\"") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+type roundTripFunc func(req *http.Request) (*http.Response, error)
+
+func (fn roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	if fn == nil {
+		return nil, fmt.Errorf("roundTripFunc is nil")
+	}
+	return fn(req)
 }

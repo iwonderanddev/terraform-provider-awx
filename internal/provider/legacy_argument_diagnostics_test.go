@@ -16,7 +16,7 @@ func TestTerraformRejectsLegacyUnsuffixedReferenceArgument(t *testing.T) {
 			{
 				Config: `
 provider "awx" {
-  base_url = "https://awx.example.invalid"
+  hostname = "https://awx.example.invalid"
   username = "demo"
   password = "demo"
 }
@@ -42,7 +42,7 @@ func TestTerraformRejectsUnexpectedRelationshipArguments(t *testing.T) {
 			{
 				Config: `
 provider "awx" {
-  base_url = "https://awx.example.invalid"
+  hostname = "https://awx.example.invalid"
   username = "demo"
   password = "demo"
 }
@@ -69,7 +69,7 @@ func TestTerraformRejectsUnexpectedSurveySpecArguments(t *testing.T) {
 			{
 				Config: `
 provider "awx" {
-  base_url = "https://awx.example.invalid"
+  hostname = "https://awx.example.invalid"
   username = "demo"
   password = "demo"
 }

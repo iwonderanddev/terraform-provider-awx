@@ -26,11 +26,11 @@ resource "awx_host" "example" {
 ### Required
 
 - `inventory_id` (Number, Required) Numeric ID of the related AWX inventory object.
-- `name` (String, Required) Value for `name`.
+- `name` (String, Required) AWX value stored in `name`.
 
 ### Optional
 
-- `description` (String, Optional) Value for `description`.
+- `description` (String, Optional) AWX value stored in `description`.
 - `enabled` (Boolean, Optional, Computed) Is this host online and available for running jobs?
 - `instance_id` (String, Optional) The value used by the remote inventory source to uniquely identify the host
 - `variables` (String, Optional) Host variables in JSON or YAML format.

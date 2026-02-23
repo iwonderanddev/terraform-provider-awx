@@ -1,6 +1,9 @@
 GOCACHE ?= /tmp/go-build
 
-.PHONY: generate validate-manifest docs docs-validate test test-acceptance coverage-report build
+.PHONY: generate validate-manifest docs docs-validate docs-verify-online docs-validate-quality test test-acceptance coverage-report build
+
+QUALITY_SUMMARY ?=
+MAX_QUALITY_PASSES ?= 3
 
 generate:
 	GOCACHE=$(GOCACHE) go run ./cmd/awxgen generate
@@ -10,6 +13,13 @@ docs:
 
 docs-validate:
 	GOCACHE=$(GOCACHE) go run ./cmd/awxgen docs-validate
+
+docs-verify-online:
+	GOCACHE=$(GOCACHE) go run ./cmd/awxgen docs-verify-online
+
+docs-validate-quality:
+	@if [ -z "$(QUALITY_SUMMARY)" ]; then echo "QUALITY_SUMMARY is required (for example openspec/changes/<change>/implementation-summary.md)"; exit 1; fi
+	GOCACHE=$(GOCACHE) go run ./cmd/awxgen docs-validate-quality --summary "$(QUALITY_SUMMARY)" --max-passes "$(MAX_QUALITY_PASSES)"
 
 validate-manifest:
 	GOCACHE=$(GOCACHE) go run ./cmd/awxgen validate

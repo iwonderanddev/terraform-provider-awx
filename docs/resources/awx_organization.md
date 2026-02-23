@@ -28,9 +28,9 @@ resource "awx_organization" "example" {
 ### Optional
 
 - `default_environment_id` (Number, Optional) The default execution environment for jobs run by this organization.
-- `description` (String, Optional) Value for `description`.
+- `description` (String, Optional) AWX value stored in `description`.
 - `max_hosts` (Number, Optional, Computed) Maximum number of hosts allowed to be managed by this organization.
-- `name` (String, Optional) Value for `name`.
+- `name` (String, Optional) AWX value stored in `name`.
 - `opa_query_path` (String, Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
 
 ### Read-Only

@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "awx" {
-  base_url  = var.awx_base_url
+  hostname  = var.awx_hostname
   username  = var.awx_username
   password  = var.awx_password
 }

@@ -11,6 +11,23 @@ Job templates are reusable launch definitions in AWX. They combine a project, pl
 ### Standard project-backed job template
 
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
+resource "awx_project" "app" {
+  name            = "app-project"
+  organization_id = awx_organization.platform.id
+  scm_type        = "git"
+  scm_url         = "https://github.com/example/app-automation.git"
+  scm_branch      = "main"
+}
+
+resource "awx_inventory" "production" {
+  name            = "production"
+  organization_id = awx_organization.platform.id
+}
+
 resource "awx_job_template" "deploy" {
   name         = "deploy-app"
   job_type     = "run"
@@ -23,6 +40,17 @@ resource "awx_job_template" "deploy" {
 ### Prompted launch with defaults
 
 ```hcl
+resource "awx_organization" "ops" {
+  name = "ops"
+}
+
+resource "awx_project" "ops" {
+  name            = "ops-automation"
+  organization_id = awx_organization.ops.id
+  scm_type        = "git"
+  scm_url         = "https://github.com/example/ops-automation.git"
+}
+
 resource "awx_job_template" "ops_prompted" {
   name                    = "ops-prompted"
   job_type                = "run"
@@ -39,7 +67,29 @@ resource "awx_job_template" "ops_prompted" {
 
 ### Webhook-enabled job template
 
+This example assumes an existing webhook signing credential named `github-webhook`.
+
 ```hcl
+resource "awx_organization" "platform" {
+  name = "platform"
+}
+
+resource "awx_project" "app" {
+  name            = "app-project"
+  organization_id = awx_organization.platform.id
+  scm_type        = "git"
+  scm_url         = "https://github.com/example/app-automation.git"
+}
+
+resource "awx_inventory" "production" {
+  name            = "production"
+  organization_id = awx_organization.platform.id
+}
+
+data "awx_credential" "github_webhook" {
+  name = "github-webhook"
+}
+
 resource "awx_job_template" "webhook" {
   name                  = "ci-webhook"
   job_type              = "run"
@@ -47,7 +97,7 @@ resource "awx_job_template" "webhook" {
   inventory_id          = awx_inventory.production.id
   playbook              = "ci.yml"
   webhook_service       = "github"
-  webhook_credential_id = awx_credential.github_token.id
+  webhook_credential_id = data.awx_credential.github_webhook.id
 }
 ```
 
@@ -90,20 +140,20 @@ resource "awx_job_template" "webhook" {
 - `execution_environment_id` (Number, Optional) Numeric ID of the execution environment container image used to run jobs.
 - `extra_vars` (Object, Optional) Object of default extra variables passed to launched jobs.
 - `force_handlers` (Boolean, Optional, Computed) Controls whether `force_handlers` is enabled in AWX.
-- `forks` (Number, Optional, Computed) Numeric setting for `forks`.
-- `host_config_key` (String, Optional) Value for `host_config_key`.
+- `forks` (Number, Optional, Computed) Numeric AWX value used for `forks`.
+- `host_config_key` (String, Optional) AWX value stored in `host_config_key`.
 - `inventory_id` (Number, Optional) Numeric ID of the default inventory used when the launch does not prompt for inventory.
 - `job_slice_count` (Number, Optional, Computed) The number of jobs to slice into at runtime. Will cause the Job Template to launch a workflow if value is greater than 1.
-- `job_tags` (String, Optional) Value for `job_tags`.
+- `job_tags` (String, Optional) AWX value stored in `job_tags`.
 - `job_type` (String, Optional, Computed) Execution mode for the template, usually `run` for normal automation or `check` for dry-run behavior.
-- `limit` (String, Optional) Value for `limit`.
+- `limit` (String, Optional) AWX value stored in `limit`.
 - `opa_query_path` (String, Optional) The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule.
 - `playbook` (String, Optional) Playbook path inside the project repository, for example `site.yml`.
 - `prevent_instance_group_fallback` (Boolean, Optional, Computed) If enabled, the job template will prevent adding any inventory or organization instance groups to the list of preferred instances groups to run on.If this setting is enabled and you provided an empty list, the global instance groups will be applied.
 - `project_id` (Number, Optional) Numeric ID of the AWX project that provides the playbook content.
 - `scm_branch` (String, Optional) Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true.
-- `skip_tags` (String, Optional) Value for `skip_tags`.
-- `start_at_task` (String, Optional) Value for `start_at_task`.
+- `skip_tags` (String, Optional) AWX value stored in `skip_tags`.
+- `start_at_task` (String, Optional) AWX value stored in `start_at_task`.
 - `survey_enabled` (Boolean, Optional, Computed) Enables survey-based prompts for this template.
 - `timeout` (Number, Optional, Computed) The amount of time (in seconds) to run before the task is canceled.
 - `use_fact_cache` (Boolean, Optional, Computed) Enables AWX fact caching for jobs launched from this template.

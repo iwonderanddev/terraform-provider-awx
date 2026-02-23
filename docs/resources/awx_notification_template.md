@@ -27,8 +27,9 @@ resource "awx_notification_template" "example" {
 
 ### Required
 
-- `name` (String, Required) Value for `name`.
-- `notification_type` (String, Required) * `awssns` - AWS SNS
+- `name` (String, Required) AWX value stored in `name`.
+- `notification_type` (String, Required) Allowed values:
+  - `awssns` - AWS SNS
   - `email` - Email
   - `grafana` - Grafana
   - `irc` - IRC
@@ -42,7 +43,7 @@ resource "awx_notification_template" "example" {
 
 ### Optional
 
-- `description` (String, Optional) Value for `description`.
+- `description` (String, Optional) AWX value stored in `description`.
 - `messages` (Object, Optional, Computed) Optional custom messages as a Terraform object.
 - `notification_configuration` (Object, Optional, Computed, Sensitive, Write-Only) Notification transport configuration as a write-only sensitive Terraform object.
 

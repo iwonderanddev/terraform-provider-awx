@@ -26,11 +26,11 @@ resource "awx_group" "example" {
 ### Required
 
 - `inventory_id` (Number, Required) Numeric ID of the related AWX inventory object.
-- `name` (String, Required) Value for `name`.
+- `name` (String, Required) AWX value stored in `name`.
 
 ### Optional
 
-- `description` (String, Optional) Value for `description`.
+- `description` (String, Optional) AWX value stored in `description`.
 - `variables` (String, Optional) Group variables in JSON or YAML format.
 
 ### Read-Only

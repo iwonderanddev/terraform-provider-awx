@@ -6,7 +6,7 @@ The `awx` provider manages AWX 24.6.1 objects via API v2.
 
 ```hcl
 provider "awx" {
-  base_url  = var.awx_base_url
+  hostname  = var.awx_hostname
   username  = var.awx_username
   password  = var.awx_password
 }
@@ -16,7 +16,7 @@ provider "awx" {
 
 ### Required
 
-- `base_url` (String) AWX base URL, for example `https://awx.example.com`.
+- `hostname` (String) AWX base URL, for example `https://awx.example.com`.
 - `username` (String) HTTP Basic username.
 - `password` (String, Sensitive) HTTP Basic password.
 

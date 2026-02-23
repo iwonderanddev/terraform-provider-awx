@@ -1,15 +1,19 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,16 +22,18 @@ import (
 )
 
 const (
-	defaultSchemaPath         = "external/awx-openapi/schema.json"
-	defaultManagedPath        = "internal/manifest/managed_objects.json"
-	defaultRelationshipsPath  = "internal/manifest/relationships.json"
-	defaultExclusionsPath     = "internal/manifest/runtime_exclusions.json"
-	defaultDeprecatedPath     = "internal/manifest/deprecated_exclusions.json"
-	defaultPrioritiesPath     = "internal/manifest/relationship_priorities.json"
-	defaultOverridesPath      = "internal/manifest/field_overrides.json"
-	defaultCoverageReportPath = "internal/manifest/coverage_report.json"
-	defaultDocsEnrichmentPath = "internal/manifest/docs_enrichment.json"
-	openAPIPlaceholderText    = "Managed field from AWX OpenAPI schema"
+	defaultSchemaPath          = "external/awx-openapi/schema.json"
+	defaultManagedPath         = "internal/manifest/managed_objects.json"
+	defaultRelationshipsPath   = "internal/manifest/relationships.json"
+	defaultExclusionsPath      = "internal/manifest/runtime_exclusions.json"
+	defaultDeprecatedPath      = "internal/manifest/deprecated_exclusions.json"
+	defaultPrioritiesPath      = "internal/manifest/relationship_priorities.json"
+	defaultOverridesPath       = "internal/manifest/field_overrides.json"
+	defaultCoverageReportPath  = "internal/manifest/coverage_report.json"
+	defaultDocsEnrichmentPath  = "internal/manifest/docs_enrichment.json"
+	defaultOnlineVerifyTimeout = 10 * time.Second
+	defaultMaxQualityPasses    = 3
+	openAPIPlaceholderText     = "Managed field from AWX OpenAPI schema"
 )
 
 // CoverageReport summarizes manifest and exclusion coverage.
@@ -51,19 +57,27 @@ type docsEnrichmentCatalog struct {
 }
 
 type objectDocsEnrichment struct {
-	Overview          string            `json:"overview,omitempty"`
-	Complex           bool              `json:"complex,omitempty"`
-	ConceptPrimer     string            `json:"conceptPrimer,omitempty"`
-	FieldDescriptions map[string]string `json:"fieldDescriptions,omitempty"`
-	FurtherReading    []docsLink        `json:"furtherReading,omitempty"`
-	CurationSource    *docsSource       `json:"curationSource,omitempty"`
-	PrimaryExample    *docsExample      `json:"primaryExample,omitempty"`
-	ExtraExamples     []docsExample     `json:"extraExamples,omitempty"`
+	Overview                   string                   `json:"overview,omitempty"`
+	Complex                    bool                     `json:"complex,omitempty"`
+	ConceptPrimer              string                   `json:"conceptPrimer,omitempty"`
+	FieldDescriptions          map[string]string        `json:"fieldDescriptions,omitempty"`
+	FurtherReading             []docsLink               `json:"furtherReading,omitempty"`
+	CurationSource             *docsSource              `json:"curationSource,omitempty"`
+	OnlineResearchChecklist    *onlineResearchChecklist `json:"onlineResearchChecklist,omitempty"`
+	InteractionReferenceFields []string                 `json:"interactionReferenceFields,omitempty"`
+	PrimaryExample             *docsExample             `json:"primaryExample,omitempty"`
+	ExtraExamples              []docsExample            `json:"extraExamples,omitempty"`
 }
 
 type docsSource struct {
 	OfficialAWXURL string `json:"officialAwxUrl"`
 	VerifiedOn     string `json:"verifiedOn"`
+}
+
+type onlineResearchChecklist struct {
+	ObjectBehavior      string `json:"objectBehavior"`
+	RelatedInteractions string `json:"relatedInteractions"`
+	ParameterSemantics  string `json:"parameterSemantics"`
 }
 
 type docsLink struct {
@@ -79,10 +93,17 @@ type docsExample struct {
 
 var markdownLinkPattern = regexp.MustCompile(`\[[^\]]+\]\(([^)]+)\)`)
 var hclFencePattern = regexp.MustCompile("(?m)^```hcl\\s*$")
+var inlineEnumBulletPattern = regexp.MustCompile(`\s+\*\s+`)
+var unresolvedReferencePattern = regexp.MustCompile(`(?m)(?:^|[^\w])(data\.)?(awx_[a-z0-9_]+)\.([A-Za-z0-9_]+)\.id(?:$|[^\w])`)
+var resourceBlockPattern = regexp.MustCompile(`(?m)^\s*resource\s+"(awx_[a-z0-9_]+)"\s+"([A-Za-z0-9_]+)"\s*\{`)
+var dataBlockPattern = regexp.MustCompile(`(?m)^\s*data\s+"(awx_[a-z0-9_]+)"\s+"([A-Za-z0-9_]+)"\s*\{`)
+var curatedReferenceAssignmentPattern = regexp.MustCompile(`(?m)^\s*([a-z0-9_]+)\s*=\s*(?:data\.)?awx_[a-z0-9_]+\.[A-Za-z0-9_]+\.id\s*$`)
+var malformedEnumInlinePattern = regexp.MustCompile("(?m)^- `[^`]+` \\([^)]+\\) [^\\n]*\\* ")
+var qualityAnalysisPassHeadingPattern = regexp.MustCompile(`(?m)^## Quality Analysis Pass ([1-9][0-9]*)\s*$`)
 
 func main() {
 	if len(os.Args) < 2 {
-		exitWithError(errors.New("usage: awxgen <generate|validate|docs|docs-validate|report>"))
+		exitWithError(errors.New("usage: awxgen <generate|validate|docs|docs-validate|docs-verify-online|docs-validate-quality|report>"))
 	}
 
 	var err error
@@ -95,6 +116,10 @@ func main() {
 		err = runDocs(os.Args[2:])
 	case "docs-validate":
 		err = runDocsValidate(os.Args[2:])
+	case "docs-verify-online":
+		err = runDocsVerifyOnline(os.Args[2:])
+	case "docs-validate-quality":
+		err = runDocsValidateQuality(os.Args[2:])
 	case "report":
 		err = runReport(os.Args[2:])
 	default:
@@ -252,6 +277,55 @@ func runDocsValidate(args []string) error {
 	}
 
 	fmt.Println("Documentation validation passed.")
+	return nil
+}
+
+func runDocsVerifyOnline(args []string) error {
+	fs := flag.NewFlagSet("docs-verify-online", flag.ContinueOnError)
+	managedPath := fs.String("managed", defaultManagedPath, "Managed object manifest path")
+	docsEnrichmentPath := fs.String("docs-enrichment", defaultDocsEnrichmentPath, "Documentation enrichment metadata path")
+	timeout := fs.Duration("timeout", defaultOnlineVerifyTimeout, "HTTP timeout per official AWX URL check")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	objects, err := readManagedObjects(*managedPath)
+	if err != nil {
+		return err
+	}
+	enrichment, err := readDocsEnrichment(*docsEnrichmentPath)
+	if err != nil {
+		return err
+	}
+	if err := validateDocsEnrichmentTargets(enrichment, objects); err != nil {
+		return err
+	}
+	client := &http.Client{Timeout: *timeout}
+	if err := verifyDocsEnrichmentOnline(client, objects, enrichment); err != nil {
+		return err
+	}
+
+	fmt.Println("Online documentation verification passed.")
+	return nil
+}
+
+func runDocsValidateQuality(args []string) error {
+	fs := flag.NewFlagSet("docs-validate-quality", flag.ContinueOnError)
+	summaryPath := fs.String("summary", "", "Path to implementation-summary.md quality analysis artifact")
+	maxPasses := fs.Int("max-passes", defaultMaxQualityPasses, "Maximum allowed quality analysis passes")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if strings.TrimSpace(*summaryPath) == "" {
+		return errors.New("docs-validate-quality requires --summary")
+	}
+	if *maxPasses < 1 {
+		return errors.New("docs-validate-quality requires --max-passes >= 1")
+	}
+	if err := validateQualityAnalysisSummary(*summaryPath, *maxPasses); err != nil {
+		return err
+	}
+	fmt.Println("Quality analysis summary validation passed.")
 	return nil
 }
 
@@ -592,7 +666,7 @@ The ` + "`awx`" + ` provider manages AWX 24.6.1 objects via API v2.
 
 ` + "```hcl" + `
 provider "awx" {
-  base_url  = var.awx_base_url
+  hostname  = var.awx_hostname
   username  = var.awx_username
   password  = var.awx_password
 }
@@ -602,7 +676,7 @@ provider "awx" {
 
 ### Required
 
-- ` + "`base_url`" + ` (String) AWX base URL, for example ` + "`https://awx.example.com`" + `.
+- ` + "`hostname`" + ` (String) AWX base URL, for example ` + "`https://awx.example.com`" + `.
 - ` + "`username`" + ` (String) HTTP Basic username.
 - ` + "`password`" + ` (String, Sensitive) HTTP Basic password.
 
@@ -952,7 +1026,7 @@ func resolveFieldDescription(terraformName string, field manifest.FieldSpec, obj
 	}
 
 	description := strings.TrimSpace(field.Description)
-	if description != "" && !strings.Contains(description, openAPIPlaceholderText) {
+	if description != "" && !strings.Contains(description, openAPIPlaceholderText) && !isLowInformationDescription(description) {
 		return sanitizeDescription(description)
 	}
 
@@ -973,14 +1047,28 @@ func resolveFieldDescription(terraformName string, field manifest.FieldSpec, obj
 	case manifest.FieldTypeBool:
 		return sanitizeDescription(fmt.Sprintf("Controls whether `%s` is enabled in AWX.", terraformName))
 	case manifest.FieldTypeInt, manifest.FieldTypeFloat:
-		return sanitizeDescription(fmt.Sprintf("Numeric setting for `%s`.", terraformName))
+		return sanitizeDescription(fmt.Sprintf("Numeric AWX value used for `%s`.", terraformName))
 	case manifest.FieldTypeArray:
 		return sanitizeDescription(fmt.Sprintf("JSON-encoded list value for `%s`.", terraformName))
 	case manifest.FieldTypeObject:
 		return sanitizeDescription(fmt.Sprintf("Object value for `%s`.", terraformName))
 	default:
-		return sanitizeDescription(fmt.Sprintf("Value for `%s`.", terraformName))
+		return sanitizeDescription(fmt.Sprintf("AWX value stored in `%s`.", terraformName))
 	}
+}
+
+func isLowInformationDescription(description string) bool {
+	content := strings.ToLower(strings.TrimSpace(description))
+	if strings.Contains(content, "managed field from awx openapi schema") {
+		return true
+	}
+	if strings.HasPrefix(content, "value for ") {
+		return true
+	}
+	if strings.HasPrefix(content, "numeric setting for ") {
+		return true
+	}
+	return false
 }
 
 func sanitizeDescription(description string) string {
@@ -1113,47 +1201,52 @@ func formatListItemDescription(description string) string {
 		return ""
 	}
 
-	lines := strings.Split(trimmed, "\n")
+	normalized := strings.ReplaceAll(trimmed, "\\n*", "\n*")
+	normalized = strings.ReplaceAll(normalized, "\\n- ", "\n- ")
+	normalized = inlineEnumBulletPattern.ReplaceAllString(normalized, "\n* ")
+
+	lines := strings.Split(normalized, "\n")
 	first := ""
-	remaining := make([]string, 0, len(lines))
+	bullets := make([]string, 0, len(lines))
+	notes := make([]string, 0, len(lines))
+
 	for _, line := range lines {
 		clean := strings.TrimSpace(line)
 		if clean == "" {
-			if len(remaining) > 0 && remaining[len(remaining)-1] != "" {
-				remaining = append(remaining, "")
-			}
+			continue
+		}
+		if strings.HasPrefix(clean, "* ") {
+			bullets = append(bullets, strings.TrimSpace(strings.TrimPrefix(clean, "* ")))
+			continue
+		}
+		if strings.HasPrefix(clean, "- ") {
+			bullets = append(bullets, strings.TrimSpace(strings.TrimPrefix(clean, "- ")))
 			continue
 		}
 		if first == "" {
 			first = clean
 			continue
 		}
-		remaining = append(remaining, clean)
+		notes = append(notes, clean)
 	}
 
-	if first == "" || len(remaining) == 0 {
+	if first == "" {
+		first = "Allowed values:"
+	}
+
+	if len(bullets) == 0 && len(notes) == 0 {
 		return first
 	}
 
 	builder := strings.Builder{}
 	builder.WriteString(first)
-	for _, line := range remaining {
-		if line == "" {
-			builder.WriteString("\n")
-			continue
-		}
-		if strings.HasPrefix(line, "* ") {
-			builder.WriteString("\n  - ")
-			builder.WriteString(strings.TrimSpace(strings.TrimPrefix(line, "* ")))
-			continue
-		}
-		if strings.HasPrefix(line, "- ") {
-			builder.WriteString("\n  - ")
-			builder.WriteString(strings.TrimSpace(strings.TrimPrefix(line, "- ")))
-			continue
-		}
+	for _, note := range notes {
 		builder.WriteString("\n  ")
-		builder.WriteString(line)
+		builder.WriteString(note)
+	}
+	for _, bullet := range bullets {
+		builder.WriteString("\n  - ")
+		builder.WriteString(bullet)
 	}
 	return builder.String()
 }
@@ -1236,6 +1329,22 @@ func validateDocsEnrichmentSchema(enrichment docsEnrichmentCatalog) error {
 				return fmt.Errorf("docs enrichment objects.%s.fieldDescriptions.%s is empty", key, fieldName)
 			}
 		}
+		if metadata.OnlineResearchChecklist != nil {
+			if strings.TrimSpace(metadata.OnlineResearchChecklist.ObjectBehavior) == "" {
+				return fmt.Errorf("docs enrichment objects.%s.onlineResearchChecklist.objectBehavior is required", key)
+			}
+			if strings.TrimSpace(metadata.OnlineResearchChecklist.RelatedInteractions) == "" {
+				return fmt.Errorf("docs enrichment objects.%s.onlineResearchChecklist.relatedInteractions is required", key)
+			}
+			if strings.TrimSpace(metadata.OnlineResearchChecklist.ParameterSemantics) == "" {
+				return fmt.Errorf("docs enrichment objects.%s.onlineResearchChecklist.parameterSemantics is required", key)
+			}
+		}
+		for idx, fieldName := range metadata.InteractionReferenceFields {
+			if strings.TrimSpace(fieldName) == "" {
+				return fmt.Errorf("docs enrichment objects.%s.interactionReferenceFields[%d] is empty", key, idx)
+			}
+		}
 		if len(metadata.ExtraExamples) > 2 {
 			return fmt.Errorf("docs enrichment objects.%s defines %d extraExamples; maximum is 2", key, len(metadata.ExtraExamples))
 		}
@@ -1285,12 +1394,16 @@ func validateDocsEnrichmentSchema(enrichment docsEnrichmentCatalog) error {
 func validateDocsEnrichmentTargets(enrichment docsEnrichmentCatalog, objects []manifest.ManagedObject) error {
 	validTargets := make(map[string]manifest.ManagedObject, len(objects)*3)
 	validResources := make(map[string]manifest.ManagedObject, len(objects))
+	requiredObjects := make([]manifest.ManagedObject, 0, len(objects))
 	for _, object := range objects {
 		validTargets[object.Name] = object
 		validTargets[object.ResourceName] = object
 		validTargets[object.DataSourceName] = object
 		if object.ResourceEligible && !object.RuntimeExcluded {
 			validResources[object.ResourceName] = object
+		}
+		if !object.RuntimeExcluded && (object.ResourceEligible || object.DataSourceElig) {
+			requiredObjects = append(requiredObjects, object)
 		}
 	}
 
@@ -1300,31 +1413,51 @@ func validateDocsEnrichmentTargets(enrichment docsEnrichmentCatalog, objects []m
 		}
 	}
 
-	for _, resourceName := range enrichment.PriorityResources {
-		object, ok := validResources[resourceName]
+	for _, object := range requiredObjects {
+		metadata, metadataKey, ok := objectEnrichmentMetadataForTarget(object, enrichment)
 		if !ok {
-			return fmt.Errorf("docs enrichment priority resource %q is not a managed resource", resourceName)
-		}
-		metadata, ok := enrichment.Objects[resourceName]
-		if !ok {
-			return fmt.Errorf("docs enrichment missing objects.%s entry for prioritized resource", resourceName)
-		}
-		if metadata.PrimaryExample == nil {
-			return fmt.Errorf("docs enrichment objects.%s requires a primaryExample for prioritized resource documentation", resourceName)
+			return fmt.Errorf("docs enrichment missing objects.%s entry for managed object documentation", object.ResourceName)
 		}
 		if metadata.CurationSource == nil {
-			return fmt.Errorf("docs enrichment objects.%s requires curationSource for prioritized resource documentation", resourceName)
+			return fmt.Errorf("docs enrichment objects.%s requires curationSource for managed object documentation", metadataKey)
+		}
+		if metadata.OnlineResearchChecklist == nil {
+			return fmt.Errorf("docs enrichment objects.%s requires onlineResearchChecklist for managed object documentation", metadataKey)
 		}
 		expectedAWXLinks, err := awxOfficialLinksForObject(object.Name)
 		if err != nil {
 			return err
 		}
 		if !matchesExpectedAWXConceptURL(metadata.CurationSource.OfficialAWXURL, expectedAWXLinks) {
-			return fmt.Errorf("docs enrichment objects.%s.curationSource.officialAwxUrl must reference the mapped official AWX concept link", resourceName)
+			return fmt.Errorf("docs enrichment objects.%s.curationSource.officialAwxUrl must reference the mapped official AWX concept link", metadataKey)
+		}
+	}
+
+	for _, resourceName := range enrichment.PriorityResources {
+		object, ok := validResources[resourceName]
+		if !ok {
+			return fmt.Errorf("docs enrichment priority resource %q is not a managed resource", resourceName)
+		}
+		metadata, metadataKey, ok := objectEnrichmentMetadataForTarget(object, enrichment)
+		if !ok {
+			return fmt.Errorf("docs enrichment missing objects.%s entry for prioritized resource", resourceName)
+		}
+		if metadata.PrimaryExample == nil {
+			return fmt.Errorf("docs enrichment objects.%s requires a primaryExample for prioritized resource documentation", metadataKey)
 		}
 	}
 
 	return nil
+}
+
+func objectEnrichmentMetadataForTarget(object manifest.ManagedObject, enrichment docsEnrichmentCatalog) (objectDocsEnrichment, string, bool) {
+	keys := []string{object.ResourceName, object.Name, object.DataSourceName}
+	for _, key := range keys {
+		if metadata, ok := enrichment.Objects[key]; ok {
+			return metadata, key, true
+		}
+	}
+	return objectDocsEnrichment{}, "", false
 }
 
 func validateGeneratedDocs(docsDir string, objects []manifest.ManagedObject, relationships []manifest.Relationship, enrichment docsEnrichmentCatalog) error {
@@ -1356,6 +1489,12 @@ func validateGeneratedDocs(docsDir string, objects []manifest.ManagedObject, rel
 			if err := ensureNoPlaceholderText(resourceDoc, content); err != nil {
 				return err
 			}
+			if err := ensureNoLowInformationText(resourceDoc, content); err != nil {
+				return err
+			}
+			if err := validateEnumFormatting(resourceDoc, content); err != nil {
+				return err
+			}
 			if err := validateExampleBounds(resourceDoc, content, 1, 3); err != nil {
 				return err
 			}
@@ -1375,8 +1514,15 @@ func validateGeneratedDocs(docsDir string, objects []manifest.ManagedObject, rel
 					return err
 				}
 			}
+			metadata := objectEnrichmentFor(object, enrichment)
 			if _, isPriority := prioritySet[object.ResourceName]; isPriority {
 				seenPriorities[object.ResourceName] = struct{}{}
+				if err := validateResolvedExampleReferences(resourceDoc, content); err != nil {
+					return err
+				}
+				if err := validateInteractionReferenceFields(resourceDoc, content, metadata); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -1387,6 +1533,12 @@ func validateGeneratedDocs(docsDir string, objects []manifest.ManagedObject, rel
 				return err
 			}
 			if err := ensureNoPlaceholderText(dataSourceDoc, content); err != nil {
+				return err
+			}
+			if err := ensureNoLowInformationText(dataSourceDoc, content); err != nil {
+				return err
+			}
+			if err := validateEnumFormatting(dataSourceDoc, content); err != nil {
 				return err
 			}
 			if err := validateExampleBounds(dataSourceDoc, content, 1, 3); err != nil {
@@ -1503,6 +1655,86 @@ func requireDocSectionsInOrder(path string, sections ...string) (string, error) 
 func ensureNoPlaceholderText(path string, content string) error {
 	if strings.Contains(content, openAPIPlaceholderText) {
 		return fmt.Errorf("documentation file %s still contains placeholder text %q", path, openAPIPlaceholderText)
+	}
+	return nil
+}
+
+func ensureNoLowInformationText(path string, content string) error {
+	lowInformationPatterns := []string{
+		"managed field from awx openapi schema",
+		") value for `",
+		") numeric setting for `",
+	}
+	contentLower := strings.ToLower(content)
+	for _, pattern := range lowInformationPatterns {
+		if strings.Contains(contentLower, pattern) {
+			return fmt.Errorf("documentation file %s contains low-information placeholder pattern %q", path, pattern)
+		}
+	}
+	return nil
+}
+
+func validateEnumFormatting(path string, content string) error {
+	if strings.Contains(content, "\\n*") || strings.Contains(content, "\\n-") {
+		return fmt.Errorf("documentation file %s contains escaped newline enum formatting artifacts", path)
+	}
+	if malformedEnumInlinePattern.MatchString(content) {
+		return fmt.Errorf("documentation file %s contains inline collapsed enum bullets; expected multiline markdown list formatting", path)
+	}
+	return nil
+}
+
+func validateResolvedExampleReferences(path string, content string) error {
+	exampleSection, err := extractTopLevelSection(content, "## Example Usage")
+	if err != nil {
+		return fmt.Errorf("documentation file %s: %w", path, err)
+	}
+
+	declaredBlocks := make(map[string]struct{})
+	for _, match := range resourceBlockPattern.FindAllStringSubmatch(exampleSection, -1) {
+		key := "resource|" + match[1] + "|" + match[2]
+		declaredBlocks[key] = struct{}{}
+	}
+	for _, match := range dataBlockPattern.FindAllStringSubmatch(exampleSection, -1) {
+		key := "data|" + match[1] + "|" + match[2]
+		declaredBlocks[key] = struct{}{}
+	}
+
+	for _, match := range unresolvedReferencePattern.FindAllStringSubmatch(exampleSection, -1) {
+		prefix := "resource"
+		if strings.TrimSpace(match[1]) != "" {
+			prefix = "data"
+		}
+		resourceType := strings.TrimSpace(match[2])
+		name := strings.TrimSpace(match[3])
+		key := prefix + "|" + resourceType + "|" + name
+		if _, ok := declaredBlocks[key]; !ok {
+			return fmt.Errorf("documentation file %s has unresolved cross-resource reference %s.%s.id in examples", path, resourceType, name)
+		}
+	}
+	return nil
+}
+
+func validateInteractionReferenceFields(path string, content string, metadata objectDocsEnrichment) error {
+	if len(metadata.InteractionReferenceFields) == 0 {
+		return nil
+	}
+	exampleSection, err := extractTopLevelSection(content, "## Example Usage")
+	if err != nil {
+		return fmt.Errorf("documentation file %s: %w", path, err)
+	}
+	found := make(map[string]struct{}, len(metadata.InteractionReferenceFields))
+	for _, match := range curatedReferenceAssignmentPattern.FindAllStringSubmatch(exampleSection, -1) {
+		found[strings.TrimSpace(match[1])] = struct{}{}
+	}
+	for _, field := range metadata.InteractionReferenceFields {
+		key := strings.TrimSpace(field)
+		if key == "" {
+			continue
+		}
+		if _, ok := found[key]; !ok {
+			return fmt.Errorf("documentation file %s must show `%s` wired to related object IDs in examples", path, key)
+		}
 	}
 	return nil
 }
@@ -1624,6 +1856,97 @@ func validateComplexPrimer(path string, content string) error {
 	}
 	if strings.TrimSpace(conceptsSection) == "" {
 		return fmt.Errorf("documentation file %s has an empty AWX Concepts section", path)
+	}
+	return nil
+}
+
+func validateQualityAnalysisSummary(path string, maxPasses int) error {
+	raw, err := os.ReadFile(filepath.Clean(path))
+	if err != nil {
+		return fmt.Errorf("quality analysis summary missing: %s", path)
+	}
+	content := string(raw)
+	matches := qualityAnalysisPassHeadingPattern.FindAllStringSubmatchIndex(content, -1)
+	if len(matches) == 0 {
+		return fmt.Errorf("quality analysis summary %s is missing required \"## Quality Analysis Pass <n>\" sections", path)
+	}
+
+	passNumbers := make([]int, 0, len(matches))
+	for _, match := range matches {
+		pass, err := strconv.Atoi(content[match[2]:match[3]])
+		if err != nil {
+			return fmt.Errorf("quality analysis summary %s contains an invalid pass heading", path)
+		}
+		passNumbers = append(passNumbers, pass)
+	}
+	if passNumbers[0] != 1 {
+		return fmt.Errorf("quality analysis summary %s must start at pass 1; found pass %d first", path, passNumbers[0])
+	}
+	for i := 1; i < len(passNumbers); i++ {
+		if passNumbers[i] != passNumbers[i-1]+1 {
+			return fmt.Errorf("quality analysis summary %s has non-contiguous pass numbering: found pass %d after pass %d", path, passNumbers[i], passNumbers[i-1])
+		}
+	}
+	if passNumbers[len(passNumbers)-1] > maxPasses {
+		return fmt.Errorf("quality analysis summary %s exceeds the maximum of %d passes", path, maxPasses)
+	}
+
+	for idx, match := range matches {
+		start := match[0]
+		end := len(content)
+		if idx+1 < len(matches) {
+			end = matches[idx+1][0]
+		}
+		section := content[start:end]
+		if !strings.Contains(section, "### Pass result") {
+			return fmt.Errorf("quality analysis summary %s is missing \"### Pass result\" for pass %d", path, passNumbers[idx])
+		}
+	}
+	return nil
+}
+
+func verifyDocsEnrichmentOnline(client *http.Client, objects []manifest.ManagedObject, enrichment docsEnrichmentCatalog) error {
+	for _, object := range objects {
+		if object.RuntimeExcluded || (!object.ResourceEligible && !object.DataSourceElig) {
+			continue
+		}
+		metadata, metadataKey, ok := objectEnrichmentMetadataForTarget(object, enrichment)
+		if !ok || metadata.CurationSource == nil {
+			return fmt.Errorf("docs enrichment objects.%s missing curationSource for online verification", object.ResourceName)
+		}
+		expectedLinks, err := awxOfficialLinksForObject(object.Name)
+		if err != nil {
+			return err
+		}
+		if err := verifyOfficialAWXLinkOnline(client, metadata.CurationSource.OfficialAWXURL, expectedLinks); err != nil {
+			return fmt.Errorf("docs enrichment objects.%s online verification failed: %w", metadataKey, err)
+		}
+	}
+	return nil
+}
+
+func verifyOfficialAWXLinkOnline(client *http.Client, officialURL string, expectedLinks []docsLink) error {
+	urlValue := strings.TrimSpace(officialURL)
+	if !isOfficialAWXLink(urlValue) {
+		return fmt.Errorf("official link %q is not an AWX documentation URL", urlValue)
+	}
+	if !matchesExpectedAWXConceptURL(urlValue, expectedLinks) {
+		return fmt.Errorf("official link %q does not match expected AWX concept mapping", urlValue)
+	}
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, urlValue, nil)
+	if err != nil {
+		return fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("User-Agent", "awxgen-docs-verify-online/1.0")
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("fetch official AWX URL: %w", err)
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 32*1024))
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusBadRequest {
+		return fmt.Errorf("fetch official AWX URL returned unexpected status %d", resp.StatusCode)
 	}
 	return nil
 }
