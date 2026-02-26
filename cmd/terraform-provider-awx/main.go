@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
-const providerAddress = "registry.terraform.io/damien/awx"
+const providerAddress = "registry.terraform.io/iwd/awx"
 
 func main() {
 	err := providerserver.Serve(context.Background(), provider.New("dev"), providerserver.ServeOpts{

@@ -5,7 +5,7 @@ The following provider development overrides are set in the CLI
 configuration:
  - denouche/awx in /Users/damien/git/terraform-provider-awx-denouche
  - josh-silvas/awx in /Users/damien/git/terraform-provider-awx-iwd/develop
- - damien/awx in /Users/damien/git/terraform-provider-awx-iwd/dist
+ - iwd/awx in /Users/damien/git/terraform-provider-awx-iwd/dist
 
 The behavior may therefore not match any released version of the provider and
 applying changes may cause the state to become incompatible with published
@@ -7781,7 +7781,7 @@ module.awx.awx_instance_group.default: Modifying... [id=2]
 Error: Provider produced inconsistent result after apply
 
 When applying changes to module.awx.awx_instance_group.default, provider
-"module.awx.provider[\"registry.terraform.io/damien/awx\"]" produced an
+"module.awx.provider[\"registry.terraform.io/iwd/awx\"]" produced an
 unexpected new value: .pod_spec_override: was cty.StringVal("\"apiVersion\":
 \"v1\"\n\"kind\": \"Pod\"\n\"metadata\":\n  \"labels\":\n    \"app\":
 \"awx\"\n  \"namespace\": \"awx\"\n\"spec\":\n
@@ -7818,7 +7818,7 @@ issue tracker.
 Error: Provider produced inconsistent result after apply
 
 When applying changes to module.awx.awx_instance_group.default, provider
-"module.awx.provider[\"registry.terraform.io/damien/awx\"]" produced an
+"module.awx.provider[\"registry.terraform.io/iwd/awx\"]" produced an
 unexpected new value: .policy_instance_list: was null, but now
 cty.StringVal("[]").
 

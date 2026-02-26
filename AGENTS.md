@@ -8,7 +8,7 @@ Target compatibility is AWX `24.6.1` (API `/api/v2`), with HTTP Basic authentica
 ## Quick Facts
 
 - Language: Go `1.25.0`
-- Provider address: `registry.terraform.io/damien/awx`
+- Provider address: `registry.terraform.io/iwd/awx`
 - Resource/data source registration is dynamic from embedded manifest JSON
 - Object import IDs:
   - Collection-created objects: numeric (`42`)
@@ -57,6 +57,7 @@ After changing curated inputs or schema, always run:
 3. `make docs`
 4. `make docs-validate`
 5. `make test`
+6. `make build`
 
 ## Core Architecture
 

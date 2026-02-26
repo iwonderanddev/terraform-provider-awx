@@ -3,7 +3,7 @@ Warning: Provider development overrides are in effect
 
 The following provider development overrides are set in the CLI
 configuration:
- - damien/awx in /Users/damien/git/terraform-provider-awx-iwd/dist
+ - iwd/awx in /Users/damien/git/terraform-provider-awx-iwd/dist
  - denouche/awx in /Users/damien/git/terraform-provider-awx-denouche
  - josh-silvas/awx in /Users/damien/git/terraform-provider-awx-iwd/develop
 

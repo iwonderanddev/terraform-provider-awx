@@ -5,7 +5,7 @@ The following provider development overrides are set in the CLI
 configuration:
  - denouche/awx in /Users/damien/git/terraform-provider-awx-denouche
  - josh-silvas/awx in /Users/damien/git/terraform-provider-awx-iwd/develop
- - damien/awx in /Users/damien/git/terraform-provider-awx-iwd/dist
+ - iwd/awx in /Users/damien/git/terraform-provider-awx-iwd/dist
 
 The behavior may therefore not match any released version of the provider and
 applying changes may cause the state to become incompatible with published
@@ -7681,7 +7681,7 @@ module.awx.awx_project.mockshop: Creation complete after 9s [id=8]
 Error: Provider produced inconsistent result after apply
 
 When applying changes to module.awx.awx_setting.all, provider
-"module.awx.provider[\"registry.terraform.io/damien/awx\"]" produced an
+"module.awx.provider[\"registry.terraform.io/iwd/awx\"]" produced an
 unexpected new value: .cleanup_host_metrics_last_ts: was null, but now
 cty.StringVal("2026-02-09T19:30:51.689027Z").
 
@@ -7691,7 +7691,7 @@ issue tracker.
 Error: Provider produced inconsistent result after apply
 
 When applying changes to module.awx.awx_setting.all, provider
-"module.awx.provider[\"registry.terraform.io/damien/awx\"]" produced an
+"module.awx.provider[\"registry.terraform.io/iwd/awx\"]" produced an
 unexpected new value: .host_metric_summary_task_last_ts: was null, but now
 cty.StringVal("2026-02-09T20:00:53.699979Z").
 

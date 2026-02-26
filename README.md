@@ -25,7 +25,7 @@ Configure Terraform CLI dev override in `~/.terraformrc`:
 ```hcl
 provider_installation {
   dev_overrides {
-    "registry.terraform.io/damien/awx" = "/Users/damien/git/terraform-provider-awx-iwd/dist"
+    "registry.terraform.io/iwd/awx" = "/Users/damien/git/terraform-provider-awx-iwd/dist"
   }
   direct {}
 }
@@ -37,7 +37,7 @@ Create a minimal Terraform config (example):
 terraform {
   required_providers {
     awx = {
-      source = "damien/awx"
+      source = "iwd/awx"
     }
   }
 }
@@ -206,7 +206,7 @@ Because this provider is local development, use a Terraform CLI dev override.
 ```hcl
 provider_installation {
   dev_overrides {
-    "registry.terraform.io/damien/awx" = "/Users/damien/git/terraform-provider-awx-iwd/dist"
+    "registry.terraform.io/iwd/awx" = "/Users/damien/git/terraform-provider-awx-iwd/dist"
   }
   direct {}
 }
@@ -218,7 +218,7 @@ Then in a Terraform config:
 terraform {
   required_providers {
     awx = {
-      source = "damien/awx"
+      source = "iwd/awx"
     }
   }
 }
@@ -240,7 +240,7 @@ terraform apply
 
 Important with `dev_overrides`: Terraform may still try to query the public
 registry during `terraform init` and fail for unreleased namespaces (for
-example `damien/awx`). In local provider development, build the binary and run
+example `iwd/awx`). In local provider development, build the binary and run
 `terraform plan`/`terraform apply` directly from your test directory instead of
 running `terraform init`.
 
