@@ -16,8 +16,8 @@ make generate
 make validate-manifest
 make test
 make test-acceptance
+make build
 
-go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
 ```
 
 Configure Terraform CLI dev override in `~/.terraformrc`:
@@ -53,7 +53,7 @@ Then run:
 
 ```bash
 # with dev_overrides, build the provider binary and skip terraform init
-go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
+make build
 terraform plan
 ```
 
@@ -109,7 +109,7 @@ If you change schema inputs or curated files, run `make generate`, then `make va
 
 ## Repository Layout
 
-- `cmd/terraform-provider-awx-iwd` provider server entrypoint
+- `cmd/terraform-provider-awx` provider server entrypoint
 - `internal/provider` resource/data source/provider runtime
 - `internal/client` shared AWX HTTP transport and error handling
 - `internal/openapi` schema parsing and derivation logic
@@ -194,8 +194,50 @@ If tests show `SKIP`, check `.env` values and confirm `AWX_ACCEPTANCE=1`.
 ## Build Provider Binary
 
 ```bash
-go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
+make build
 ```
+
+`make build` injects a provider version at build time:
+
+- If `HEAD` is tagged (example `v0.2.0`), that exact tag is used.
+- If `HEAD` is not tagged, a dev version is used (example `v0.2.0-dev.a1b2c3d`).
+- If the workspace has uncommitted changes, `.dirty` is appended.
+
+Override the injected version manually:
+
+```bash
+make build VERSION=v0.2.0
+```
+
+## Create A New Version (Developers)
+
+Use SemVer tags (`vMAJOR.MINOR.PATCH`) to create release versions.
+
+1. Ensure the branch is ready and tests pass:
+
+```bash
+make test
+```
+
+1. Create an annotated tag for the new version:
+
+```bash
+git tag -a v0.2.0 -m "Release v0.2.0"
+```
+
+1. Push the tag:
+
+```bash
+git push origin v0.2.0
+```
+
+1. Build from that tagged commit:
+
+```bash
+make build
+```
+
+The resulting binary reports version `v0.2.0` to Terraform.
 
 ## Use Locally With Terraform (Dev Override)
 
@@ -233,7 +275,7 @@ provider "awx" {
 Run:
 
 ```bash
-go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
+make build
 terraform plan
 terraform apply
 ```

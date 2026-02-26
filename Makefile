@@ -1,4 +1,6 @@
 GOCACHE ?= /tmp/go-build
+VERSION ?= $(shell tag=$$(git describe --tags --exact-match 2>/dev/null || true); if [ -n "$$tag" ]; then printf "%s" "$$tag"; else base=$$(git describe --tags --abbrev=0 2>/dev/null || echo v0.0.0); sha=$$(git rev-parse --short HEAD 2>/dev/null || echo unknown); dirty=$$(if git diff --quiet --ignore-submodules HEAD >/dev/null 2>&1; then echo ""; else echo ".dirty"; fi); printf "%s-dev.%s%s" "$$base" "$$sha" "$$dirty"; fi)
+LDFLAGS ?= -X main.version=$(VERSION)
 
 .PHONY: generate validate-manifest docs docs-validate docs-verify-online docs-validate-quality test test-acceptance coverage-report build
 
@@ -29,7 +31,7 @@ coverage-report:
 
 build:
 	mkdir -p dist
-	GOCACHE=$(GOCACHE) go build -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx-iwd
+	GOCACHE=$(GOCACHE) go build -ldflags "$(LDFLAGS)" -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx
 
 test:
 	GOCACHE=$(GOCACHE) go test ./...
