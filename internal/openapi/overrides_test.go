@@ -124,3 +124,29 @@ func TestApplyFieldOverridesSetsReference(t *testing.T) {
 		t.Fatalf("expected teams.organization to be marked as reference after override")
 	}
 }
+
+func TestApplyFieldOverridesSetsTerraformName(t *testing.T) {
+	t.Parallel()
+
+	objects := []manifest.ManagedObject{
+		{
+			Name: "projects",
+			Fields: []manifest.FieldSpec{
+				{Name: "credential", Type: manifest.FieldTypeInt, Reference: true},
+			},
+		},
+	}
+
+	updated := ApplyFieldOverrides(objects, map[string]FieldOverride{
+		"projects.credential": {
+			Object:        "projects",
+			Field:         "credential",
+			TerraformName: "scm_credential_id",
+		},
+	})
+
+	credential := updated[0].Fields[0]
+	if credential.TerraformName != "scm_credential_id" {
+		t.Fatalf("unexpected Terraform name override: got=%q want=%q", credential.TerraformName, "scm_credential_id")
+	}
+}

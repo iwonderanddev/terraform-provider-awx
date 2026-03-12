@@ -24,14 +24,15 @@ const (
 
 // FieldSpec maps OpenAPI request schema fields into Terraform schema fields.
 type FieldSpec struct {
-	Name        string    `json:"name"`
-	Type        FieldType `json:"type"`
-	Required    bool      `json:"required"`
-	Reference   bool      `json:"reference,omitempty"`
-	Computed    bool      `json:"computed,omitempty"`
-	Sensitive   bool      `json:"sensitive"`
-	WriteOnly   bool      `json:"writeOnly"`
-	Description string    `json:"description,omitempty"`
+	Name          string    `json:"name"`
+	TerraformName string    `json:"terraformName,omitempty"`
+	Type          FieldType `json:"type"`
+	Required      bool      `json:"required"`
+	Reference     bool      `json:"reference,omitempty"`
+	Computed      bool      `json:"computed,omitempty"`
+	Sensitive     bool      `json:"sensitive"`
+	WriteOnly     bool      `json:"writeOnly"`
+	Description   string    `json:"description,omitempty"`
 }
 
 // ManagedObject describes one AWX API object candidate.

@@ -312,7 +312,7 @@
       "overview": "Manages AWX projects that supply automation content from source control or archive locations.",
       "fieldDescriptions": {
         "allow_override": "Allows job templates to override this project branch at launch.",
-        "credential_id": "Numeric ID of the source-control credential used to access private repositories.",
+        "scm_credential_id": "Numeric ID of the source-control credential used to access private repositories.",
         "default_environment_id": "Numeric ID of the default execution environment for project jobs.",
         "description": "Optional explanation displayed to project users.",
         "name": "Human-readable project name in AWX.",
@@ -337,7 +337,7 @@
       "onlineResearchChecklist": {
         "objectBehavior": "Verified project SCM sync behavior and update controls in AWX project documentation.",
         "relatedInteractions": "Verified project interactions with organizations, credentials, and downstream job templates.",
-        "parameterSemantics": "Verified reference-field semantics for organization_id, credential_id, and default_environment_id."
+        "parameterSemantics": "Verified reference-field semantics for organization_id, scm_credential_id, and default_environment_id."
       },
       "interactionReferenceFields": [
         "organization_id"
@@ -350,7 +350,7 @@
         {
           "title": "Project with private repository credential",
           "description": "This example assumes an existing source-control credential named `git-deploy-key`.",
-          "hcl": "resource \"awx_organization\" \"platform\" {\n  name = \"platform\"\n}\n\ndata \"awx_credential\" \"git_deploy_key\" {\n  name = \"git-deploy-key\"\n}\n\nresource \"awx_project\" \"private_repo\" {\n  name                 = \"private-automation\"\n  organization_id      = awx_organization.platform.id\n  scm_type             = \"git\"\n  scm_url              = \"git@github.com:example/private-automation.git\"\n  scm_branch           = \"release\"\n  credential_id        = data.awx_credential.git_deploy_key.id\n  scm_update_on_launch = true\n}\n"
+          "hcl": "resource \"awx_organization\" \"platform\" {\n  name = \"platform\"\n}\n\ndata \"awx_credential\" \"git_deploy_key\" {\n  name = \"git-deploy-key\"\n}\n\nresource \"awx_project\" \"private_repo\" {\n  name                 = \"private-automation\"\n  organization_id      = awx_organization.platform.id\n  scm_type             = \"git\"\n  scm_url              = \"git@github.com:example/private-automation.git\"\n  scm_branch           = \"release\"\n  scm_credential_id    = data.awx_credential.git_deploy_key.id\n  scm_update_on_launch = true\n}\n"
         }
       ]
     },

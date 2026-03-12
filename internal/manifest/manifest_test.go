@@ -308,6 +308,10 @@ func TestTerraformAttributeName(t *testing.T) {
 	if got := TerraformAttributeNameForField("settings", FieldSpec{Name: "AUTH_LDAP_4_SERVER_URI", Type: FieldTypeString}); got != "auth_ldap_4_server_uri" {
 		t.Fatalf("unexpected settings field mapping with field helper: got=%q want=%q", got, "auth_ldap_4_server_uri")
 	}
+
+	if got := TerraformAttributeNameForField("projects", FieldSpec{Name: "credential", Type: FieldTypeInt, Reference: true, TerraformName: "scm_credential_id"}); got != "scm_credential_id" {
+		t.Fatalf("unexpected explicit Terraform name mapping: got=%q want=%q", got, "scm_credential_id")
+	}
 }
 
 func TestRelationshipObjectIDAttribute(t *testing.T) {

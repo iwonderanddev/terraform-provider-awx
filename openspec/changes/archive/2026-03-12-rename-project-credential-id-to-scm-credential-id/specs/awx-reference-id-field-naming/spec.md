@@ -1,10 +1,6 @@
-# awx-reference-id-field-naming Specification
+# Delta Specification: awx-reference-id-field-naming
 
-## Purpose
-
-TBD - created by archiving change enforce-id-suffix-for-references. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Canonical object-link fields SHALL use `_id` suffixes
 
@@ -41,17 +37,3 @@ interaction context.
   `credential` reference
 - **THEN** the resource and data source expose that field as
   `scm_credential_id`
-
-### Requirement: Legacy unsuffixed link fields SHALL NOT be generated
-
-The provider SHALL NOT emit unsuffixed Terraform field names for object-link references once a canonical `_id` field exists for that reference.
-
-#### Scenario: Generated schema omits unsuffixed alias
-
-- **WHEN** generation runs for an object with a known link field
-- **THEN** the generated schema includes only the canonical `_id` field name for that link and does not include an unsuffixed duplicate
-
-#### Scenario: Legacy configuration receives actionable diagnostics
-
-- **WHEN** Terraform configuration uses a removed unsuffixed link argument after this change
-- **THEN** Terraform reports an unsupported-argument diagnostic that identifies the invalid field name

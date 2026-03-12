@@ -132,6 +132,45 @@ func TestWriteSettingsResourceDocDefaultsToAllAndIncludesScopeGuidance(t *testin
 	}
 }
 
+func TestWriteProjectResourceDocUsesExplicitTerraformReferenceName(t *testing.T) {
+	t.Parallel()
+
+	resourceDir := t.TempDir()
+	object := manifest.ManagedObject{
+		Name:         "projects",
+		ResourceName: "awx_project",
+		Fields: []manifest.FieldSpec{
+			{Name: "name", Type: manifest.FieldTypeString, Required: true},
+			{Name: "credential", Type: manifest.FieldTypeInt, Reference: true, TerraformName: "scm_credential_id"},
+		},
+	}
+
+	awxLinks, err := awxOfficialLinksForObject(object.Name)
+	if err != nil {
+		t.Fatalf("awxOfficialLinksForObject returned error: %v", err)
+	}
+	if err := writeResourceDoc(resourceDir, object, objectDocsEnrichment{
+		FieldDescriptions: map[string]string{
+			"scm_credential_id": "Numeric ID of the source-control credential used to access private repositories.",
+		},
+	}, awxLinks, map[string]struct{}{}); err != nil {
+		t.Fatalf("writeResourceDoc returned error: %v", err)
+	}
+
+	docPath := filepath.Join(resourceDir, "awx_project.md")
+	raw, err := os.ReadFile(docPath)
+	if err != nil {
+		t.Fatalf("failed to read generated resource doc: %v", err)
+	}
+	content := string(raw)
+	if !strings.Contains(content, "`scm_credential_id` (Number, Optional)") {
+		t.Fatalf("expected SCM credential field in generated docs, got:\n%s", content)
+	}
+	if strings.Contains(content, "`credential_id` (Number, Optional)") {
+		t.Fatalf("unexpected legacy credential field in generated docs, got:\n%s", content)
+	}
+}
+
 func TestResolveFieldDescriptionPrefersCuratedThenSchemaThenFallback(t *testing.T) {
 	t.Parallel()
 
