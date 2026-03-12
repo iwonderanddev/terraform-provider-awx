@@ -212,3 +212,59 @@ func TestPayloadFromConfigReferenceFieldMapsSuffixedTerraformNameToAWXField(t *t
 		t.Fatalf("expected AWX field organization to be populated, got=%#v", payload["organization"])
 	}
 }
+
+func TestObjectResourceSchemaUsesExplicitTerraformNameForReferenceField(t *testing.T) {
+	t.Parallel()
+
+	r := &objectResource{
+		object: manifest.ManagedObject{
+			Name: "projects",
+			Fields: []manifest.FieldSpec{
+				{Name: "credential", Type: manifest.FieldTypeInt, Reference: true, TerraformName: "scm_credential_id"},
+			},
+		},
+	}
+
+	resp := &resource.SchemaResponse{}
+	r.Schema(context.Background(), resource.SchemaRequest{}, resp)
+
+	if _, ok := resp.Schema.Attributes["scm_credential_id"]; !ok {
+		t.Fatalf("expected explicit Terraform attribute for project SCM credential")
+	}
+	if _, ok := resp.Schema.Attributes["credential_id"]; ok {
+		t.Fatalf("unexpected legacy Terraform attribute for project SCM credential")
+	}
+}
+
+func TestPayloadFromConfigReferenceFieldMapsExplicitTerraformNameToAWXField(t *testing.T) {
+	t.Parallel()
+
+	r := &objectResource{
+		object: manifest.ManagedObject{
+			Name: "projects",
+			Fields: []manifest.FieldSpec{
+				{Name: "name", Type: manifest.FieldTypeString, Required: true},
+				{Name: "credential", Type: manifest.FieldTypeInt, Reference: true, TerraformName: "scm_credential_id"},
+			},
+		},
+	}
+
+	source := &mockConfigSource{
+		values: map[string]any{
+			"name":              types.StringValue("private-repo"),
+			"scm_credential_id": types.Int64Value(12),
+		},
+	}
+
+	payload, _, diags := r.payloadFromConfig(context.Background(), source)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+
+	if _, exists := payload["scm_credential_id"]; exists {
+		t.Fatalf("unexpected payload key scm_credential_id")
+	}
+	if got, ok := payload["credential"].(int64); !ok || got != 12 {
+		t.Fatalf("expected AWX field credential to be populated, got=%#v", payload["credential"])
+	}
+}

@@ -13,15 +13,16 @@ import (
 
 // FieldOverride updates derived field metadata for schema/runtime mismatches.
 type FieldOverride struct {
-	Object      string             `json:"object"`
-	Field       string             `json:"field"`
-	Type        manifest.FieldType `json:"type,omitempty"`
-	Required    *bool              `json:"required,omitempty"`
-	Reference   *bool              `json:"reference,omitempty"`
-	Computed    *bool              `json:"computed,omitempty"`
-	Sensitive   *bool              `json:"sensitive,omitempty"`
-	WriteOnly   *bool              `json:"writeOnly,omitempty"`
-	Description string             `json:"description,omitempty"`
+	Object        string             `json:"object"`
+	Field         string             `json:"field"`
+	TerraformName string             `json:"terraformName,omitempty"`
+	Type          manifest.FieldType `json:"type,omitempty"`
+	Required      *bool              `json:"required,omitempty"`
+	Reference     *bool              `json:"reference,omitempty"`
+	Computed      *bool              `json:"computed,omitempty"`
+	Sensitive     *bool              `json:"sensitive,omitempty"`
+	WriteOnly     *bool              `json:"writeOnly,omitempty"`
+	Description   string             `json:"description,omitempty"`
 }
 
 // FieldOverrideFile stores override declarations.
@@ -96,6 +97,9 @@ func ApplyFieldOverrides(objects []manifest.ManagedObject, overrides map[string]
 			if strings.TrimSpace(override.Description) != "" {
 				field.Description = override.Description
 			}
+			if strings.TrimSpace(override.TerraformName) != "" {
+				field.TerraformName = strings.TrimSpace(override.TerraformName)
+			}
 			fields = append(fields, field)
 		}
 
@@ -166,13 +170,14 @@ func fieldFromOverride(override FieldOverride) manifest.FieldSpec {
 	}
 
 	return manifest.FieldSpec{
-		Name:        override.Field,
-		Type:        fieldType,
-		Required:    required,
-		Reference:   reference,
-		Computed:    computed,
-		Sensitive:   sensitive,
-		WriteOnly:   writeOnly,
-		Description: strings.TrimSpace(override.Description),
+		Name:          override.Field,
+		TerraformName: strings.TrimSpace(override.TerraformName),
+		Type:          fieldType,
+		Required:      required,
+		Reference:     reference,
+		Computed:      computed,
+		Sensitive:     sensitive,
+		WriteOnly:     writeOnly,
+		Description:   strings.TrimSpace(override.Description),
 	}
 }

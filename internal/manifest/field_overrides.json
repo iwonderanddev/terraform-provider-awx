@@ -1,6 +1,11 @@
 {
   "overrides": [
     {
+      "object": "projects",
+      "field": "credential",
+      "terraformName": "scm_credential_id"
+    },
+    {
       "object": "credentials",
       "field": "inputs",
       "type": "object",

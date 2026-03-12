@@ -21,7 +21,7 @@ data "awx_project" "example" {
 
 - `id` (Number, Read-Only) Numeric AWX object ID.
 - `allow_override` (Boolean, Read-Only) Allows job templates to override this project branch at launch.
-- `credential_id` (Number, Read-Only) Numeric ID of the source-control credential used to access private repositories.
+- `scm_credential_id` (Number, Read-Only) Numeric ID of the source-control credential used to access private repositories.
 - `default_environment_id` (Number, Read-Only) Numeric ID of the default execution environment for project jobs.
 - `description` (String, Read-Only) Optional explanation displayed to project users.
 - `local_path` (String, Read-Only) Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project.

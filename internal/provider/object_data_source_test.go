@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
@@ -400,6 +401,53 @@ func TestObjectDataSourceSetStateConvertsObjectFieldToDynamic(t *testing.T) {
 	}
 	if !enabledValue.ValueBool() {
 		t.Fatalf("expected enabled to be true")
+	}
+}
+
+func TestObjectDataSourceSetStateUsesExplicitTerraformNameForReferenceField(t *testing.T) {
+	t.Parallel()
+
+	dataSource := &objectDataSource{
+		object: manifest.ManagedObject{
+			Name:             "projects",
+			CollectionCreate: true,
+			Fields: []manifest.FieldSpec{
+				{Name: "credential", Type: manifest.FieldTypeInt, Reference: true, TerraformName: "scm_credential_id"},
+			},
+		},
+	}
+
+	state := &mockAttributeTarget{values: map[string]any{}}
+	diags := dataSource.setState(context.Background(), state, objectLookupResult{
+		ID:     "2",
+		Object: map[string]any{"credential": 14},
+	})
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+
+	var (
+		credentialValue any
+		ok              bool
+	)
+	for key, value := range state.values {
+		if strings.Contains(key, "credential_id") && !strings.Contains(key, "scm_credential_id") {
+			t.Fatalf("unexpected legacy credential_id state attribute: %s", key)
+		}
+		if strings.Contains(key, "scm_credential_id") {
+			credentialValue = value
+			ok = true
+		}
+	}
+	if !ok {
+		t.Fatalf("expected scm_credential_id attribute to be written")
+	}
+	intValue, ok := credentialValue.(types.Int64)
+	if !ok {
+		t.Fatalf("expected types.Int64 for scm_credential_id, got %T", credentialValue)
+	}
+	if got := intValue.ValueInt64(); got != 14 {
+		t.Fatalf("unexpected scm_credential_id value: got=%d want=%d", got, 14)
 	}
 }
 

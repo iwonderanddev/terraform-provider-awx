@@ -40,7 +40,7 @@ resource "awx_project" "private_repo" {
   scm_type             = "git"
   scm_url              = "git@github.com:example/private-automation.git"
   scm_branch           = "release"
-  credential_id        = data.awx_credential.git_deploy_key.id
+  scm_credential_id    = data.awx_credential.git_deploy_key.id
   scm_update_on_launch = true
 }
 ```
@@ -62,7 +62,7 @@ resource "awx_project" "private_repo" {
 ### Optional
 
 - `allow_override` (Boolean, Optional, Computed) Allows job templates to override this project branch at launch.
-- `credential_id` (Number, Optional) Numeric ID of the source-control credential used to access private repositories.
+- `scm_credential_id` (Number, Optional) Numeric ID of the source-control credential used to access private repositories.
 - `default_environment_id` (Number, Optional) Numeric ID of the default execution environment for project jobs.
 - `description` (String, Optional) Optional explanation displayed to project users.
 - `local_path` (String, Optional) Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project.
