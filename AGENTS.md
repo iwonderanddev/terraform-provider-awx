@@ -19,7 +19,7 @@ Target compatibility is AWX `24.6.1` (API `/api/v2`), with HTTP Basic authentica
 
 ## Repository Map
 
-- `cmd/terraform-provider-awx-iwd/main.go`: provider server entrypoint
+- `cmd/terraform-provider-awx/main.go`: provider server entrypoint
 - `cmd/awxgen/main.go`: generator/validator/docs CLI
 - `internal/provider/*`: provider runtime for objects, relationships, data sources
 - `internal/client/*`: AWX HTTP transport, retries, pagination, errors
@@ -118,7 +118,7 @@ After changing curated inputs or schema, always run:
 - `make coverage-report`: print coverage summary
 - `make test`: run all Go tests
 - `make test-acceptance`: run opt-in live AWX tests (`internal/acceptance` + Terraform-driven provider acceptance tests)
-- `make build`: build `dist/terraform-provider-awx-iwd`
+- `make build`: build `dist/terraform-provider-awx`
 
 ## Markdown Quality Gate
 

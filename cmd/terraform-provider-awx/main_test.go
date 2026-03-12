@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"os"
+	"strings"
+	"testing"
+)
 
 func TestNormalizeVersion(t *testing.T) {
 	tests := []struct {
@@ -21,5 +25,20 @@ func TestNormalizeVersion(t *testing.T) {
 				t.Fatalf("normalizeVersion(%q) = %q, want %q", tc.input, got, tc.want)
 			}
 		})
+	}
+}
+
+func TestMakeBuildTargetsTerraformProviderAwxBinaryName(t *testing.T) {
+	raw, err := os.ReadFile("../../Makefile")
+	if err != nil {
+		t.Fatalf("failed to read Makefile: %v", err)
+	}
+
+	content := string(raw)
+	if !strings.Contains(content, "-o dist/terraform-provider-awx ./cmd/terraform-provider-awx") {
+		t.Fatalf("expected make build to emit dist/terraform-provider-awx, got:\n%s", content)
+	}
+	if strings.Contains(content, "-o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx") {
+		t.Fatalf("unexpected awx-iwd output name in make build target")
 	}
 }
