@@ -31,7 +31,7 @@ coverage-report:
 
 build:
 	mkdir -p dist
-	GOCACHE=$(GOCACHE) go build -ldflags "$(LDFLAGS)" -o dist/terraform-provider-awx-iwd ./cmd/terraform-provider-awx
+	GOCACHE=$(GOCACHE) go build -ldflags "$(LDFLAGS)" -o dist/terraform-provider-awx ./cmd/terraform-provider-awx
 
 test:
 	GOCACHE=$(GOCACHE) go test ./...
