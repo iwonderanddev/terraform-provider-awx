@@ -1,8 +1,7 @@
-# awx-data-sources-and-lookups Specification
+# awx-data-sources-and-lookups Delta
 
-## Purpose
-TBD - created by archiving change create-awx-terraform-provider. Update Purpose after archive.
-## Requirements
+## MODIFIED Requirements
+
 ### Requirement: Data sources for managed object lookup
 
 The provider SHALL expose data sources for managed AWX object types needed to
@@ -54,11 +53,3 @@ as Terraform numbers even when the field is nullable.
   represents the numeric primary key of another AWX object
 - **THEN** the attribute is typed as Terraform number data and can flow
   directly into resource arguments expecting the same numeric identifier
-
-### Requirement: Stable data source query behavior
-Data source queries SHALL implement normalized filtering and deterministic result handling consistent with AWX API v2 semantics.
-
-#### Scenario: No matching object
-- **WHEN** a data source lookup returns zero matches
-- **THEN** the provider returns a not-found diagnostic that identifies the lookup criteria
-

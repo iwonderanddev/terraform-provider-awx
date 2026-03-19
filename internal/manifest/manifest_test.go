@@ -256,6 +256,35 @@ func TestWorkflowJobNodeExtraDataIsObjectField(t *testing.T) {
 	t.Fatalf("expected extra_data field on workflow_job_nodes object")
 }
 
+func TestRoleAssignmentObjectIDFieldsAreNumeric(t *testing.T) {
+	t.Parallel()
+
+	catalog := MustLoad()
+	objectNames := []string{"role_team_assignments", "role_user_assignments"}
+
+	for _, objectName := range objectNames {
+		object, ok := catalog.ObjectByName(objectName)
+		if !ok {
+			t.Fatalf("expected %s object in catalog", objectName)
+		}
+
+		found := false
+		for _, field := range object.Fields {
+			if field.Name != "object_id" {
+				continue
+			}
+			found = true
+			if field.Type != FieldTypeInt {
+				t.Fatalf("expected %s.object_id type=%q, got=%q", objectName, FieldTypeInt, field.Type)
+			}
+		}
+
+		if !found {
+			t.Fatalf("expected object_id field on %s", objectName)
+		}
+	}
+}
+
 func TestSettingsHostMetricTimestampsAreComputed(t *testing.T) {
 	t.Parallel()
 

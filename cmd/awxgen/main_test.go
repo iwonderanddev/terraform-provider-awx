@@ -825,6 +825,42 @@ func TestWriteRelationshipDocUsesCanonicalSurveySpecParentArgument(t *testing.T)
 	}
 }
 
+func TestWriteRelationshipDocUsesDistinctSelfReferentialChildArgument(t *testing.T) {
+	t.Parallel()
+
+	resourceDir := t.TempDir()
+	rel := manifest.Relationship{
+		Name:              "workflow_job_template_node_success_node_association",
+		ResourceName:      "awx_workflow_job_template_node_success_node_association",
+		ParentObject:      "workflow_job_template_nodes",
+		ChildObject:       "workflow_job_template_nodes",
+		ParentIDAttribute: "workflow_job_template_node_id",
+		ChildIDAttribute:  "success_node_id",
+		Path:              "/api/v2/workflow_job_template_nodes/{id}/success_nodes/",
+	}
+
+	awxLinks, err := awxOfficialLinksForRelationship(rel)
+	if err != nil {
+		t.Fatalf("awxOfficialLinksForRelationship returned error: %v", err)
+	}
+	if err := writeRelationshipDoc(resourceDir, rel, awxLinks); err != nil {
+		t.Fatalf("writeRelationshipDoc returned error: %v", err)
+	}
+
+	docPath := filepath.Join(resourceDir, "awx_workflow_job_template_node_success_node_association.md")
+	raw, err := os.ReadFile(docPath)
+	if err != nil {
+		t.Fatalf("failed to read generated relationship doc: %v", err)
+	}
+	content := string(raw)
+	if !strings.Contains(content, "workflow_job_template_node_id = 12") {
+		t.Fatalf("expected parent workflow node argument in example, got:\n%s", content)
+	}
+	if !strings.Contains(content, "success_node_id = 34") {
+		t.Fatalf("expected distinct success-node child argument in example, got:\n%s", content)
+	}
+}
+
 func TestGenerateDocsRendersSettingsDefaultsAndGuidance(t *testing.T) {
 	t.Parallel()
 

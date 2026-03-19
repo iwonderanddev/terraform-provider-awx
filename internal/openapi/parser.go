@@ -383,7 +383,7 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 		if _, ok := objectByCollection[parentCollection]; !ok {
 			continue
 		}
-		resolvedChildCollection, childToken, specialVariant := resolveRelationshipChildCollection(childCollection, objectByCollection)
+		resolvedChildCollection, childToken, specialVariant, childIDAttribute := resolveRelationshipChildCollection(parentCollection, childCollection, objectByCollection)
 		if resolvedChildCollection == "" {
 			continue
 		}
@@ -409,9 +409,12 @@ func DeriveRelationships(doc *Document, managedObjects []manifest.ManagedObject,
 			ParentObject:      parentCollection,
 			ChildObject:       resolvedChildCollection,
 			ParentIDAttribute: manifest.RelationshipObjectIDAttribute(parentCollection),
-			ChildIDAttribute:  manifest.RelationshipObjectIDAttribute(resolvedChildCollection),
+			ChildIDAttribute:  childIDAttribute,
 			Path:              endpointPath,
 			Priority:          priority,
+		}
+		if strings.TrimSpace(candidate.ChildIDAttribute) == "" {
+			candidate.ChildIDAttribute = manifest.RelationshipObjectIDAttribute(resolvedChildCollection)
 		}
 
 		if existingIndex, exists := relationshipIndexByName[name]; exists {
@@ -802,36 +805,47 @@ func isSurveySpecChild(childCollection string) bool {
 	return childCollection == "survey_spec"
 }
 
-func resolveRelationshipChildCollection(childCollection string, objectByCollection map[string]manifest.ManagedObject) (string, string, bool) {
+func resolveRelationshipChildCollection(parentCollection string, childCollection string, objectByCollection map[string]manifest.ManagedObject) (string, string, bool, string) {
 	if childCollection == "" {
-		return "", "", false
+		return "", "", false, ""
 	}
 	if !isRelationshipCandidate(childCollection) {
-		return "", "", false
+		return "", "", false, ""
 	}
 	if _, ok := objectByCollection[childCollection]; ok {
-		return childCollection, singularize(childCollection), false
+		return childCollection, singularize(childCollection), false, ""
+	}
+
+	// Workflow template node edges are self-referential associations with
+	// edge-specific Terraform child arguments.
+	if parentCollection == "workflow_job_template_nodes" {
+		if _, ok := objectByCollection["workflow_job_template_nodes"]; ok {
+			switch childCollection {
+			case "success_nodes", "failure_nodes", "always_nodes":
+				return "workflow_job_template_nodes", singularize(childCollection), false, manifest.RelationshipObjectIDAttribute(childCollection)
+			}
+		}
 	}
 	if childCollection == "galaxy_credentials" {
 		if _, ok := objectByCollection["credentials"]; ok {
-			return "credentials", singularize("credentials"), false
+			return "credentials", singularize("credentials"), false, ""
 		}
-		return "", "", false
+		return "", "", false, ""
 	}
 
 	const notificationTemplatePrefix = "notification_templates_"
 	if strings.HasPrefix(childCollection, notificationTemplatePrefix) {
 		if _, ok := objectByCollection["notification_templates"]; !ok {
-			return "", "", false
+			return "", "", false, ""
 		}
 		suffix := strings.TrimPrefix(childCollection, notificationTemplatePrefix)
 		if strings.TrimSpace(suffix) == "" {
-			return "", "", false
+			return "", "", false, ""
 		}
-		return "notification_templates", fmt.Sprintf("notification_template_%s", singularize(suffix)), true
+		return "notification_templates", fmt.Sprintf("notification_template_%s", singularize(suffix)), true, ""
 	}
 
-	return "", "", false
+	return "", "", false, ""
 }
 
 func shouldPreferRelationshipPath(name string, existingPath string, candidatePath string) bool {

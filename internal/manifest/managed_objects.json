@@ -3586,7 +3586,7 @@
       },
       {
         "name": "object_id",
-        "type": "string",
+        "type": "integer",
         "required": false,
         "sensitive": false,
         "writeOnly": false,
@@ -3679,7 +3679,7 @@
       },
       {
         "name": "object_id",
-        "type": "string",
+        "type": "integer",
         "required": false,
         "sensitive": false,
         "writeOnly": false,

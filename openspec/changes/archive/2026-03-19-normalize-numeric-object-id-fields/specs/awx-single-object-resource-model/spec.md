@@ -1,8 +1,7 @@
-# awx-single-object-resource-model Specification
+# awx-single-object-resource-model Delta
 
-## Purpose
-TBD - created by archiving change create-awx-terraform-provider. Update Purpose after archive.
-## Requirements
+## MODIFIED Requirements
+
 ### Requirement: One AWX object per resource boundary
 
 The provider SHALL define resources so each resource instance manages exactly
@@ -42,11 +41,3 @@ represented as Terraform numbers even when the field itself is optional.
 - **THEN** the resource schema uses Terraform number typing for that field
   while still allowing the attribute to be omitted where AWX permits a
   system-scoped assignment
-
-### Requirement: No inline nested sub-object lifecycle blocks
-The provider SHALL reject designs that manage child object lifecycle via inline nested blocks within parent resources.
-
-#### Scenario: Attempted inline lifecycle modeling
-- **WHEN** a resource schema proposal introduces inline nested lifecycle management for child objects
-- **THEN** the schema validation process flags the design as unsupported
-

@@ -31,7 +31,7 @@ resource "awx_role_team_assignment" "example" {
 ### Optional
 
 - `object_ansible_id` (String, Optional) The resource id of the object this role applies to. An alternative to the object_id field.
-- `object_id` (String, Optional) The primary key of the object this assignment applies to; null value indicates system-wide assignment.
+- `object_id` (Number, Optional) The primary key of the object this assignment applies to; null value indicates system-wide assignment.
 - `team_id` (Number, Optional) Numeric ID of the related AWX team object.
 - `team_ansible_id` (String, Optional) The resource ID of the team who will receive permissions from this assignment. An alternative to team field.
 

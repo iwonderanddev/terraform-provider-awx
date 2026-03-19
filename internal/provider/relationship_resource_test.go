@@ -61,6 +61,36 @@ func TestRelationshipResourceSchemaAssociation(t *testing.T) {
 	}
 }
 
+func TestRelationshipResourceSchemaSelfReferentialAssociationUsesDistinctChildAttribute(t *testing.T) {
+	t.Parallel()
+
+	resourceInstance := NewRelationshipResource(manifest.Relationship{
+		Name:              "workflow_job_template_node_success_node_association",
+		ResourceName:      "awx_workflow_job_template_node_success_node_association",
+		ParentObject:      "workflow_job_template_nodes",
+		ChildObject:       "workflow_job_template_nodes",
+		ParentIDAttribute: "workflow_job_template_node_id",
+		ChildIDAttribute:  "success_node_id",
+		Path:              "/api/v2/workflow_job_template_nodes/{id}/success_nodes/",
+	})
+
+	resp := resource.SchemaResponse{}
+	resourceInstance.Schema(context.Background(), resource.SchemaRequest{}, &resp)
+
+	if _, ok := resp.Schema.Attributes["workflow_job_template_node_id"]; !ok {
+		t.Fatalf("expected self-referential association schema to include workflow_job_template_node_id")
+	}
+	if _, ok := resp.Schema.Attributes["success_node_id"]; !ok {
+		t.Fatalf("expected self-referential association schema to include success_node_id")
+	}
+	if _, ok := resp.Schema.Attributes["failure_node_id"]; ok {
+		t.Fatalf("did not expect unrelated failure_node_id attribute in success-edge schema")
+	}
+	if got := len(resp.Schema.Attributes); got != 3 {
+		t.Fatalf("expected self-referential association schema to expose exactly 3 attributes, got=%d", got)
+	}
+}
+
 func TestParseCompositeRelationshipImportID(t *testing.T) {
 	t.Parallel()
 

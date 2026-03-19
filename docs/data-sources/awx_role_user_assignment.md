@@ -24,7 +24,7 @@ data "awx_role_user_assignment" "example" {
 - `created_by_id` (Number, Read-Only) The user who created this resource.
 - `id` (Number, Read-Only) Numeric AWX value used for `id`.
 - `object_ansible_id` (String, Read-Only) The resource id of the object this role applies to. An alternative to the object_id field.
-- `object_id` (String, Read-Only) The primary key of the object this assignment applies to; null value indicates system-wide assignment.
+- `object_id` (Number, Read-Only) The primary key of the object this assignment applies to; null value indicates system-wide assignment.
 - `related` (Object, Read-Only) Object value for `related`.
 - `role_definition_id` (Number, Read-Only) The role definition which defines permissions conveyed by this assignment.
 - `summary_fields` (Object, Read-Only) Object value for `summary_fields`.

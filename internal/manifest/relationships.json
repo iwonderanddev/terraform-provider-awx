@@ -519,6 +519,16 @@
     "priority": 100
   },
   {
+    "name": "workflow_job_template_node_always_node_association",
+    "resourceName": "awx_workflow_job_template_node_always_node_association",
+    "parentObject": "workflow_job_template_nodes",
+    "childObject": "workflow_job_template_nodes",
+    "parentIDAttribute": "workflow_job_template_node_id",
+    "childIDAttribute": "always_node_id",
+    "path": "/api/v2/workflow_job_template_nodes/{id}/always_nodes/",
+    "priority": 100
+  },
+  {
     "name": "workflow_job_template_node_credential_association",
     "resourceName": "awx_workflow_job_template_node_credential_association",
     "parentObject": "workflow_job_template_nodes",
@@ -526,6 +536,16 @@
     "parentIDAttribute": "workflow_job_template_node_id",
     "childIDAttribute": "credential_id",
     "path": "/api/v2/workflow_job_template_nodes/{id}/credentials/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_node_failure_node_association",
+    "resourceName": "awx_workflow_job_template_node_failure_node_association",
+    "parentObject": "workflow_job_template_nodes",
+    "childObject": "workflow_job_template_nodes",
+    "parentIDAttribute": "workflow_job_template_node_id",
+    "childIDAttribute": "failure_node_id",
+    "path": "/api/v2/workflow_job_template_nodes/{id}/failure_nodes/",
     "priority": 100
   },
   {
@@ -546,6 +566,16 @@
     "parentIDAttribute": "workflow_job_template_node_id",
     "childIDAttribute": "label_id",
     "path": "/api/v2/workflow_job_template_nodes/{id}/labels/",
+    "priority": 100
+  },
+  {
+    "name": "workflow_job_template_node_success_node_association",
+    "resourceName": "awx_workflow_job_template_node_success_node_association",
+    "parentObject": "workflow_job_template_nodes",
+    "childObject": "workflow_job_template_nodes",
+    "parentIDAttribute": "workflow_job_template_node_id",
+    "childIDAttribute": "success_node_id",
+    "path": "/api/v2/workflow_job_template_nodes/{id}/success_nodes/",
     "priority": 100
   },
   {

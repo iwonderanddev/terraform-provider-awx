@@ -70,6 +70,16 @@
       "description": "Structured extra data as a Terraform object."
     },
     {
+      "object": "role_team_assignments",
+      "field": "object_id",
+      "type": "integer"
+    },
+    {
+      "object": "role_user_assignments",
+      "field": "object_id",
+      "type": "integer"
+    },
+    {
       "object": "organizations",
       "field": "max_hosts",
       "computed": true

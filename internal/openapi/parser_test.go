@@ -582,6 +582,109 @@ func TestDeriveRelationshipsPrefersOrganizationGalaxyCredentialsPath(t *testing.
 	}
 }
 
+func TestDeriveRelationshipsIncludesWorkflowTemplateNodeEdges(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/workflow_job_template_nodes/{id}/success_nodes/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+			"/api/v2/workflow_job_template_nodes/{id}/failure_nodes/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+			"/api/v2/workflow_job_template_nodes/{id}/always_nodes/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+		},
+	}
+	objects := []manifest.ManagedObject{
+		{Name: "workflow_job_template_nodes"},
+	}
+
+	relationships := DeriveRelationships(doc, objects, map[string]int{}, map[string]string{})
+	if len(relationships) != 3 {
+		t.Fatalf("expected 3 workflow template node edge relationships, got %d", len(relationships))
+	}
+
+	seen := map[string]manifest.Relationship{}
+	for _, rel := range relationships {
+		seen[rel.Name] = rel
+	}
+
+	successRel, ok := seen["workflow_job_template_node_success_node_association"]
+	if !ok {
+		t.Fatalf("missing success-node relationship")
+	}
+	if successRel.ChildObject != "workflow_job_template_nodes" {
+		t.Fatalf("unexpected success-node child object: got=%q want=%q", successRel.ChildObject, "workflow_job_template_nodes")
+	}
+	if successRel.ParentIDAttribute != "workflow_job_template_node_id" {
+		t.Fatalf("unexpected success-node parent attribute: got=%q want=%q", successRel.ParentIDAttribute, "workflow_job_template_node_id")
+	}
+	if successRel.ChildIDAttribute != "success_node_id" {
+		t.Fatalf("unexpected success-node child attribute: got=%q want=%q", successRel.ChildIDAttribute, "success_node_id")
+	}
+	if successRel.Path != "/api/v2/workflow_job_template_nodes/{id}/success_nodes/" {
+		t.Fatalf("unexpected success-node path: got=%q want=%q", successRel.Path, "/api/v2/workflow_job_template_nodes/{id}/success_nodes/")
+	}
+
+	failureRel, ok := seen["workflow_job_template_node_failure_node_association"]
+	if !ok {
+		t.Fatalf("missing failure-node relationship")
+	}
+	if failureRel.ChildIDAttribute != "failure_node_id" {
+		t.Fatalf("unexpected failure-node child attribute: got=%q want=%q", failureRel.ChildIDAttribute, "failure_node_id")
+	}
+	if failureRel.Path != "/api/v2/workflow_job_template_nodes/{id}/failure_nodes/" {
+		t.Fatalf("unexpected failure-node path: got=%q want=%q", failureRel.Path, "/api/v2/workflow_job_template_nodes/{id}/failure_nodes/")
+	}
+
+	alwaysRel, ok := seen["workflow_job_template_node_always_node_association"]
+	if !ok {
+		t.Fatalf("missing always-node relationship")
+	}
+	if alwaysRel.ChildIDAttribute != "always_node_id" {
+		t.Fatalf("unexpected always-node child attribute: got=%q want=%q", alwaysRel.ChildIDAttribute, "always_node_id")
+	}
+	if alwaysRel.Path != "/api/v2/workflow_job_template_nodes/{id}/always_nodes/" {
+		t.Fatalf("unexpected always-node path: got=%q want=%q", alwaysRel.Path, "/api/v2/workflow_job_template_nodes/{id}/always_nodes/")
+	}
+}
+
+func TestDeriveRelationshipsSkipsRuntimeWorkflowNodeEdges(t *testing.T) {
+	t.Parallel()
+
+	doc := &Document{
+		Paths: map[string]PathItem{
+			"/api/v2/workflow_job_nodes/{id}/success_nodes/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+			"/api/v2/workflow_job_nodes/{id}/failure_nodes/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+			"/api/v2/workflow_job_nodes/{id}/always_nodes/": {
+				Get:  &Operation{},
+				Post: &Operation{},
+			},
+		},
+	}
+	objects := []manifest.ManagedObject{
+		{Name: "workflow_job_nodes"},
+		{Name: "workflow_job_template_nodes"},
+	}
+
+	relationships := DeriveRelationships(doc, objects, map[string]int{}, map[string]string{})
+	if len(relationships) != 0 {
+		t.Fatalf("expected runtime workflow job node edges to be ignored, got %d relationships", len(relationships))
+	}
+}
+
 func TestDeriveRelationshipsExcludesDeprecatedPaths(t *testing.T) {
 	t.Parallel()
 

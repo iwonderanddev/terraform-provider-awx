@@ -1,8 +1,7 @@
-# awx-typed-reference-ids Specification
+# awx-typed-reference-ids Delta
 
-## Purpose
-TBD - created by archiving change fix-id-type-mismatch. Update Purpose after archive.
-## Requirements
+## MODIFIED Requirements
+
 ### Requirement: Numeric reference fields SHALL use a consistent Terraform number type
 
 For AWX object, data source, and relationship-resource fields that represent numeric foreign-key references, the provider SHALL expose those fields as Terraform numbers for both configurable arguments and computed attributes.
@@ -36,11 +35,3 @@ Canonical reference fields SHALL use explicit object-specific `_id` suffix names
   represents an AWX numeric object primary key
 - **THEN** the field is typed as a Terraform number for both configuration
   input and computed state, while nullable behavior remains unchanged
-
-### Requirement: Object identity ID type SHALL match AWX key semantics
-For collection-created objects, the provider SHALL expose object and data source `id` as Terraform numbers. For detail-path keyed objects, the provider SHALL expose `id` as Terraform strings.
-
-#### Scenario: Import behavior remains stable
-- **WHEN** a user imports an object resource using the existing documented import syntax
-- **THEN** the provider accepts the same import ID format and stores state identity using the schema-appropriate type for that object (`Number` for collection-created objects, `String` for detail-path keyed objects)
-
