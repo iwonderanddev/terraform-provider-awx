@@ -8,9 +8,10 @@ mirror_to_github:
   before_script:
     - apk add --no-cache bash curl git jq openssl
   script:
-    # Quoted so YAML does not interpret `- :` as a mapping (colon after list marker).
-    - ': "${GITHUB_MIRROR_REPOSITORY:?GITHUB_MIRROR_REPOSITORY must be set (owner/repo)}"'
+    # Quoted so YAML does not interpret `- :` as a mapping. Use $$ so GitLab passes
+    # ${...} to the shell (otherwise CI strips unknown vars like TOKEN, or breaks :? checks).
+    - ': "$${GITHUB_MIRROR_REPOSITORY:?GITHUB_MIRROR_REPOSITORY must be set (owner/repo)}"'
     - chmod +x scripts/ci/github-installation-token.sh
     - set +x
     - TOKEN="$(scripts/ci/github-installation-token.sh)"
-    - GIT_TERMINAL_PROMPT=0 git push --mirror "https://x-access-token:${TOKEN}@github.com/${GITHUB_MIRROR_REPOSITORY}.git"
+    - GIT_TERMINAL_PROMPT=0 git push --mirror "https://x-access-token:$${TOKEN}@github.com/${GITHUB_MIRROR_REPOSITORY}.git"

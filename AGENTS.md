@@ -42,6 +42,8 @@ When the canonical remote is GitLab and a **GitHub** copy should stay in sync, t
 
 **Logs:** The installation token must never appear in job output; avoid `set -x` around secret handling (the job disables `xtrace` before resolving the token).
 
+**GitLab `script` expansion:** Use `$$` before shell-only variables (for example `$${TOKEN}`) so GitLab does not strip them; see [CI/CD variable expansion](https://docs.gitlab.com/ee/ci/variables/variables_troubleshooting.html).
+
 ## Source Of Truth Rules
 
 ### Curated (manual edits expected)
