@@ -6,6 +6,7 @@ import (
 
 	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	resourceschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
 func TestRelationshipResourceSchemaSurveySpec(t *testing.T) {
@@ -30,6 +31,13 @@ func TestRelationshipResourceSchemaSurveySpec(t *testing.T) {
 	}
 	if got := len(resp.Schema.Attributes); got != 3 {
 		t.Fatalf("expected survey spec schema to expose exactly 3 attributes, got=%d", got)
+	}
+	specAttr, ok := resp.Schema.Attributes["spec"]
+	if !ok {
+		t.Fatalf("expected spec attribute")
+	}
+	if _, ok := specAttr.(resourceschema.DynamicAttribute); !ok {
+		t.Fatalf("expected spec to be DynamicAttribute, got %T", specAttr)
 	}
 }
 

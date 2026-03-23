@@ -751,8 +751,8 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, objEnrichm
 	for _, field := range obj.Fields {
 		if field.Required {
 			tfName := manifest.TerraformAttributeNameForField(obj.Name, field)
-			description := resolveFieldDescription(tfName, field, objEnrichment)
-			builder.WriteString(fmt.Sprintf("- `%s` (%s, Required) %s\n", tfName, terraformTypeLabel(field), formatListItemDescription(description)))
+			description := resolveFieldDescription(obj.Name, tfName, field, objEnrichment)
+			builder.WriteString(fmt.Sprintf("- `%s` (%s, Required) %s\n", tfName, terraformTypeLabel(obj.Name, field), formatListItemDescription(description)))
 			requiredCount++
 		}
 	}
@@ -767,7 +767,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, objEnrichm
 			continue
 		}
 		tfName := manifest.TerraformAttributeNameForField(obj.Name, field)
-		description := resolveFieldDescription(tfName, field, objEnrichment)
+		description := resolveFieldDescription(obj.Name, tfName, field, objEnrichment)
 		qualifiers := []string{"Optional"}
 		if field.Computed {
 			qualifiers = append(qualifiers, "Computed")
@@ -778,7 +778,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, objEnrichm
 		if field.WriteOnly {
 			qualifiers = append(qualifiers, "Write-Only")
 		}
-		builder.WriteString(fmt.Sprintf("- `%s` (%s, %s) %s\n", tfName, terraformTypeLabel(field), strings.Join(qualifiers, ", "), formatListItemDescription(description)))
+		builder.WriteString(fmt.Sprintf("- `%s` (%s, %s) %s\n", tfName, terraformTypeLabel(obj.Name, field), strings.Join(qualifiers, ", "), formatListItemDescription(description)))
 		optionalCount++
 	}
 	if optionalCount == 0 {
@@ -840,12 +840,12 @@ func writeDataSourceDoc(dataSourceDir string, obj manifest.ManagedObject, objEnr
 	}
 	for _, field := range obj.Fields {
 		tfName := manifest.TerraformAttributeNameForField(obj.Name, field)
-		description := resolveFieldDescription(tfName, field, objEnrichment)
+		description := resolveFieldDescription(obj.Name, tfName, field, objEnrichment)
 		qualifiers := []string{"Read-Only"}
 		if field.Sensitive {
 			qualifiers = append(qualifiers, "Sensitive")
 		}
-		builder.WriteString(fmt.Sprintf("- `%s` (%s, %s) %s\n", tfName, terraformTypeLabel(field), strings.Join(qualifiers, ", "), formatListItemDescription(description)))
+		builder.WriteString(fmt.Sprintf("- `%s` (%s, %s) %s\n", tfName, terraformTypeLabel(obj.Name, field), strings.Join(qualifiers, ", "), formatListItemDescription(description)))
 	}
 	builder.WriteString("\n## Further Reading\n\n")
 	writeFurtherReading(&builder, furtherReadingLinks(awxLinks, objEnrichment.FurtherReading))
@@ -863,13 +863,13 @@ func writeRelationshipDoc(resourceDir string, rel manifest.Relationship, awxLink
 		builder.WriteString(fmt.Sprintf("Manages the AWX survey specification for `%s` objects.\n\n", rel.ParentObject))
 		builder.WriteString("## Example Usage\n\n")
 		renderExamples(&builder, []docsExample{{
-			HCL: fmt.Sprintf("resource %q %q {\n  %s = 12\n  spec = jsonencode({\n    name        = \"Example survey\"\n    description = \"Managed by Terraform\"\n    spec        = []\n  })\n}", rel.ResourceName, "example", parentIDAttribute),
+			HCL: fmt.Sprintf("resource %q %q {\n  %s = 12\n  spec = {\n    name        = \"Example survey\"\n    description = \"Managed by Terraform\"\n    spec        = []\n  }\n}", rel.ResourceName, "example", parentIDAttribute),
 		}})
 		builder.WriteString("## Schema\n\n")
 		builder.WriteString("### Required\n\n")
 		builder.WriteString(fmt.Sprintf("- `%s` (Number, Required) Parent object numeric ID.\n", parentIDAttribute))
 		builder.WriteString("\n### Optional\n\n")
-		builder.WriteString("- `spec` (String, Optional) JSON-encoded survey specification payload.\n")
+		builder.WriteString("- `spec` (Object, Optional, Computed) Survey specification payload as a Terraform object (same logical content as the AWX API JSON body).\n")
 		builder.WriteString("\n### Read-Only\n\n")
 		builder.WriteString(fmt.Sprintf("- `id` (String, Read-Only) Survey specification ID (same as `%s`).\n", parentIDAttribute))
 		builder.WriteString(fmt.Sprintf("- `%s` (Number, Read-Only) Parent object numeric ID.\n", parentIDAttribute))
@@ -947,7 +947,7 @@ func defaultResourceExample(obj manifest.ManagedObject, managedResourceBySingula
 			continue
 		}
 		tfName := manifest.TerraformAttributeNameForField(obj.Name, field)
-		builder.WriteString(fmt.Sprintf("  %s = %s\n", tfName, sampleDocValue(field, tfName, managedResourceBySingular)))
+		builder.WriteString(fmt.Sprintf("  %s = %s\n", tfName, sampleDocValue(obj.Name, field, tfName, managedResourceBySingular)))
 		exampleFields[field.Name] = struct{}{}
 	}
 	for _, field := range obj.Fields {
@@ -1005,7 +1005,7 @@ func renderExamples(builder *strings.Builder, examples []docsExample) {
 	}
 }
 
-func terraformTypeLabel(field manifest.FieldSpec) string {
+func terraformTypeLabel(objectName string, field manifest.FieldSpec) string {
 	switch field.Type {
 	case manifest.FieldTypeBool:
 		return "Boolean"
@@ -1014,13 +1014,16 @@ func terraformTypeLabel(field manifest.FieldSpec) string {
 	case manifest.FieldTypeObject:
 		return "Object"
 	case manifest.FieldTypeArray:
+		if objectName == "role_definitions" && field.Name == "permissions" {
+			return "List of String"
+		}
 		return "String"
 	default:
 		return "String"
 	}
 }
 
-func resolveFieldDescription(terraformName string, field manifest.FieldSpec, objEnrichment objectDocsEnrichment) string {
+func resolveFieldDescription(objectName string, terraformName string, field manifest.FieldSpec, objEnrichment objectDocsEnrichment) string {
 	if override := lookupFieldDescription(terraformName, field.Name, objEnrichment.FieldDescriptions); override != "" {
 		return sanitizeDescription(override)
 	}
@@ -1049,6 +1052,9 @@ func resolveFieldDescription(terraformName string, field manifest.FieldSpec, obj
 	case manifest.FieldTypeInt, manifest.FieldTypeFloat:
 		return sanitizeDescription(fmt.Sprintf("Numeric AWX value used for `%s`.", terraformName))
 	case manifest.FieldTypeArray:
+		if objectName == "role_definitions" && field.Name == "permissions" {
+			return sanitizeDescription(fmt.Sprintf("List of permission strings for `%s`.", terraformName))
+		}
 		return sanitizeDescription(fmt.Sprintf("JSON-encoded list value for `%s`.", terraformName))
 	case manifest.FieldTypeObject:
 		return sanitizeDescription(fmt.Sprintf("Object value for `%s`.", terraformName))
@@ -1169,7 +1175,10 @@ func sampleValue(fieldType manifest.FieldType) string {
 	}
 }
 
-func sampleDocValue(field manifest.FieldSpec, terraformName string, managedResourceBySingular map[string]struct{}) string {
+func sampleDocValue(objectName string, field manifest.FieldSpec, terraformName string, managedResourceBySingular map[string]struct{}) string {
+	if field.Type == manifest.FieldTypeArray && objectName == "role_definitions" && field.Name == "permissions" {
+		return `["awx.view_inventory"]`
+	}
 	if !field.Reference || field.Type != manifest.FieldTypeInt {
 		return sampleValue(field.Type)
 	}

@@ -445,11 +445,11 @@ func testAccJobTemplateSurveySpecConfig(jobTemplateID int64) string {
 %s
 resource "awx_job_template_survey_spec" "test" {
   job_template_id = %d
-  spec = jsonencode({
+  spec = {
     name        = "Terraform Acceptance Survey"
     description = "managed by terraform-plugin-testing"
     spec        = []
-  })
+  }
 }
 `, testAccProviderConfig(), jobTemplateID)
 }

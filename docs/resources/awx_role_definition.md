@@ -9,7 +9,7 @@ Manages AWX `role_definitions` objects.
 ```hcl
 resource "awx_role_definition" "example" {
   name = "example"
-  permissions = jsonencode(["value"])
+  permissions = ["awx.view_inventory"]
 }
 ```
 
@@ -26,7 +26,7 @@ resource "awx_role_definition" "example" {
 ### Required
 
 - `name` (String, Required) The name of this role.
-- `permissions` (String, Required) JSON-encoded list value for `permissions`.
+- `permissions` (List of String, Required) List of permission strings for `permissions`.
 
 ### Optional
 

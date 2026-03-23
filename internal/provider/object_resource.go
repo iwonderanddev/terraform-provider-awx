@@ -12,6 +12,7 @@ import (
 
 	"github.com/damien/terraform-provider-awx-iwd/internal/client"
 	"github.com/damien/terraform-provider-awx-iwd/internal/manifest"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -20,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/dynamicplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -73,7 +75,7 @@ func (r *objectResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	}
 
 	for _, field := range r.object.Fields {
-		attributes[manifest.TerraformAttributeNameForField(r.object.Name, field)] = newResourceFieldAttribute(field, r.object.UpdateSupported)
+		attributes[manifest.TerraformAttributeNameForField(r.object.Name, field)] = newResourceFieldAttribute(r.object.Name, field, r.object.UpdateSupported)
 	}
 
 	resp.Schema = resourceschema.Schema{
@@ -382,7 +384,39 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 			}
 
 			payload[field.Name] = objectPayload
-		default:
+		case manifest.FieldTypeArray:
+			if isNativeStringListArrayField(r.object.Name, field.Name) {
+				var list types.List
+				diags.Append(config.GetAttribute(ctx, path.Root(tfName), &list)...)
+				if list.IsNull() || list.IsUnknown() {
+					continue
+				}
+				if field.WriteOnly {
+					plannedValues[field.Name] = list
+				}
+				elems := list.Elements()
+				out := make([]any, len(elems))
+				okElems := true
+				for i, el := range elems {
+					sv, ok := el.(types.String)
+					if !ok {
+						diags.AddAttributeError(path.Root(tfName), "Invalid list element", fmt.Sprintf("expected string at index %d, got %T", i, el))
+						okElems = false
+						break
+					}
+					if sv.IsNull() || sv.IsUnknown() {
+						diags.AddAttributeError(path.Root(tfName), "Invalid list element", fmt.Sprintf("index %d must be a known string", i))
+						okElems = false
+						break
+					}
+					out[i] = sv.ValueString()
+				}
+				if !okElems {
+					continue
+				}
+				payload[field.Name] = out
+				continue
+			}
 			var value types.String
 			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
 			if value.IsNull() || value.IsUnknown() {
@@ -392,14 +426,20 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 				plannedValues[field.Name] = value
 			}
 
-			if field.Type == manifest.FieldTypeArray {
-				decoded, decodeErr := decodeJSONString(value.ValueString())
-				if decodeErr != nil {
-					diags.AddAttributeError(path.Root(tfName), "Invalid JSON payload", decodeErr.Error())
-					continue
-				}
-				payload[field.Name] = decoded
+			decoded, decodeErr := decodeJSONString(value.ValueString())
+			if decodeErr != nil {
+				diags.AddAttributeError(path.Root(tfName), "Invalid JSON payload", decodeErr.Error())
 				continue
+			}
+			payload[field.Name] = decoded
+		default:
+			var value types.String
+			diags.Append(config.GetAttribute(ctx, path.Root(tfName), &value)...)
+			if value.IsNull() || value.IsUnknown() {
+				continue
+			}
+			if field.WriteOnly {
+				plannedValues[field.Name] = value
 			}
 
 			payload[field.Name] = value.ValueString()
@@ -485,7 +525,20 @@ func (r *objectResource) pruneUnchangedFieldsFromPayload(
 			if reflect.DeepEqual(plannedObject, priorObject) {
 				delete(payload, field.Name)
 			}
-		default:
+		case manifest.FieldTypeArray:
+			if isNativeStringListArrayField(r.object.Name, field.Name) {
+				var planned types.List
+				var prior types.List
+				diags.Append(plan.GetAttribute(ctx, attributePath, &planned)...)
+				diags.Append(state.GetAttribute(ctx, attributePath, &prior)...)
+				if planned.IsNull() || planned.IsUnknown() || prior.IsNull() || prior.IsUnknown() {
+					continue
+				}
+				if planned.Equal(prior) {
+					delete(payload, field.Name)
+				}
+				continue
+			}
 			var planned types.String
 			var prior types.String
 			diags.Append(plan.GetAttribute(ctx, attributePath, &planned)...)
@@ -497,14 +550,27 @@ func (r *objectResource) pruneUnchangedFieldsFromPayload(
 			plannedString := planned.ValueString()
 			priorString := prior.ValueString()
 
-			if field.Type == manifest.FieldTypeArray {
-				plannedArray, plannedErr := decodeJSONString(plannedString)
-				priorArray, priorErr := decodeJSONString(priorString)
-				if plannedErr == nil && priorErr == nil && reflect.DeepEqual(plannedArray, priorArray) {
-					delete(payload, field.Name)
-					continue
-				}
+			plannedArray, plannedErr := decodeJSONString(plannedString)
+			priorArray, priorErr := decodeJSONString(priorString)
+			if plannedErr == nil && priorErr == nil && reflect.DeepEqual(plannedArray, priorArray) {
+				delete(payload, field.Name)
+				continue
 			}
+
+			if plannedString == priorString {
+				delete(payload, field.Name)
+			}
+		default:
+			var planned types.String
+			var prior types.String
+			diags.Append(plan.GetAttribute(ctx, attributePath, &planned)...)
+			diags.Append(state.GetAttribute(ctx, attributePath, &prior)...)
+			if planned.IsNull() || planned.IsUnknown() || prior.IsNull() || prior.IsUnknown() {
+				continue
+			}
+
+			plannedString := planned.ValueString()
+			priorString := prior.ValueString()
 
 			if fieldHasTrailingNewlineNormalization(r.object.Name, field.Name) &&
 				stripSingleTrailingLineEnding(plannedString) == stripSingleTrailingLineEnding(priorString) {
@@ -556,6 +622,16 @@ func (r *objectResource) writeOnlyValuesFromSource(ctx context.Context, source a
 			if !value.IsNull() && !value.IsUnknown() {
 				values[field.Name] = value
 			}
+		case manifest.FieldTypeArray:
+			if isNativeStringListArrayField(r.object.Name, field.Name) {
+				var value types.List
+				diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
+				if !value.IsNull() && !value.IsUnknown() {
+					values[field.Name] = value
+				}
+				continue
+			}
+			fallthrough
 		default:
 			var value types.String
 			diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
@@ -789,7 +865,7 @@ func shouldPreserveObjectValue(objectName string, fieldName string, apiValue any
 	return reflect.DeepEqual(priorMap, apiMap), nil
 }
 
-func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) resourceschema.Attribute {
+func newResourceFieldAttribute(objectName string, field manifest.FieldSpec, updateSupported bool) resourceschema.Attribute {
 	optional := !field.Required
 	computed := field.Computed && !field.Required
 	requiresReplace := !updateSupported
@@ -803,7 +879,7 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 			planModifiers = append(planModifiers, int64planmodifier.RequiresReplace())
 		}
 		return resourceschema.Int64Attribute{
-			Description:   fieldDescription(field),
+			Description:   fieldDescription(objectName, field),
 			Required:      field.Required,
 			Optional:      optional,
 			Computed:      computed,
@@ -819,7 +895,7 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 			planModifiers = append(planModifiers, boolplanmodifier.RequiresReplace())
 		}
 		return resourceschema.BoolAttribute{
-			Description:   fieldDescription(field),
+			Description:   fieldDescription(objectName, field),
 			Required:      field.Required,
 			Optional:      optional,
 			Computed:      computed,
@@ -835,7 +911,7 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 			planModifiers = append(planModifiers, float64planmodifier.RequiresReplace())
 		}
 		return resourceschema.Float64Attribute{
-			Description:   fieldDescription(field),
+			Description:   fieldDescription(objectName, field),
 			Required:      field.Required,
 			Optional:      optional,
 			Computed:      computed,
@@ -851,7 +927,43 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 			planModifiers = append(planModifiers, dynamicplanmodifier.RequiresReplace())
 		}
 		return resourceschema.DynamicAttribute{
-			Description:   fieldDescription(field),
+			Description:   fieldDescription(objectName, field),
+			Required:      field.Required,
+			Optional:      optional,
+			Computed:      computed,
+			Sensitive:     field.Sensitive,
+			PlanModifiers: planModifiers,
+		}
+	case manifest.FieldTypeArray:
+		if isNativeStringListArrayField(objectName, field.Name) {
+			planModifiers := []planmodifier.List{}
+			if computed {
+				planModifiers = append(planModifiers, listplanmodifier.UseStateForUnknown())
+			}
+			if requiresReplace {
+				planModifiers = append(planModifiers, listplanmodifier.RequiresReplace())
+			}
+			return resourceschema.ListAttribute{
+				ElementType:   types.StringType,
+				Description:   fieldDescription(objectName, field),
+				Required:      field.Required,
+				Optional:      optional,
+				Computed:      computed,
+				Sensitive:     field.Sensitive,
+				PlanModifiers: planModifiers,
+			}
+		}
+		fallthrough
+	case manifest.FieldTypeString:
+		planModifiers := []planmodifier.String{}
+		if computed {
+			planModifiers = append(planModifiers, stringplanmodifier.UseStateForUnknown())
+		}
+		if requiresReplace {
+			planModifiers = append(planModifiers, stringplanmodifier.RequiresReplace())
+		}
+		return resourceschema.StringAttribute{
+			Description:   fieldDescription(objectName, field),
 			Required:      field.Required,
 			Optional:      optional,
 			Computed:      computed,
@@ -867,7 +979,7 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 			planModifiers = append(planModifiers, stringplanmodifier.RequiresReplace())
 		}
 		return resourceschema.StringAttribute{
-			Description:   fieldDescription(field),
+			Description:   fieldDescription(objectName, field),
 			Required:      field.Required,
 			Optional:      optional,
 			Computed:      computed,
@@ -877,11 +989,61 @@ func newResourceFieldAttribute(field manifest.FieldSpec, updateSupported bool) r
 	}
 }
 
-func fieldDescription(field manifest.FieldSpec) string {
+func isNativeStringListArrayField(objectName string, fieldName string) bool {
+	return objectName == "role_definitions" && fieldName == "permissions"
+}
+
+func nativeStringSliceToTerraformList(value any) (types.List, diag.Diagnostics) {
+	diags := diag.Diagnostics{}
+	var elems []attr.Value
+	switch v := value.(type) {
+	case []any:
+		elems = make([]attr.Value, len(v))
+		for i, x := range v {
+			s, ok := x.(string)
+			if !ok {
+				diags.AddError("Failed to convert array field", fmt.Sprintf("index %d: expected string, got %T", i, x))
+				return types.ListNull(types.StringType), diags
+			}
+			elems[i] = types.StringValue(s)
+		}
+	case []string:
+		elems = make([]attr.Value, len(v))
+		for i, s := range v {
+			elems[i] = types.StringValue(s)
+		}
+	default:
+		rv := reflect.ValueOf(value)
+		if rv.Kind() == reflect.Slice {
+			n := rv.Len()
+			elems = make([]attr.Value, n)
+			for i := 0; i < n; i++ {
+				el := rv.Index(i).Interface()
+				s, ok := el.(string)
+				if !ok {
+					diags.AddError("Failed to convert array field", fmt.Sprintf("index %d: expected string, got %T", i, el))
+					return types.ListNull(types.StringType), diags
+				}
+				elems[i] = types.StringValue(s)
+			}
+		} else {
+			diags.AddError("Failed to convert array field", fmt.Sprintf("expected a string slice, got %T", value))
+			return types.ListNull(types.StringType), diags
+		}
+	}
+	list, ldiags := types.ListValue(types.StringType, elems)
+	diags.Append(ldiags...)
+	return list, diags
+}
+
+func fieldDescription(objectName string, field manifest.FieldSpec) string {
 	if strings.TrimSpace(field.Description) != "" {
 		return field.Description
 	}
 	if field.Type == manifest.FieldTypeArray {
+		if isNativeStringListArrayField(objectName, field.Name) {
+			return "List of permission strings for this role."
+		}
 		return "JSON-encoded value for this AWX field."
 	}
 	if field.Type == manifest.FieldTypeObject {
@@ -902,6 +1064,11 @@ func toTerraformValue(objectName string, field manifest.FieldSpec, value any) (a
 			return types.Float64Null(), diags
 		case manifest.FieldTypeObject:
 			return types.DynamicNull(), diags
+		case manifest.FieldTypeArray:
+			if isNativeStringListArrayField(objectName, field.Name) {
+				return types.ListNull(types.StringType), diags
+			}
+			return types.StringNull(), diags
 		default:
 			return types.StringNull(), diags
 		}
@@ -937,6 +1104,11 @@ func toTerraformValue(objectName string, field manifest.FieldSpec, value any) (a
 		}
 		return dynamicValue, diags
 	case manifest.FieldTypeArray:
+		if isNativeStringListArrayField(objectName, field.Name) {
+			listVal, listDiags := nativeStringSliceToTerraformList(value)
+			diags.Append(listDiags...)
+			return listVal, diags
+		}
 		encoded, err := json.Marshal(value)
 		if err != nil {
 			diags.AddError("Failed to encode complex field as JSON", fmt.Sprintf("field=%s err=%s", field.Name, err.Error()))

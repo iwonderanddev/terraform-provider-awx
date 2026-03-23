@@ -23,7 +23,7 @@ data "awx_role_definition" "example" {
 - `content_type` (String, Read-Only) String to use for references to this type from other models in the API.
 - `description` (String, Read-Only) A description of this role.
 - `name` (String, Read-Only) The name of this role.
-- `permissions` (String, Read-Only) JSON-encoded list value for `permissions`.
+- `permissions` (List of String, Read-Only) List of permission strings for `permissions`.
 
 ## Further Reading
 

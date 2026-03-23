@@ -77,11 +77,11 @@ provider "awx" {
 resource "awx_job_template_survey_spec" "legacy" {
   job_template_id = 1
   legacy_id       = 1
-  spec = jsonencode({
+  spec = {
     name        = "legacy"
     description = "legacy"
     spec        = []
-  })
+  }
 }
 `,
 				ExpectError: regexp.MustCompile(`(?s)(Unsupported argument|An argument named "legacy_id" is not expected here)`),

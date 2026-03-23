@@ -73,7 +73,7 @@ func (d *objectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 			// Preserve explicit lookup arguments such as id and name.
 			continue
 		}
-		attributes[tfName] = newDataSourceFieldAttribute(field)
+		attributes[tfName] = newDataSourceFieldAttribute(d.object.Name, field)
 	}
 
 	resp.Schema = datasourceschema.Schema{
@@ -166,35 +166,45 @@ func (d *objectDataSource) setState(ctx context.Context, state attributeTarget, 
 	return diags
 }
 
-func newDataSourceFieldAttribute(field manifest.FieldSpec) datasourceschema.Attribute {
+func newDataSourceFieldAttribute(objectName string, field manifest.FieldSpec) datasourceschema.Attribute {
 	switch field.Type {
 	case manifest.FieldTypeInt:
 		return datasourceschema.Int64Attribute{
-			Description: fieldDescription(field),
+			Description: fieldDescription(objectName, field),
 			Computed:    true,
 			Sensitive:   field.Sensitive,
 		}
 	case manifest.FieldTypeBool:
 		return datasourceschema.BoolAttribute{
-			Description: fieldDescription(field),
+			Description: fieldDescription(objectName, field),
 			Computed:    true,
 			Sensitive:   field.Sensitive,
 		}
 	case manifest.FieldTypeFloat:
 		return datasourceschema.Float64Attribute{
-			Description: fieldDescription(field),
+			Description: fieldDescription(objectName, field),
 			Computed:    true,
 			Sensitive:   field.Sensitive,
 		}
 	case manifest.FieldTypeObject:
 		return datasourceschema.DynamicAttribute{
-			Description: fieldDescription(field),
+			Description: fieldDescription(objectName, field),
 			Computed:    true,
 			Sensitive:   field.Sensitive,
 		}
+	case manifest.FieldTypeArray:
+		if isNativeStringListArrayField(objectName, field.Name) {
+			return datasourceschema.ListAttribute{
+				ElementType: types.StringType,
+				Description: fieldDescription(objectName, field),
+				Computed:    true,
+				Sensitive:   field.Sensitive,
+			}
+		}
+		fallthrough
 	default:
 		return datasourceschema.StringAttribute{
-			Description: fieldDescription(field),
+			Description: fieldDescription(objectName, field),
 			Computed:    true,
 			Sensitive:   field.Sensitive,
 		}

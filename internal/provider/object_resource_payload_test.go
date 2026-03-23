@@ -426,6 +426,48 @@ func TestPruneUnchangedFieldsFromPayloadTreatsEquivalentArraysAsUnchanged(t *tes
 	}
 }
 
+func TestPayloadFromConfigEncodesRoleDefinitionPermissionsList(t *testing.T) {
+	t.Parallel()
+
+	resource := &objectResource{
+		object: manifest.ManagedObject{
+			Name: "role_definitions",
+			Fields: []manifest.FieldSpec{
+				{Name: "name", Type: manifest.FieldTypeString, Required: true},
+				{Name: "permissions", Type: manifest.FieldTypeArray, Required: true},
+			},
+		},
+	}
+
+	perms, permDiags := types.ListValue(types.StringType, []attr.Value{
+		types.StringValue("awx.view_inventory"),
+		types.StringValue("awx.change_inventory"),
+	})
+	if permDiags.HasError() {
+		t.Fatalf("unexpected diagnostics building list: %v", permDiags)
+	}
+
+	source := &mockConfigSource{
+		values: map[string]any{
+			"name":        types.StringValue("custom-role"),
+			"permissions": perms,
+		},
+	}
+
+	payload, _, diags := resource.payloadFromConfig(context.Background(), source)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+
+	out, ok := payload["permissions"].([]any)
+	if !ok {
+		t.Fatalf("expected permissions []any, got %#v", payload["permissions"])
+	}
+	if len(out) != 2 {
+		t.Fatalf("unexpected permissions length: %d", len(out))
+	}
+}
+
 type mockConfigSource struct {
 	values map[string]any
 }
@@ -477,6 +519,13 @@ func assignMockAttribute(target any, value any) diag.Diagnostics {
 			return diags
 		}
 		*t = v
+	case *types.List:
+		v, ok := value.(types.List)
+		if !ok {
+			diags.AddError("mock type mismatch", fmt.Sprintf("expected types.List, got %T", value))
+			return diags
+		}
+		*t = v
 	default:
 		diags.AddError("unsupported mock target", fmt.Sprintf("target type %T is not supported", target))
 	}
@@ -495,6 +544,8 @@ func assignMockNull(target any) diag.Diagnostics {
 		*t = types.Float64Null()
 	case *types.Dynamic:
 		*t = types.DynamicNull()
+	case *types.List:
+		*t = types.ListNull(types.StringType)
 	default:
 		diags := diag.Diagnostics{}
 		diags.AddError("unsupported mock target", fmt.Sprintf("target type %T is not supported", target))

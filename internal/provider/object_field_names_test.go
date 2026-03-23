@@ -268,3 +268,53 @@ func TestPayloadFromConfigReferenceFieldMapsExplicitTerraformNameToAWXField(t *t
 		t.Fatalf("expected AWX field credential to be populated, got=%#v", payload["credential"])
 	}
 }
+
+func TestObjectResourceSchemaUsesListAttributeForRoleDefinitionPermissions(t *testing.T) {
+	t.Parallel()
+
+	r := &objectResource{
+		object: manifest.ManagedObject{
+			Name: "role_definitions",
+			Fields: []manifest.FieldSpec{
+				{Name: "name", Type: manifest.FieldTypeString, Required: true},
+				{Name: "permissions", Type: manifest.FieldTypeArray, Required: true},
+			},
+		},
+	}
+
+	resp := &resource.SchemaResponse{}
+	r.Schema(context.Background(), resource.SchemaRequest{}, resp)
+
+	attribute, ok := resp.Schema.Attributes["permissions"]
+	if !ok {
+		t.Fatalf("expected permissions attribute")
+	}
+	if _, ok := attribute.(resourceschema.ListAttribute); !ok {
+		t.Fatalf("expected resourceschema.ListAttribute, got %T", attribute)
+	}
+}
+
+func TestObjectDataSourceSchemaUsesListAttributeForRoleDefinitionPermissions(t *testing.T) {
+	t.Parallel()
+
+	d := &objectDataSource{
+		object: manifest.ManagedObject{
+			Name: "role_definitions",
+			Fields: []manifest.FieldSpec{
+				{Name: "name", Type: manifest.FieldTypeString, Required: true},
+				{Name: "permissions", Type: manifest.FieldTypeArray, Required: true},
+			},
+		},
+	}
+
+	resp := &datasource.SchemaResponse{}
+	d.Schema(context.Background(), datasource.SchemaRequest{}, resp)
+
+	attribute, ok := resp.Schema.Attributes["permissions"]
+	if !ok {
+		t.Fatalf("expected permissions attribute")
+	}
+	if _, ok := attribute.(datasourceschema.ListAttribute); !ok {
+		t.Fatalf("expected datasourceschema.ListAttribute, got %T", attribute)
+	}
+}

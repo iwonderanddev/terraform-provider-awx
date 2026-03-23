@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -14,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	resourceschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/dynamicplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -60,10 +60,13 @@ func (r *relationshipResource) Schema(_ context.Context, _ resource.SchemaReques
 					Description: fmt.Sprintf("Numeric ID for parent `%s` object.", r.relationship.ParentObject),
 					Required:    true,
 				},
-				"spec": resourceschema.StringAttribute{
-					Description: "JSON-encoded survey specification payload.",
+				"spec": resourceschema.DynamicAttribute{
+					Description: "Survey specification payload as a Terraform object (same logical content as the AWX API JSON body).",
 					Optional:    true,
 					Computed:    true,
+					PlanModifiers: []planmodifier.Dynamic{
+						dynamicplanmodifier.UseStateForUnknown(),
+					},
 				},
 			},
 		}
@@ -125,8 +128,8 @@ func (r *relationshipResource) Create(ctx context.Context, req resource.CreateRe
 
 		stateSpec := spec
 		if refreshed, err := r.data.client.GetObject(ctx, r.relationship.Path, strconv.FormatInt(parentID, 10)); err == nil && len(refreshed) > 0 {
-			if encoded, encodeErr := json.Marshal(refreshed); encodeErr == nil {
-				stateSpec = types.StringValue(string(encoded))
+			if dyn, dynErr := terraformObjectValueFromAPIValue("_survey_spec", "spec", refreshed); dynErr == nil {
+				stateSpec = dyn
 			}
 		}
 
@@ -173,7 +176,7 @@ func (r *relationshipResource) Read(ctx context.Context, req resource.ReadReques
 			return
 		}
 
-		var currentSpec types.String
+		var currentSpec types.Dynamic
 		resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("spec"), &currentSpec)...)
 		if resp.Diagnostics.HasError() {
 			return
@@ -181,14 +184,14 @@ func (r *relationshipResource) Read(ctx context.Context, req resource.ReadReques
 
 		stateSpec := currentSpec
 		if len(payload) > 0 {
-			encoded, encodeErr := json.Marshal(payload)
-			if encodeErr != nil {
-				resp.Diagnostics.AddError("Failed to encode survey specification state", encodeErr.Error())
+			dyn, dynErr := terraformObjectValueFromAPIValue("_survey_spec", "spec", payload)
+			if dynErr != nil {
+				resp.Diagnostics.AddError("Failed to convert survey specification state", dynErr.Error())
 				return
 			}
-			stateSpec = types.StringValue(string(encoded))
+			stateSpec = dyn
 		} else if stateSpec.IsUnknown() {
-			stateSpec = types.StringNull()
+			stateSpec = types.DynamicNull()
 		}
 
 		setSurveySpecState(ctx, parentID, parentIDAttribute, stateSpec, &resp.State, &resp.Diagnostics)
@@ -310,7 +313,7 @@ func (r *relationshipResource) ImportState(ctx context.Context, req resource.Imp
 			resp.Diagnostics.AddError("Invalid survey specification import ID", err.Error())
 			return
 		}
-		setSurveySpecState(ctx, parentID, r.parentIDAttributeName(), types.StringNull(), &resp.State, &resp.Diagnostics)
+		setSurveySpecState(ctx, parentID, r.parentIDAttributeName(), types.DynamicNull(), &resp.State, &resp.Diagnostics)
 		return
 	}
 
@@ -375,32 +378,30 @@ func surveySpecParentID(ctx context.Context, source attributeSource, parentAttri
 	return parentID.ValueInt64(), diags
 }
 
-func surveySpecConfig(ctx context.Context, source attributeSource, parentAttribute string) (int64, any, types.String, diag.Diagnostics) {
+func surveySpecConfig(ctx context.Context, source attributeSource, parentAttribute string) (int64, any, types.Dynamic, diag.Diagnostics) {
 	parentID, diags := surveySpecParentID(ctx, source, parentAttribute)
 	if diags.HasError() {
-		return 0, nil, types.StringNull(), diags
+		return 0, nil, types.DynamicNull(), diags
 	}
 
-	var spec types.String
+	var spec types.Dynamic
 	diags.Append(source.GetAttribute(ctx, path.Root("spec"), &spec)...)
 	if spec.IsNull() || spec.IsUnknown() {
 		diags.AddAttributeError(path.Root("spec"), "Missing survey specification", "spec is required for survey specification resources.")
-		return 0, nil, types.StringNull(), diags
+		return 0, nil, types.DynamicNull(), diags
 	}
 
-	decoded, err := decodeJSONString(spec.ValueString())
+	objectPayload, err := terraformDynamicObjectToMap(spec)
 	if err != nil {
-		diags.AddAttributeError(path.Root("spec"), "Invalid JSON payload", err.Error())
-		return 0, nil, types.StringNull(), diags
+		diags.AddAttributeError(path.Root("spec"), "Invalid survey specification object", err.Error())
+		return 0, nil, types.DynamicNull(), diags
+	}
+	if objectPayload == nil {
+		diags.AddAttributeError(path.Root("spec"), "Invalid survey specification object", "spec must be a non-null object value.")
+		return 0, nil, types.DynamicNull(), diags
 	}
 
-	encoded, err := json.Marshal(decoded)
-	if err != nil {
-		diags.AddAttributeError(path.Root("spec"), "Invalid JSON payload", err.Error())
-		return 0, nil, types.StringNull(), diags
-	}
-
-	return parentID, decoded, types.StringValue(string(encoded)), diags
+	return parentID, objectPayload, spec, diags
 }
 
 func setRelationshipState(ctx context.Context, parentID, childID int64, parentAttribute string, childAttribute string, target attributeTarget, diags *diag.Diagnostics) {
@@ -410,7 +411,7 @@ func setRelationshipState(ctx context.Context, parentID, childID int64, parentAt
 	diags.Append(target.SetAttribute(ctx, path.Root(childAttribute), types.Int64Value(childID))...)
 }
 
-func setSurveySpecState(ctx context.Context, parentID int64, parentAttribute string, spec types.String, target attributeTarget, diags *diag.Diagnostics) {
+func setSurveySpecState(ctx context.Context, parentID int64, parentAttribute string, spec types.Dynamic, target attributeTarget, diags *diag.Diagnostics) {
 	diags.Append(target.SetAttribute(ctx, path.Root("id"), fmt.Sprintf("%d", parentID))...)
 	diags.Append(target.SetAttribute(ctx, path.Root(parentAttribute), types.Int64Value(parentID))...)
 	diags.Append(target.SetAttribute(ctx, path.Root("spec"), spec)...)

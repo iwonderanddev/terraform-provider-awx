@@ -180,7 +180,7 @@ func TestResolveFieldDescriptionPrefersCuratedThenSchemaThenFallback(t *testing.
 		Reference:   true,
 		Description: "Schema description",
 	}
-	withCurated := resolveFieldDescription("inventory_id", field, objectDocsEnrichment{
+	withCurated := resolveFieldDescription("inventories", "inventory_id", field, objectDocsEnrichment{
 		FieldDescriptions: map[string]string{
 			"inventory_id": "Curated description",
 		},
@@ -189,20 +189,20 @@ func TestResolveFieldDescriptionPrefersCuratedThenSchemaThenFallback(t *testing.
 		t.Fatalf("expected curated description precedence, got=%q", withCurated)
 	}
 
-	withSchema := resolveFieldDescription("inventory_id", field, objectDocsEnrichment{})
+	withSchema := resolveFieldDescription("inventories", "inventory_id", field, objectDocsEnrichment{})
 	if withSchema != "Schema description" {
 		t.Fatalf("expected schema description fallback, got=%q", withSchema)
 	}
 
 	field.Description = ""
-	withFallback := resolveFieldDescription("inventory_id", field, objectDocsEnrichment{})
+	withFallback := resolveFieldDescription("inventories", "inventory_id", field, objectDocsEnrichment{})
 	if !strings.Contains(withFallback, "Numeric ID of the related AWX inventory object.") {
 		t.Fatalf("expected typed fallback description, got=%q", withFallback)
 	}
 
 	field.Reference = false
 	field.Description = "Value for `inventory`."
-	lowInfoFallback := resolveFieldDescription("inventory", field, objectDocsEnrichment{})
+	lowInfoFallback := resolveFieldDescription("inventories", "inventory", field, objectDocsEnrichment{})
 	if strings.Contains(strings.ToLower(lowInfoFallback), "value for") {
 		t.Fatalf("expected low-information schema description to be replaced, got=%q", lowInfoFallback)
 	}
@@ -211,7 +211,7 @@ func TestResolveFieldDescriptionPrefersCuratedThenSchemaThenFallback(t *testing.
 func TestObjectFieldDocTypeAndSampleValue(t *testing.T) {
 	t.Parallel()
 
-	label := terraformTypeLabel(manifest.FieldSpec{Type: manifest.FieldTypeObject})
+	label := terraformTypeLabel("", manifest.FieldSpec{Type: manifest.FieldTypeObject})
 	if label != "Object" {
 		t.Fatalf("expected object field doc label to be Object, got=%q", label)
 	}
@@ -650,14 +650,14 @@ func TestSampleDocValueUsesReferenceWiringWhenTargetResourceExists(t *testing.T)
 		Reference: true,
 	}
 
-	got := sampleDocValue(field, "organization_id", map[string]struct{}{
+	got := sampleDocValue("teams", field, "organization_id", map[string]struct{}{
 		"organization": {},
 	})
 	if got != "awx_organization.example.id" {
 		t.Fatalf("unexpected reference wiring example: got=%q", got)
 	}
 
-	fallback := sampleDocValue(field, "organization_id", map[string]struct{}{})
+	fallback := sampleDocValue("teams", field, "organization_id", map[string]struct{}{})
 	if fallback != "1" {
 		t.Fatalf("expected numeric fallback example when target resource is unavailable, got=%q", fallback)
 	}

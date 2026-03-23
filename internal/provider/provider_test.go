@@ -19,7 +19,7 @@ import (
 func TestNewResourceFieldAttributeSensitive(t *testing.T) {
 	t.Parallel()
 
-	attribute := newResourceFieldAttribute(manifest.FieldSpec{
+	attribute := newResourceFieldAttribute("credentials", manifest.FieldSpec{
 		Name:      "password",
 		Type:      manifest.FieldTypeString,
 		Sensitive: true,
@@ -37,7 +37,7 @@ func TestNewResourceFieldAttributeSensitive(t *testing.T) {
 func TestNewResourceFieldAttributeComputed(t *testing.T) {
 	t.Parallel()
 
-	attribute := newResourceFieldAttribute(manifest.FieldSpec{
+	attribute := newResourceFieldAttribute("inventories", manifest.FieldSpec{
 		Name:     "max_hosts",
 		Type:     manifest.FieldTypeInt,
 		Required: false,
@@ -59,7 +59,7 @@ func TestNewResourceFieldAttributeComputed(t *testing.T) {
 func TestNewResourceFieldAttributeRequiresReplaceWhenUpdateUnsupported(t *testing.T) {
 	t.Parallel()
 
-	attribute := newResourceFieldAttribute(manifest.FieldSpec{
+	attribute := newResourceFieldAttribute("teams", manifest.FieldSpec{
 		Name: "user",
 		Type: manifest.FieldTypeInt,
 	}, false)

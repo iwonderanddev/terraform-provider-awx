@@ -7,11 +7,11 @@ Manages the AWX survey specification for `workflow_job_templates` objects.
 ```hcl
 resource "awx_workflow_job_template_survey_spec" "example" {
   workflow_job_template_id = 12
-  spec = jsonencode({
+  spec = {
     name        = "Example survey"
     description = "Managed by Terraform"
     spec        = []
-  })
+  }
 }
 ```
 
@@ -23,7 +23,7 @@ resource "awx_workflow_job_template_survey_spec" "example" {
 
 ### Optional
 
-- `spec` (String, Optional) JSON-encoded survey specification payload.
+- `spec` (Object, Optional, Computed) Survey specification payload as a Terraform object (same logical content as the AWX API JSON body).
 
 ### Read-Only
 
