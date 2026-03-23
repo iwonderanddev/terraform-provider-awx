@@ -38,11 +38,13 @@ When the canonical remote is GitLab and a **GitHub** copy should stay in sync, t
 
 **GitHub (one-time):** Create a GitHub App with **Contents: Read and write**, install it for the target owner, and use a **dedicated** mirror repository if possible — `git push --mirror` can overwrite or delete refs on the remote. Align **branch protection** with automation (mirror updates are forceful).
 
-**GitLab CI/CD variables:** `GITHUB_APP_CLIENT_ID` (JWT `iss` — GitHub recommends the app **Client ID** for this claim; see [Generating a JWT for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-json-web-token-jwt-for-a-github-app)), `GITHUB_APP_INSTALLATION_ID` (required for `POST /app/installations/{id}/access_tokens`; not the same as Client ID), `GITHUB_APP_PRIVATE_KEY` (PEM; File-type variable recommended), `GITHUB_MIRROR_REPOSITORY` (`owner/repo`). Prefer **protected** variables for protected branches.
+**GitLab CI/CD variables:** `GITHUB_APP_CLIENT_ID` (JWT `iss` — GitHub recommends the app **Client ID** for this claim; see [Generating a JWT for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-json-web-token-jwt-for-a-github-app)), `GITHUB_APP_INSTALLATION_ID` (required for `POST /app/installations/{id}/access_tokens`; not the same as Client ID), `GITHUB_APP_PRIVATE_KEY` (PEM; **File**-type variable is most reliable; if you use a multiline value in the UI, the script normalizes literal `\n` and CRLF — see `scripts/ci/github-installation-token.sh`), `GITHUB_MIRROR_REPOSITORY` (`owner/repo`). Prefer **protected** variables for protected branches.
 
 **Logs:** The installation token must never appear in job output; avoid `set -x` around secret handling (the job disables `xtrace` before resolving the token).
 
 **GitLab `script` expansion:** Use `$$` before shell-only variables (for example `$${TOKEN}`) so GitLab does not strip them; see [CI/CD variable expansion](https://docs.gitlab.com/ee/ci/variables/variables_troubleshooting.html).
+
+**Inspecting pipelines (glab):** With [glab](https://gitlab.com/gitlab-org/cli) authenticated against your GitLab instance (`glab auth login`), from the repo root: `glab ci list -P 10` (recent pipelines), `glab ci status` (pipeline for current branch), `glab ci trace <job_id>` (full job log). Use `-R group/project` when not inside the checkout.
 
 ## Source Of Truth Rules
 
