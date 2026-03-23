@@ -2,23 +2,35 @@
 
 ## Purpose
 
-Define requirements for mirroring this repository from GitLab CI to GitHub using a GitHub App installation token.
+Define requirements for syncing this repository's default branch from GitLab CI
+to GitHub using a GitHub App installation token.
 
 ## ADDED Requirements
 
-### Requirement: Default-branch mirror job
+### Requirement: Default-branch sync job
 
-The repository SHALL include a GitLab CI job that pushes a full git mirror to a configured GitHub repository when the pipeline runs for a commit on the GitLab **default branch** only.
+The repository SHALL include a GitLab CI job that pushes only the GitLab default
+branch to a configured GitHub repository when the pipeline runs for a commit on
+the GitLab **default branch** only.
 
 #### Scenario: Feature branch does not mirror
 
 - **WHEN** a pipeline runs for a branch other than the GitLab default branch
 - **THEN** the mirror job SHALL NOT run (or SHALL be skipped by rules equivalent to default-branch-only execution)
 
-#### Scenario: Default branch mirrors
+#### Scenario: Default branch syncs only the target branch
 
 - **WHEN** a pipeline runs for a push to the GitLab default branch
-- **THEN** the mirror job SHALL run and SHALL push refs to the configured GitHub remote such that branches and tags present in the CI checkout are reflected on GitHub (full mirror semantics)
+- **THEN** the sync job SHALL run and SHALL update
+  `refs/heads/<default-branch>` on the configured GitHub remote to the current CI
+  commit
+
+#### Scenario: GitLab-specific refs are not retained
+
+- **GIVEN** the configured GitHub remote contains stale `refs/merge-requests/*`
+  or `refs/pipelines/*` refs from an earlier configuration
+- **WHEN** the default-branch sync job runs
+- **THEN** those GitLab-specific refs SHALL be deleted from the GitHub remote
 
 ### Requirement: Full history checkout for mirroring
 

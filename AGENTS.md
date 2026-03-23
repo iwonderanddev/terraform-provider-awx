@@ -34,9 +34,16 @@ Target compatibility is AWX `24.6.1` (API `/api/v2`), with HTTP Basic authentica
 
 ## GitLab CI → GitHub mirror
 
-When the canonical remote is GitLab and a **GitHub** copy should stay in sync, the `mirror_to_github` job pushes a **full ref mirror** on every push to the **default branch** only. Authentication uses a **GitHub App** (JWT signed with the app private key, then `POST /app/installations/{id}/access_tokens`); do not use a long-lived PAT for this flow.
+When the canonical remote is GitLab and a **GitHub** copy should stay in sync, the
+`mirror_to_github` job force-pushes the GitLab **default branch only** to
+`refs/heads/<default-branch>` on GitHub. Authentication uses a **GitHub App**
+(JWT signed with the app private key, then
+`POST /app/installations/{id}/access_tokens`); do not use a long-lived PAT for
+this flow.
 
-**GitHub (one-time):** Create a GitHub App with **Contents: Read and write**, install it for the target owner, and use a **dedicated** mirror repository if possible — `git push --mirror` can overwrite or delete refs on the remote. Align **branch protection** with automation (mirror updates are forceful).
+**GitHub (one-time):** Create a GitHub App with **Contents: Read and write**,
+install it for the target owner, and align **branch protection** with automation
+because the job force-updates the target default branch.
 
 **GitLab CI/CD variables:** `GITHUB_APP_CLIENT_ID` (JWT `iss` — GitHub recommends the app **Client ID** for this claim; see [Generating a JWT for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-json-web-token-jwt-for-a-github-app)), `GITHUB_APP_INSTALLATION_ID` (required for `POST /app/installations/{id}/access_tokens`; not the same as Client ID), `GITHUB_APP_PRIVATE_KEY` (PEM; **File**-type variable is most reliable; if you use a multiline value in the UI, the script normalizes literal `\n` and CRLF — see `scripts/ci/github-installation-token.sh`), `GITHUB_MIRROR_REPOSITORY` (`owner/repo`). Prefer **protected** variables for protected branches.
 
@@ -48,16 +55,13 @@ variables (for example `${TOKEN}` in the `git push` URL). Do **not** write
 `$${TOKEN}` in shell commands: if it reaches `bash`, `$$` becomes the shell PID
 and breaks authentication.
 
-**Mirror source:** Run `git push --mirror` from a dedicated
-`git clone --mirror "$CI_REPOSITORY_URL"` checkout, not from the GitLab runner's
-detached working tree. The detached checkout can miss `refs/heads/<default>`,
-which leads to failed or incorrect mirror pushes.
+**Push mode:** Push only the checked-out GitLab default-branch commit to
+`refs/heads/$CI_DEFAULT_BRANCH` on GitHub. Do **not** use `git push --mirror`
+when the intent is to publish only the main branch.
 
-**Ref scope:** This job performs a **full Git ref mirror**. In practice that can
-include non-branch refs GitLab exposes to the job, such as
-`refs/merge-requests/*` and `refs/pipelines/*`, not just branches and tags. Use a
-**dedicated mirror repository** if you do not want those refs mixed with normal
-developer workflows.
+**GitLab ref cleanup:** The job deletes stale `refs/merge-requests/*` and
+`refs/pipelines/*` refs from the GitHub remote if they were mirrored by an older
+configuration.
 
 **Inspecting pipelines (glab):** With [glab](https://gitlab.com/gitlab-org/cli) authenticated against your GitLab instance (`glab auth login`), from the repo root: `glab ci list -P 10` (recent pipelines), `glab ci status` (pipeline for current branch), `glab ci trace <job_id>` (full job log). Use `-R group/project` when not inside the checkout.
 
