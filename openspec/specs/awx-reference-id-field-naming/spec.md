@@ -8,12 +8,12 @@ TBD - created by archiving change enforce-id-suffix-for-references. Update Purpo
 
 ### Requirement: Canonical object-link fields SHALL use `_id` suffixes
 
-For generated AWX object resources and data sources, any field that represents
-a link to another AWX object SHALL be exposed with an explicit `_id` suffix in
-Terraform schemas. When the raw AWX field name is too generic to communicate
-the relationship purpose, the provider SHALL derive a more specific canonical
-Terraform field name that preserves both the related object type and the AWX
-interaction context.
+For generated AWX object resources and data sources, the provider SHALL expose
+any field that represents a link to another AWX object with an explicit `_id`
+suffix in Terraform schemas. When the raw AWX field name is too generic to
+communicate the relationship purpose, the provider SHALL derive a more specific
+canonical Terraform field name that preserves both the related object type and
+the AWX interaction context.
 
 #### Scenario: Resource reference argument naming is explicit
 
