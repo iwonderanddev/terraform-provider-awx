@@ -29,6 +29,18 @@ Target compatibility is AWX `24.6.1` (API `/api/v2`), with HTTP Basic authentica
 - `docs/*`: generated provider/resource/data-source docs
 - `examples/*`: Terraform usage examples
 - `external/awx-openapi/schema.json`: vendored AWX OpenAPI source schema
+- `.gitlab-ci.yml`: GitLab CI (optional mirror job to GitHub)
+- `scripts/ci/github-installation-token.sh`: GitHub App installation token helper for CI
+
+## GitLab CI → GitHub mirror
+
+When the canonical remote is GitLab and a **GitHub** copy should stay in sync, the `mirror_to_github` job pushes a **full ref mirror** on every push to the **default branch** only. Authentication uses a **GitHub App** (JWT signed with the app private key, then `POST /app/installations/{id}/access_tokens`); do not use a long-lived PAT for this flow.
+
+**GitHub (one-time):** Create a GitHub App with **Contents: Read and write**, install it for the target owner, and use a **dedicated** mirror repository if possible — `git push --mirror` can overwrite or delete refs on the remote. Align **branch protection** with automation (mirror updates are forceful).
+
+**GitLab CI/CD variables:** `GITHUB_APP_CLIENT_ID` (JWT `iss` — GitHub recommends the app **Client ID** for this claim; see [Generating a JWT for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-json-web-token-jwt-for-a-github-app)), `GITHUB_APP_INSTALLATION_ID` (required for `POST /app/installations/{id}/access_tokens`; not the same as Client ID), `GITHUB_APP_PRIVATE_KEY` (PEM; File-type variable recommended), `GITHUB_MIRROR_REPOSITORY` (`owner/repo`). Prefer **protected** variables for protected branches.
+
+**Logs:** The installation token must never appear in job output; avoid `set -x` around secret handling (the job disables `xtrace` before resolving the token).
 
 ## Source Of Truth Rules
 

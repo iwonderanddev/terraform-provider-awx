@@ -1,0 +1,16 @@
+variables:
+  GIT_DEPTH: "0"
+
+mirror_to_github:
+  image: alpine:3.21
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  before_script:
+    - apk add --no-cache bash curl git jq openssl
+  script:
+    # Quoted so YAML does not interpret `- :` as a mapping (colon after list marker).
+    - ': "${GITHUB_MIRROR_REPOSITORY:?GITHUB_MIRROR_REPOSITORY must be set (owner/repo)}"'
+    - chmod +x scripts/ci/github-installation-token.sh
+    - set +x
+    - TOKEN="$(scripts/ci/github-installation-token.sh)"
+    - GIT_TERMINAL_PROMPT=0 git push --mirror "https://x-access-token:${TOKEN}@github.com/${GITHUB_MIRROR_REPOSITORY}.git"
