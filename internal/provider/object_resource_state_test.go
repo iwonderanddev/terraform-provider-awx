@@ -233,6 +233,7 @@ func TestSetStateOptionalStringPreservesNullForEmptyAPIValue(t *testing.T) {
 		nil,
 		map[string]types.String{"description": types.StringNull()},
 		nil,
+		nil,
 	)
 	if diags.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diags)
@@ -275,6 +276,7 @@ func TestSetStateOptionalStringKeepsExplicitEmptyString(t *testing.T) {
 		map[string]any{"description": ""},
 		nil,
 		map[string]types.String{"description": types.StringValue("")},
+		nil,
 		nil,
 	)
 	if diags.HasError() {
@@ -323,6 +325,7 @@ func TestSetStateInstanceGroupPodSpecOverridePreservesTrailingNewlineEquivalentV
 		nil,
 		map[string]types.String{"pod_spec_override": types.StringValue("kind: Pod\n")},
 		nil,
+		nil,
 	)
 	if diags.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diags)
@@ -367,6 +370,7 @@ func TestSetStateInstanceGroupPodSpecOverrideUsesAPIValueWhenContentChanges(t *t
 		nil,
 		map[string]types.String{"pod_spec_override": types.StringValue("kind: Pod\n")},
 		nil,
+		nil,
 	)
 	if diags.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diags)
@@ -410,6 +414,7 @@ func TestSetStateWriteOnlyIntegerDefaultsToTypedNull(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil,
 	)
 	if diags.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diags)
@@ -426,6 +431,215 @@ func TestSetStateWriteOnlyIntegerDefaultsToTypedNull(t *testing.T) {
 	}
 	if !intValue.IsNull() {
 		t.Fatalf("expected null team when no write-only value is available")
+	}
+}
+
+func TestNormalizeOptionalEmptyJSONEncodedArrayToNull(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		object   string
+		field    manifest.FieldSpec
+		value    any
+		prior    map[string]types.String
+		wantOK   bool
+		wantNull bool
+	}{
+		{
+			name:   "empty api slice with prior null normalizes",
+			object: "instance_groups",
+			field: manifest.FieldSpec{
+				Name:     "policy_instance_list",
+				Type:     manifest.FieldTypeArray,
+				Required: false,
+			},
+			value:    []any{},
+			prior:    map[string]types.String{"policy_instance_list": types.StringNull()},
+			wantOK:   true,
+			wantNull: true,
+		},
+		{
+			name:   "explicit json array with prior non-null does not normalize",
+			object: "instance_groups",
+			field: manifest.FieldSpec{
+				Name:     "policy_instance_list",
+				Type:     manifest.FieldTypeArray,
+				Required: false,
+			},
+			value:  []any{},
+			prior:  map[string]types.String{"policy_instance_list": types.StringValue("[]")},
+			wantOK: false,
+		},
+		{
+			name:   "non-empty array does not normalize",
+			object: "instance_groups",
+			field: manifest.FieldSpec{
+				Name:     "policy_instance_list",
+				Type:     manifest.FieldTypeArray,
+				Required: false,
+			},
+			value:  []any{"1"},
+			prior:  map[string]types.String{"policy_instance_list": types.StringNull()},
+			wantOK: false,
+		},
+		{
+			name:   "native string list field does not normalize",
+			object: "role_definitions",
+			field: manifest.FieldSpec{
+				Name:     "permissions",
+				Type:     manifest.FieldTypeArray,
+				Required: false,
+			},
+			value:  []any{},
+			prior:  map[string]types.String{"permissions": types.StringNull()},
+			wantOK: false,
+		},
+		{
+			name:   "computed field does not normalize",
+			object: "instance_groups",
+			field: manifest.FieldSpec{
+				Name:     "policy_instance_list",
+				Type:     manifest.FieldTypeArray,
+				Required: false,
+				Computed: true,
+			},
+			value:  []any{},
+			prior:  map[string]types.String{"policy_instance_list": types.StringNull()},
+			wantOK: false,
+		},
+		{
+			name:   "nil api value does not normalize via this path",
+			object: "instance_groups",
+			field: manifest.FieldSpec{
+				Name:     "policy_instance_list",
+				Type:     manifest.FieldTypeArray,
+				Required: false,
+			},
+			value:  nil,
+			prior:  map[string]types.String{"policy_instance_list": types.StringNull()},
+			wantOK: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, ok := normalizeOptionalEmptyJSONEncodedArrayToNull(tc.object, tc.field, tc.value, tc.prior)
+			if ok != tc.wantOK {
+				t.Fatalf("unexpected normalize result: got=%v want=%v", ok, tc.wantOK)
+			}
+			if !ok {
+				return
+			}
+			if got.IsNull() != tc.wantNull {
+				t.Fatalf("unexpected normalized nullness: got=%v want=%v", got.IsNull(), tc.wantNull)
+			}
+		})
+	}
+}
+
+func TestSetStateOptionalJSONEncodedArrayNullWhenEmptyAPIAndPriorNull(t *testing.T) {
+	t.Parallel()
+
+	resource := &objectResource{
+		object: manifest.ManagedObject{
+			Name:             "instance_groups",
+			CollectionCreate: true,
+			Fields: []manifest.FieldSpec{
+				{
+					Name:     "name",
+					Type:     manifest.FieldTypeString,
+					Required: true,
+				},
+				{
+					Name:     "policy_instance_list",
+					Type:     manifest.FieldTypeArray,
+					Required: false,
+				},
+			},
+		},
+	}
+
+	target := &mockAttributeTarget{values: map[string]any{}}
+	diags := resource.setState(
+		context.Background(),
+		target,
+		"42",
+		map[string]any{"name": "ig", "policy_instance_list": []any{}},
+		nil,
+		map[string]types.String{"name": types.StringValue("ig")},
+		nil,
+		map[string]types.String{"policy_instance_list": types.StringNull()},
+	)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+
+	value, ok := findStateAttributeValue(target.values, "policy_instance_list")
+	if !ok {
+		t.Fatalf("policy_instance_list attribute was not written")
+	}
+
+	stringValue, ok := value.(types.String)
+	if !ok {
+		t.Fatalf("expected types.String for policy_instance_list, got %T", value)
+	}
+	if !stringValue.IsNull() {
+		t.Fatalf("expected null policy_instance_list when prior was null and API returned empty array")
+	}
+}
+
+func TestSetStateOptionalJSONEncodedArrayKeepsExplicitEmptyJSONArray(t *testing.T) {
+	t.Parallel()
+
+	resource := &objectResource{
+		object: manifest.ManagedObject{
+			Name:             "instance_groups",
+			CollectionCreate: true,
+			Fields: []manifest.FieldSpec{
+				{
+					Name:     "name",
+					Type:     manifest.FieldTypeString,
+					Required: true,
+				},
+				{
+					Name:     "policy_instance_list",
+					Type:     manifest.FieldTypeArray,
+					Required: false,
+				},
+			},
+		},
+	}
+
+	target := &mockAttributeTarget{values: map[string]any{}}
+	diags := resource.setState(
+		context.Background(),
+		target,
+		"42",
+		map[string]any{"name": "ig", "policy_instance_list": []any{}},
+		nil,
+		map[string]types.String{"name": types.StringValue("ig")},
+		nil,
+		map[string]types.String{"policy_instance_list": types.StringValue("[]")},
+	)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+
+	value, ok := findStateAttributeValue(target.values, "policy_instance_list")
+	if !ok {
+		t.Fatalf("policy_instance_list attribute was not written")
+	}
+
+	stringValue, ok := value.(types.String)
+	if !ok {
+		t.Fatalf("expected types.String for policy_instance_list, got %T", value)
+	}
+	if stringValue.IsNull() {
+		t.Fatalf("expected explicit empty JSON array to remain non-null")
+	}
+	if got := stringValue.ValueString(); got != "[]" {
+		t.Fatalf("unexpected policy_instance_list value: got=%q want=%q", got, "[]")
 	}
 }
 

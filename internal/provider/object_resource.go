@@ -113,6 +113,11 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plannedJSONArrayStrings := r.jsonEncodedArrayStringValuesFromSource(ctx, req.Plan)
+	resp.Diagnostics.Append(plannedJSONArrayStrings.Diagnostics...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	plannedObjects := r.objectValuesFromSource(ctx, req.Plan)
 	resp.Diagnostics.Append(plannedObjects.Diagnostics...)
 	if resp.Diagnostics.HasError() {
@@ -141,7 +146,7 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 			refreshed = map[string]any{}
 		}
 
-		resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values)...)
+		resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values, plannedJSONArrayStrings.Values)...)
 		return
 	}
 
@@ -167,7 +172,7 @@ func (r *objectResource) Create(ctx context.Context, req resource.CreateRequest,
 		refreshed = created
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values, plannedJSONArrayStrings.Values)...)
 }
 
 func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -192,6 +197,11 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		resp.Diagnostics.Append(currentStrings.Diagnostics...)
 		return
 	}
+	currentJSONArrayStrings := r.jsonEncodedArrayStringValuesFromSource(ctx, req.State)
+	if currentJSONArrayStrings.HasError() {
+		resp.Diagnostics.Append(currentJSONArrayStrings.Diagnostics...)
+		return
+	}
 	currentObjects := r.objectValuesFromSource(ctx, req.State)
 	if currentObjects.HasError() {
 		resp.Diagnostics.Append(currentObjects.Diagnostics...)
@@ -208,7 +218,7 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, obj, currentValues.Values, currentStrings.Values, currentObjects.Values)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, obj, currentValues.Values, currentStrings.Values, currentObjects.Values, currentJSONArrayStrings.Values)...)
 }
 
 func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -244,6 +254,11 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plannedJSONArrayStrings := r.jsonEncodedArrayStringValuesFromSource(ctx, req.Plan)
+	resp.Diagnostics.Append(plannedJSONArrayStrings.Diagnostics...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	plannedObjects := r.objectValuesFromSource(ctx, req.Plan)
 	resp.Diagnostics.Append(plannedObjects.Diagnostics...)
 	if resp.Diagnostics.HasError() {
@@ -264,7 +279,7 @@ func (r *objectResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values)...)
+	resp.Diagnostics.Append(r.setState(ctx, &resp.State, id, refreshed, plannedValues, plannedStrings.Values, plannedObjects.Values, plannedJSONArrayStrings.Values)...)
 }
 
 func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -665,6 +680,33 @@ func (r *objectResource) stringValuesFromSource(ctx context.Context, source attr
 	return valueSnapshot{Values: values, Diagnostics: diags}
 }
 
+// jsonEncodedArrayStringValuesFromSource collects Terraform string values for manifest array fields that are
+// transported as JSON-encoded strings (non-native list types). Used to align read/apply state with omitted
+// optional attributes when AWX returns empty JSON arrays.
+func (r *objectResource) jsonEncodedArrayStringValuesFromSource(ctx context.Context, source attributeSource) valueSnapshot {
+	values := make(map[string]types.String)
+	diags := diag.Diagnostics{}
+
+	for _, field := range r.object.Fields {
+		if field.Type != manifest.FieldTypeArray {
+			continue
+		}
+		if isNativeStringListArrayField(r.object.Name, field.Name) {
+			continue
+		}
+
+		tfName := manifest.TerraformAttributeNameForField(r.object.Name, field)
+		var value types.String
+		diags.Append(source.GetAttribute(ctx, path.Root(tfName), &value)...)
+		if value.IsUnknown() {
+			continue
+		}
+		values[field.Name] = value
+	}
+
+	return valueSnapshot{Values: values, Diagnostics: diags}
+}
+
 func (r *objectResource) objectValuesFromSource(ctx context.Context, source attributeSource) objectValueSnapshot {
 	values := make(map[string]types.Dynamic)
 	diags := diag.Diagnostics{}
@@ -694,6 +736,7 @@ func (r *objectResource) setState(
 	writeOnlyValues map[string]any,
 	priorStringValues map[string]types.String,
 	priorObjectValues map[string]types.Dynamic,
+	priorJSONEncodedArrayValues map[string]types.String,
 ) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	if r.object.CollectionCreate {
@@ -749,6 +792,10 @@ func (r *objectResource) setState(
 			diags.Append(state.SetAttribute(ctx, path.Root(tfName), normalized)...)
 			continue
 		}
+		if normalized, ok := normalizeOptionalEmptyJSONEncodedArrayToNull(r.object.Name, field, value, priorJSONEncodedArrayValues); ok {
+			diags.Append(state.SetAttribute(ctx, path.Root(tfName), normalized)...)
+			continue
+		}
 		if preserved, ok := preserveKnownNormalizedStringField(r.object.Name, field, value, priorStringValues); ok {
 			diags.Append(state.SetAttribute(ctx, path.Root(tfName), preserved)...)
 			continue
@@ -795,6 +842,50 @@ func normalizeOptionalEmptyStringToNull(field manifest.FieldSpec, value any, pri
 	}
 
 	return types.StringNull(), true
+}
+
+func normalizeOptionalEmptyJSONEncodedArrayToNull(
+	objectName string,
+	field manifest.FieldSpec,
+	value any,
+	priorJSONEncodedArrayValues map[string]types.String,
+) (types.String, bool) {
+	if field.Type != manifest.FieldTypeArray {
+		return types.String{}, false
+	}
+	if isNativeStringListArrayField(objectName, field.Name) {
+		return types.String{}, false
+	}
+	if field.Required || field.Computed {
+		return types.String{}, false
+	}
+
+	prior, hasPrior := priorJSONEncodedArrayValues[field.Name]
+	if !hasPrior || !prior.IsNull() {
+		return types.String{}, false
+	}
+
+	if !isEmptyJSONArrayAPIValue(value) {
+		return types.String{}, false
+	}
+
+	return types.StringNull(), true
+}
+
+func isEmptyJSONArrayAPIValue(value any) bool {
+	if value == nil {
+		return false
+	}
+	switch v := value.(type) {
+	case []any:
+		return len(v) == 0
+	default:
+		rv := reflect.ValueOf(value)
+		if rv.Kind() == reflect.Slice {
+			return rv.Len() == 0
+		}
+	}
+	return false
 }
 
 func preserveKnownNormalizedStringField(objectName string, field manifest.FieldSpec, value any, priorStringValues map[string]types.String) (types.String, bool) {
