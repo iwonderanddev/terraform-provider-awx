@@ -239,6 +239,27 @@ make build
 
 The resulting binary reports version `v0.2.0` to Terraform.
 
+## Publish to Terraform Registry
+
+Terraform Registry lists versions only from **signed [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)** on the public repository linked when you [publish the provider](https://developer.hashicorp.com/terraform/registry/providers/publishing). A bare Git tag or GitLab-only tag is not enough.
+
+### One-time setup
+
+1. Add your **GPG public key** (ASCII-armored) under [Terraform Registry → User Settings → Signing Keys](https://registry.terraform.io/settings/gpg-keys). Use an RSA or DSA key; the registry does not accept the default ECC type for signing.
+1. In the **GitHub** repository: Settings → Secrets and variables → Actions, add:
+   - `GPG_PRIVATE_KEY` — ASCII-armored secret key matching the registered public key
+   - `PASSPHRASE` — passphrase for that key (if empty, use an empty secret or adjust the workflow)
+1. Ensure [GitHub Actions](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository) are allowed to run (organization and repo settings).
+
+### Cutting a release
+
+1. Merge your release commit to the default branch and push it to **GitHub** (directly or via the GitLab `mirror_to_github` job).
+1. Create and push a SemVer tag with a `v` prefix (for example `v1.0.0`) to **GitHub**. If GitLab is the source of truth, push the tag to GitLab; the `mirror_tag_to_github` CI job pushes that tag to GitHub so the tag exists where GitHub Actions runs.
+1. Confirm the **Release** workflow (`.github/workflows/release.yml`) completes and publishes a non-draft release with ZIPs, `terraform-provider-awx_<version>_SHA256SUMS`, `terraform-provider-awx_<version>_SHA256SUMS.sig`, and the manifest JSON asset.
+1. On the [provider page](https://registry.terraform.io/), use **Resync** if a new version does not appear (after fixing webhooks or the first successful release).
+
+Local dry-run (optional): install [GoReleaser](https://goreleaser.com/install/) and run `goreleaser release --snapshot --clean` to verify builds without publishing.
+
 ## Use Locally With Terraform (Dev Override)
 
 Because this provider is local development, use a Terraform CLI dev override.

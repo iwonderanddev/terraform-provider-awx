@@ -29,14 +29,17 @@ Target compatibility is AWX `24.6.1` (API `/api/v2`), with HTTP Basic authentica
 - `docs/*`: generated provider/resource/data-source docs
 - `examples/*`: Terraform usage examples
 - `external/awx-openapi/schema.json`: vendored AWX OpenAPI source schema
-- `.gitlab-ci.yml`: GitLab CI (optional mirror job to GitHub)
+- `.gitlab-ci.yml`: GitLab CI (optional mirror of default branch and tags to GitHub)
+- `.github/workflows/release.yml`: GitHub Actions release (GoReleaser → Terraform Registry)
+- `.goreleaser.yml`, `terraform-registry-manifest.json`: multi-platform release assets for the registry
 - `scripts/ci/github-installation-token.sh`: GitHub App installation token helper for CI
 
 ## GitLab CI → GitHub mirror
 
 When the canonical remote is GitLab and a **GitHub** copy should stay in sync, the
 `mirror_to_github` job force-pushes the GitLab **default branch only** to
-`refs/heads/<default-branch>` on GitHub. Authentication uses a **GitHub App**
+`refs/heads/<default-branch>` on GitHub. The `mirror_tag_to_github` job runs on
+**tag pipelines** and pushes the same tag ref to GitHub so [GitHub Actions](https://docs.github.com/en/actions) can build a release for [Terraform Registry](https://developer.hashicorp.com/terraform/registry/providers/publishing). Authentication uses a **GitHub App**
 (JWT signed with the app private key, then
 `POST /app/installations/{id}/access_tokens`); do not use a long-lived PAT for
 this flow.
