@@ -50,9 +50,14 @@ and breaks authentication.
 
 **Mirror source:** Run `git push --mirror` from a dedicated
 `git clone --mirror "$CI_REPOSITORY_URL"` checkout, not from the GitLab runner's
-detached working tree. The detached checkout can miss `refs/heads/<default>` and
-can include runner-only refs such as `refs/pipelines/*`, which leads to failed or
-incorrect mirror pushes.
+detached working tree. The detached checkout can miss `refs/heads/<default>`,
+which leads to failed or incorrect mirror pushes.
+
+**Ref scope:** This job performs a **full Git ref mirror**. In practice that can
+include non-branch refs GitLab exposes to the job, such as
+`refs/merge-requests/*` and `refs/pipelines/*`, not just branches and tags. Use a
+**dedicated mirror repository** if you do not want those refs mixed with normal
+developer workflows.
 
 **Inspecting pipelines (glab):** With [glab](https://gitlab.com/gitlab-org/cli) authenticated against your GitLab instance (`glab auth login`), from the repo root: `glab ci list -P 10` (recent pipelines), `glab ci status` (pipeline for current branch), `glab ci trace <job_id>` (full job log). Use `-R group/project` when not inside the checkout.
 

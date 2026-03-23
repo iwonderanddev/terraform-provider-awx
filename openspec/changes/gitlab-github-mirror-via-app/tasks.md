@@ -15,4 +15,4 @@
 ## 3. Verification
 
 - [x] 3.1 Run `openspec validate --changes --strict` (or validate this change) and fix any reported issues
-- [ ] 3.2 After merge to the default branch on GitLab, confirm the pipeline succeeds and the GitHub mirror receives expected refs; confirm logs do not contain the installation token
+- [x] 3.2 After merge to the default branch on GitLab, confirm the pipeline succeeds and the GitHub mirror receives expected refs; confirm logs do not contain the installation token
