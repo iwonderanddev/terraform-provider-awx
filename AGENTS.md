@@ -40,9 +40,19 @@ When the canonical remote is GitLab and a **GitHub** copy should stay in sync, t
 
 **GitLab CI/CD variables:** `GITHUB_APP_CLIENT_ID` (JWT `iss` — GitHub recommends the app **Client ID** for this claim; see [Generating a JWT for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-json-web-token-jwt-for-a-github-app)), `GITHUB_APP_INSTALLATION_ID` (required for `POST /app/installations/{id}/access_tokens`; not the same as Client ID), `GITHUB_APP_PRIVATE_KEY` (PEM; **File**-type variable is most reliable; if you use a multiline value in the UI, the script normalizes literal `\n` and CRLF — see `scripts/ci/github-installation-token.sh`), `GITHUB_MIRROR_REPOSITORY` (`owner/repo`). Prefer **protected** variables for protected branches.
 
-**Logs:** The installation token must never appear in job output; avoid `set -x` around secret handling (the job disables `xtrace` before resolving the token).
+**Logs:** The installation token must never appear in job output; avoid `set -x`
+around secret handling (the job disables `xtrace` before resolving the token).
 
-**GitLab `script` expansion:** Use `$$` before shell-only variables (for example `$${TOKEN}`) so GitLab does not strip them; see [CI/CD variable expansion](https://docs.gitlab.com/ee/ci/variables/variables_troubleshooting.html).
+**GitLab `script` expansion:** Use normal shell expansion for shell-local
+variables (for example `${TOKEN}` in the `git push` URL). Do **not** write
+`$${TOKEN}` in shell commands: if it reaches `bash`, `$$` becomes the shell PID
+and breaks authentication.
+
+**Mirror source:** Run `git push --mirror` from a dedicated
+`git clone --mirror "$CI_REPOSITORY_URL"` checkout, not from the GitLab runner's
+detached working tree. The detached checkout can miss `refs/heads/<default>` and
+can include runner-only refs such as `refs/pipelines/*`, which leads to failed or
+incorrect mirror pushes.
 
 **Inspecting pipelines (glab):** With [glab](https://gitlab.com/gitlab-org/cli) authenticated against your GitLab instance (`glab auth login`), from the repo root: `glab ci list -P 10` (recent pipelines), `glab ci status` (pipeline for current branch), `glab ci trace <job_id>` (full job log). Use `-R group/project` when not inside the checkout.
 
