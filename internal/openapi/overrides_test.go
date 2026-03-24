@@ -41,6 +41,46 @@ func TestApplyFieldOverridesSetsComputed(t *testing.T) {
 	}
 }
 
+func TestApplyFieldOverridesSetsReadOnly(t *testing.T) {
+	t.Parallel()
+
+	computed := true
+	readOnly := true
+	objects := []manifest.ManagedObject{
+		{
+			Name: "projects",
+			Fields: []manifest.FieldSpec{
+				{Name: "name", Type: manifest.FieldTypeString, Required: true},
+				{Name: "local_path", Type: manifest.FieldTypeString, Required: false, Computed: false},
+			},
+		},
+	}
+
+	updated := ApplyFieldOverrides(objects, map[string]FieldOverride{
+		"projects.local_path": {
+			Object:   "projects",
+			Field:    "local_path",
+			Computed: &computed,
+			ReadOnly: &readOnly,
+		},
+	})
+
+	var localPath manifest.FieldSpec
+	for _, field := range updated[0].Fields {
+		if field.Name == "local_path" {
+			localPath = field
+			break
+		}
+	}
+
+	if !localPath.Computed {
+		t.Fatalf("expected local_path to be computed after override")
+	}
+	if !localPath.ReadOnly {
+		t.Fatalf("expected local_path to be read-only after override")
+	}
+}
+
 func TestApplyFieldOverridesAddsMissingField(t *testing.T) {
 	t.Parallel()
 

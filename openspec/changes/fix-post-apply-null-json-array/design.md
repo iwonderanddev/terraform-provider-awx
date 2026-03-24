@@ -1,4 +1,4 @@
-# Design: Optional JSON-encoded arrays and `local_path` (Option C)
+# Design: Optional JSON-encoded arrays and `local_path`
 
 ## JSON-encoded array normalization
 
@@ -16,20 +16,17 @@ When configuration **omits** such an attribute:
 - In `setState`, before `toTerraformValue`, if the field is optional, non-computed, JSON-encoded array transport, prior is **null**, and the API value is an **empty slice**, write **`types.StringNull()`** instead of `"[]"`.
 - If the user explicitly sets `policy_instance_list = jsonencode([])`, prior is the non-null string `"[]"`; normalization does **not** apply, and state remains `"[]"`.
 
-## `projects.local_path` — Option C (out of scope for runtime in this change)
+## `projects.local_path` — read-only (AWX-assigned)
 
-AWX may return a canonical `local_path` that differs from the configured value (for example prefixed with `_{pk}__`), which can trigger the same class of post-apply inconsistency for projects.
+AWX chooses the canonical directory name under `PROJECTS_ROOT`; user-supplied `local_path` values caused plan vs read-back mismatches.
 
-**This change does not** add `setState` preservation or mark `local_path` computed-only.
+**Contract**
 
-**Follow-up** is owned by the native survey / spec-driven program: [`native-survey-spec-and-role-permissions`](../native-survey-spec-and-role-permissions/) and/or a future OpenSpec change that defines how `awx_project` exposes server-normalized paths (schema, semantic equality, or documentation).
+- Manifest override: `computed: true`, `readOnly: true` for `projects.local_path`.
+- `FieldSpec.ReadOnly` drives Terraform schema: **Optional: false**, **Computed: true** (not configurable).
+- `payloadFromConfig` skips read-only fields so `local_path` is never sent on create/update.
+- `setState` does not apply the “preserve null for computed optional string” shortcut to read-only strings, so the API value is always stored.
 
-**Interim mitigation for operators**: where AWX rewrites `local_path`, use:
+**Breaking change**
 
-```hcl
-lifecycle {
-  ignore_changes = [local_path]
-}
-```
-
-until a first-class contract is implemented.
+- Existing configurations that set `local_path` on `awx_project` must remove that argument; Terraform will error until they do.

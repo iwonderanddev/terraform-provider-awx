@@ -24,7 +24,7 @@ data "awx_project" "example" {
 - `scm_credential_id` (Number, Read-Only) Numeric ID of the source-control credential used to access private repositories.
 - `default_environment_id` (Number, Read-Only) Numeric ID of the default execution environment for project jobs.
 - `description` (String, Read-Only) Optional explanation displayed to project users.
-- `local_path` (String, Read-Only) Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project.
+- `local_path` (String, Read-Only) Local path under PROJECTS_ROOT assigned by AWX. This value is chosen by the server and cannot be set in Terraform.
 - `name` (String, Read-Only) Human-readable project name in AWX.
 - `organization_id` (Number, Read-Only) Numeric ID of the owning organization.
 - `scm_branch` (String, Read-Only) Branch, tag, or revision checked out by AWX.

@@ -2,17 +2,20 @@
 
 ## Purpose
 
-Track server-canonical `local_path` behavior for `awx_project` without implementing runtime fixes in the [`fix-post-apply-null-json-array`](../../) change. Implementation is deferred to the **native survey / spec-driven** program ([`native-survey-spec-and-role-permissions`](../../../native-survey-spec-and-role-permissions/)) or a dedicated follow-up OpenSpec change.
+Address server-assigned `local_path` on `awx_project` so Terraform does not treat user-supplied values as authoritative. The chosen contract is **`local_path` as a read-only computed attribute** (not configurable in Terraform); AWX’s canonical value is always what appears in state after create/read.
 
 ## ADDED Requirements
 
-### Requirement: `projects.local_path` canonicalization is specified in the native survey program
+### Requirement: `awx_project.local_path` is not user-configurable
 
-The provider SHALL define how `awx_project.local_path` interacts with AWX server normalization (for example directory names prefixed with project primary key) so that plan, apply, and refreshed state remain consistent, **or** SHALL document supported workarounds (such as `lifecycle` blocks) as part of the native survey initiative.
+The provider SHALL expose `local_path` on `awx_project` (and the corresponding data source) as **read-only** in the Terraform schema: operators MUST NOT be able to set `local_path` in configuration. The value SHALL come only from AWX on create and refresh.
 
-This requirement SHALL NOT be satisfied solely by the JSON-encoded array normalization change; it MAY be implemented together with other `awx_project` field modeling work under [`native-survey-spec-and-role-permissions`](../../../native-survey-spec-and-role-permissions/).
+#### Scenario: Configuration rejects `local_path`
 
-#### Scenario: Follow-up links native survey work
+- **WHEN** a user adds `local_path` to an `awx_project` resource
+- **THEN** Terraform reports that the argument is not expected (read-only attribute)
 
-- **WHEN** maintainers close the `fix-post-apply-null-json-array` change
-- **THEN** `projects.local_path` post-apply inconsistencies remain tracked under the native survey program until a follow-up change implements the agreed contract
+#### Scenario: State matches AWX after apply
+
+- **WHEN** a project is created without `local_path` in configuration
+- **THEN** state records the `local_path` returned by AWX and `terraform apply` does not fail with post-apply inconsistency for this attribute

@@ -18,6 +18,10 @@
 - [x] `make generate` / `make validate-manifest`
 - [x] `make docs` / `make docs-validate`
 
-## Backlog (not this change)
+## `local_path` read-only (follow-up contract)
 
-- [ ] Implement `awx_project.local_path` contract per [`specs/awx-project-local-path-follow-up/spec.md`](specs/awx-project-local-path-follow-up/spec.md) under the native survey initiative.
+- [x] Add `FieldSpec.readOnly` and override `projects.local_path` with `computed` + `readOnly`.
+- [x] Schema: `newResourceFieldAttribute` uses read-only for Optional=false, Computed=true.
+- [x] Skip read-only fields in `payloadFromConfig`; `setState` preserves API value for read-only strings.
+- [x] Resource docs: list read-only attributes under **Read-Only** (not Optional).
+- [x] Update OpenSpec `design.md` / `proposal.md` / [`specs/awx-project-local-path-follow-up/spec.md`](specs/awx-project-local-path-follow-up/spec.md).

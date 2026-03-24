@@ -337,6 +337,9 @@ func (r *objectResource) payloadFromConfig(ctx context.Context, config attribute
 	diags := diag.Diagnostics{}
 
 	for _, field := range r.object.Fields {
+		if field.ReadOnly {
+			continue
+		}
 		tfName := manifest.TerraformAttributeNameForField(r.object.Name, field)
 		switch field.Type {
 		case manifest.FieldTypeInt:
@@ -774,7 +777,7 @@ func (r *objectResource) setState(
 					continue
 				}
 			}
-			if field.Type == manifest.FieldTypeString {
+			if field.Type == manifest.FieldTypeString && !field.ReadOnly {
 				if priorString, ok := priorStringValues[field.Name]; ok && !priorString.IsUnknown() && priorString.IsNull() {
 					diags.Append(state.SetAttribute(ctx, path.Root(tfName), priorString)...)
 					continue
@@ -827,7 +830,7 @@ func (r *objectResource) setState(
 }
 
 func normalizeOptionalEmptyStringToNull(field manifest.FieldSpec, value any, priorStringValues map[string]types.String) (types.String, bool) {
-	if field.Type != manifest.FieldTypeString || field.Required {
+	if field.Type != manifest.FieldTypeString || field.Required || field.ReadOnly {
 		return types.String{}, false
 	}
 
@@ -957,8 +960,8 @@ func shouldPreserveObjectValue(objectName string, fieldName string, apiValue any
 }
 
 func newResourceFieldAttribute(objectName string, field manifest.FieldSpec, updateSupported bool) resourceschema.Attribute {
-	optional := !field.Required
-	computed := field.Computed && !field.Required
+	optional := !field.Required && !field.ReadOnly
+	computed := field.ReadOnly || (!field.Required && field.Computed)
 	requiresReplace := !updateSupported
 	switch field.Type {
 	case manifest.FieldTypeInt:
