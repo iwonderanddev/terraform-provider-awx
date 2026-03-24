@@ -1,10 +1,6 @@
-# awx-relationship-resources Specification
+# awx-relationship-resources Delta
 
-## Purpose
-
-TBD - created by archiving change create-awx-terraform-provider. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Explicit relationship resource modeling
 
@@ -80,7 +76,7 @@ path preserves association attach/detach semantics.
 
 - **WHEN** two eligible AWX relationship-like endpoints resolve to the same
   relationship resource name
-- **THEN** derivation applies explicit path preference rules rather than
+- **THEN** derivation applies explicit path-preference rules rather than
   first-seen lexical order
 
 #### Scenario: Non-organization credential associations remain stable
@@ -89,72 +85,3 @@ path preserves association attach/detach semantics.
   organizations (for example job templates, inventory sources, teams, users)
 - **THEN** those relationships keep their existing endpoint mappings and
   canonical argument naming
-
-### Requirement: Relationship resource identity
-
-Relationship resources SHALL expose stable endpoint-aligned identity:
-
-- association resources use composite IDs based on related object identifiers.
-- parent-scoped singleton relationship resources use parent-key IDs.
-
-#### Scenario: Relationship state refresh
-
-- **WHEN** the provider refreshes a relationship resource with ID `<left_id>:<right_id>`
-- **THEN** the provider verifies the association exists and preserves the same composite ID format in state regardless of canonical argument naming
-
-#### Scenario: Singleton relationship state refresh
-
-- **WHEN** the provider refreshes a parent-scoped singleton relationship resource with ID `<resource_id>`
-- **THEN** the provider verifies the relationship exists and preserves the same parent-key ID format in state
-
-### Requirement: Workflow template node edge relationship modeling
-
-The provider SHALL model AWX workflow template node edge endpoints as explicit
-relationship resources when AWX exposes
-`/api/v2/workflow_job_template_nodes/{id}/success_nodes/`,
-`/api/v2/workflow_job_template_nodes/{id}/failure_nodes/`, or
-`/api/v2/workflow_job_template_nodes/{id}/always_nodes/`.
-
-These resources SHALL use the following Terraform resource names and canonical
-arguments:
-
-- `awx_workflow_job_template_node_success_node_association` with
-  `workflow_job_template_node_id` and `success_node_id`
-- `awx_workflow_job_template_node_failure_node_association` with
-  `workflow_job_template_node_id` and `failure_node_id`
-- `awx_workflow_job_template_node_always_node_association` with
-  `workflow_job_template_node_id` and `always_node_id`
-
-These resources SHALL preserve standard relationship lifecycle and identity
-behavior, including composite import IDs in `<primary_id>:<related_id>` format.
-
-#### Scenario: Configure workflow node success edge
-
-- **WHEN** a user declares
-  `awx_workflow_job_template_node_success_node_association`
-- **THEN** the provider manages the AWX
-  `/api/v2/workflow_job_template_nodes/{id}/success_nodes/` association using
-  `workflow_job_template_node_id` and `success_node_id`
-
-#### Scenario: Configure workflow node failure edge
-
-- **WHEN** a user declares
-  `awx_workflow_job_template_node_failure_node_association`
-- **THEN** the provider manages the AWX
-  `/api/v2/workflow_job_template_nodes/{id}/failure_nodes/` association using
-  `workflow_job_template_node_id` and `failure_node_id`
-
-#### Scenario: Configure workflow node always edge
-
-- **WHEN** a user declares
-  `awx_workflow_job_template_node_always_node_association`
-- **THEN** the provider manages the AWX
-  `/api/v2/workflow_job_template_nodes/{id}/always_nodes/` association using
-  `workflow_job_template_node_id` and `always_node_id`
-
-#### Scenario: Runtime workflow job node edges remain unmanaged
-
-- **WHEN** relationship metadata is derived for
-  `/api/v2/workflow_job_nodes/{id}/{success|failure|always}_nodes/`
-- **THEN** the provider does not expose managed relationship resources for
-  those runtime workflow job node endpoints

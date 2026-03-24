@@ -126,14 +126,11 @@ func (r *relationshipResource) Create(ctx context.Context, req resource.CreateRe
 			return
 		}
 
-		stateSpec := spec
-		if refreshed, err := r.data.client.GetObject(ctx, r.relationship.Path, strconv.FormatInt(parentID, 10)); err == nil && len(refreshed) > 0 {
-			if dyn, dynErr := terraformObjectValueFromAPIValue("_survey_spec", "spec", refreshed); dynErr == nil {
-				stateSpec = dyn
-			}
-		}
-
-		setSurveySpecState(ctx, parentID, parentIDAttribute, stateSpec, &resp.State, &resp.Diagnostics)
+		// Write the planned spec to state (same as Update). Re-encoding the AWX GET
+		// response can yield Dynamic/tuple shapes that differ from the plan (omitted
+		// null keys, JSON number typing, etc.), which triggers "inconsistent result
+		// after apply". POST already applied the survey; refresh will reconcile drift.
+		setSurveySpecState(ctx, parentID, parentIDAttribute, spec, &resp.State, &resp.Diagnostics)
 		return
 	}
 

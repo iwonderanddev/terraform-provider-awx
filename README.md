@@ -199,14 +199,14 @@ make build
 
 `make build` injects a provider version at build time:
 
-- If `HEAD` is tagged (example `v0.2.2`), that exact tag is used.
-- If `HEAD` is not tagged, a dev version is used (example `v0.2.2-dev.a1b2c3d`).
+- If `HEAD` is tagged (example `v0.2.3`), that exact tag is used.
+- If `HEAD` is not tagged, a dev version is used (example `v0.2.3-dev.a1b2c3d`).
 - If the workspace has uncommitted changes, `.dirty` is appended.
 
 Override the injected version manually:
 
 ```bash
-make build VERSION=v0.2.2
+make build VERSION=v0.2.3
 ```
 
 ## Create A New Version (Developers)
@@ -222,13 +222,13 @@ make test
 1. Create an annotated tag for the new version:
 
 ```bash
-git tag -a v0.2.2 -m "Release v0.2.2"
+git tag -a v0.2.3 -m "Release v0.2.3"
 ```
 
 1. Push the tag:
 
 ```bash
-git push origin v0.2.2
+git push origin v0.2.3
 ```
 
 1. Build from that tagged commit:
@@ -237,7 +237,7 @@ git push origin v0.2.2
 make build
 ```
 
-The resulting binary reports version `v0.2.2` to Terraform.
+The resulting binary reports version `v0.2.3` to Terraform.
 
 ## Publish to Terraform Registry
 

@@ -90,6 +90,10 @@ func terraformObjectValueFromAPIValue(objectName string, fieldName string, value
 		return types.DynamicNull(), nil
 	}
 
+	if objectName == "_survey_spec" && fieldName == "spec" {
+		objectValue = normalizeSurveySpecAPIMap(objectValue)
+	}
+
 	attrValue, err := nativeToTerraformAttrValue(objectValue)
 	if err != nil {
 		return types.DynamicNull(), err
