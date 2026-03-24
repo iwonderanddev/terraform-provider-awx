@@ -6,6 +6,13 @@
       "terraformName": "scm_credential_id"
     },
     {
+      "object": "projects",
+      "field": "local_path",
+      "computed": true,
+      "readOnly": true,
+      "description": "Local path under PROJECTS_ROOT assigned by AWX. This value is chosen by the server and cannot be set in Terraform."
+    },
+    {
       "object": "credentials",
       "field": "inputs",
       "type": "object",

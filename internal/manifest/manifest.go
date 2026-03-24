@@ -30,6 +30,7 @@ type FieldSpec struct {
 	Required      bool      `json:"required"`
 	Reference     bool      `json:"reference,omitempty"`
 	Computed      bool      `json:"computed,omitempty"`
+	ReadOnly      bool      `json:"readOnly,omitempty"`
 	Sensitive     bool      `json:"sensitive"`
 	WriteOnly     bool      `json:"writeOnly"`
 	Description   string    `json:"description,omitempty"`

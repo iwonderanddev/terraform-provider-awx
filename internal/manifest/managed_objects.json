@@ -3286,9 +3286,11 @@
         "name": "local_path",
         "type": "string",
         "required": false,
+        "computed": true,
+        "readOnly": true,
         "sensitive": false,
         "writeOnly": false,
-        "description": "Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project."
+        "description": "Local path under PROJECTS_ROOT assigned by AWX. This value is chosen by the server and cannot be set in Terraform."
       },
       {
         "name": "name",

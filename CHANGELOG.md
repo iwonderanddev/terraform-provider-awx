@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.2 (2026-03-24)
+
+### Fixed
+
+- Optional JSON-array object fields: keep Terraform state aligned when AWX returns an empty array (for example project local path lists).
+
 ## Unreleased
 
 ### Breaking changes

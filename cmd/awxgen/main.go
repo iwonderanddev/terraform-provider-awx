@@ -739,6 +739,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, objEnrichm
 	builder.WriteString("- `Required`: Must be set in configuration.\n")
 	builder.WriteString("- `Optional`: May be omitted.\n")
 	builder.WriteString("- `Computed`: AWX sets the value during create or refresh.\n")
+	builder.WriteString("- `Read-Only`: Cannot be set in configuration; Terraform records the value AWX returns.\n")
 	builder.WriteString("- `Sensitive`: Terraform redacts the value in normal CLI output.\n")
 	builder.WriteString("- `Write-Only`: Sent to AWX during create/update and not read back.\n\n")
 
@@ -763,7 +764,7 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, objEnrichm
 	builder.WriteString("\n### Optional\n\n")
 	optionalCount := 0
 	for _, field := range obj.Fields {
-		if field.Required {
+		if field.Required || field.ReadOnly {
 			continue
 		}
 		tfName := manifest.TerraformAttributeNameForField(obj.Name, field)
@@ -790,6 +791,14 @@ func writeResourceDoc(resourceDir string, obj manifest.ManagedObject, objEnrichm
 		builder.WriteString("- `id` (Number, Read-Only) Numeric AWX object identifier.\n")
 	} else {
 		builder.WriteString("- `id` (String, Read-Only) AWX detail-path identifier for this object.\n")
+	}
+	for _, field := range obj.Fields {
+		if !field.ReadOnly || field.Required {
+			continue
+		}
+		tfName := manifest.TerraformAttributeNameForField(obj.Name, field)
+		description := resolveFieldDescription(obj.Name, tfName, field, objEnrichment)
+		builder.WriteString(fmt.Sprintf("- `%s` (%s, Read-Only) %s\n", tfName, terraformTypeLabel(obj.Name, field), formatListItemDescription(description)))
 	}
 
 	builder.WriteString("\n## Import\n\n")
@@ -1768,7 +1777,7 @@ func validateQualifierPlacement(path string, content string) error {
 	if err != nil {
 		return fmt.Errorf("documentation file %s: %w", path, err)
 	}
-	for _, marker := range []string{"- `Required`:", "- `Optional`:", "- `Computed`:", "- `Sensitive`:", "- `Write-Only`:"} {
+	for _, marker := range []string{"- `Required`:", "- `Optional`:", "- `Computed`:", "- `Read-Only`:", "- `Sensitive`:", "- `Write-Only`:"} {
 		if strings.Contains(requiredSection, marker) || strings.Contains(optionalSection, marker) {
 			return fmt.Errorf("documentation file %s has qualifier guidance mixed into argument lists", path)
 		}

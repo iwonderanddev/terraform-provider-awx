@@ -55,6 +55,7 @@ resource "awx_credential" "git_token" {
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
 - `Computed`: AWX sets the value during create or refresh.
+- `Read-Only`: Cannot be set in configuration; Terraform records the value AWX returns.
 - `Sensitive`: Terraform redacts the value in normal CLI output.
 - `Write-Only`: Sent to AWX during create/update and not read back.
 

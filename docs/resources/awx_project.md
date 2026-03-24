@@ -52,6 +52,7 @@ resource "awx_project" "private_repo" {
 - `Required`: Must be set in configuration.
 - `Optional`: May be omitted.
 - `Computed`: AWX sets the value during create or refresh.
+- `Read-Only`: Cannot be set in configuration; Terraform records the value AWX returns.
 - `Sensitive`: Terraform redacts the value in normal CLI output.
 - `Write-Only`: Sent to AWX during create/update and not read back.
 
@@ -65,7 +66,6 @@ resource "awx_project" "private_repo" {
 - `scm_credential_id` (Number, Optional) Numeric ID of the source-control credential used to access private repositories.
 - `default_environment_id` (Number, Optional) Numeric ID of the default execution environment for project jobs.
 - `description` (String, Optional) Optional explanation displayed to project users.
-- `local_path` (String, Optional) Local path (relative to PROJECTS_ROOT) containing playbooks and related files for this project.
 - `organization_id` (Number, Optional) Numeric ID of the owning organization.
 - `scm_branch` (String, Optional) Branch, tag, or revision checked out by AWX.
 - `scm_clean` (Boolean, Optional, Computed) Discard any local changes before syncing the project.
@@ -82,6 +82,7 @@ resource "awx_project" "private_repo" {
 ### Read-Only
 
 - `id` (Number, Read-Only) Numeric AWX object identifier.
+- `local_path` (String, Read-Only) Local path under PROJECTS_ROOT assigned by AWX. This value is chosen by the server and cannot be set in Terraform.
 
 ## Import
 
