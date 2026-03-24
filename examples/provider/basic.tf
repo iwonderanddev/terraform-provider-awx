@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     awx = {
-      source  = "iwd/awx"
-      version = "~> 0.1"
+      source  = "iwonderanddev/awx"
+      version = "~> 0.2"
     }
   }
 }
